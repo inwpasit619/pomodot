@@ -28,6 +28,7 @@ Map: [Map: Pomodoro ลอยบนจอ](../map.md)
 
 **ไอคอนบน menu bar**
 - ไอคอนบอก Phase ปัจจุบัน (Focus / Break) และดูออกว่ากำลัง Pause
+  - (แก้เมื่อ 2026-10-15 ในตั๋ว [ชื่อแอพ, bundle identifier และไอคอน](14-app-name-and-icon.md)) ตอน Pause ไอคอนเป็น `pause.circle` ทุก Phase และตัวเลขจางลง **ไอคอนไม่บอกว่าเป็น Phase ไหน** ดูได้จากเมนู ตอนเดินไอคอนยังบอก Phase (Focus = `timer`, Break = `cup.and.saucer.fill`)
 - โชว์ `mm:ss` คู่กับไอคอน **เฉพาะตอนที่ timer เดินอยู่หรือ Pause** ตอนรอให้กด ▶︎ จะเหลือแค่ไอคอน **ไม่มีสวิตช์**ให้ปิดเวลา
 - คลิกแล้วได้ **เมนู dropdown ธรรมดา** (ไม่ใช่ popover)
 

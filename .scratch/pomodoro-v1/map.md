@@ -43,10 +43,11 @@ Label: wayfinder:map
 - [หน้าตาและตำแหน่งของหน้าต่างลอย](issues/10-floating-window-look.md) — แคปซูลกระจกเล็กๆ (จุดสี + เวลา) ชี้ค้างหรือคลิกแล้วขยายเป็นการ์ดที่มีปุ่มกับ Expected finish ครบ ลากได้โดยไม่ขยาย ขยายไปทางที่มีที่ว่างตอนชิดขอบ เริ่มที่กลางบนและจำตำแหน่งไว้ มี light/dark และ Appearance System/Light/Dark ใน Settings ส่วน Settings กับ Statistics ใช้กล่องมุมโค้งแบบ System Settings (prototype อยู่ที่ branch `prototype/floating-window-look`)
 - [spec จะสั่ง agent ให้จัดโครงสร้างโค้ดและทดสอบยังไง](issues/12-code-structure-and-testing.md) — Core (กติกาล้วน รับ `now` จากข้างนอก) + App + CoreTests ใช้ `/tdd` และ Swift Testing ชื่อ test แบบ Given/When/Then มี seam ที่กำหนดไว้ 4 จุด, checklist ทดสอบด้วยมือแบบ Given/When/Then ใน `docs/manual-test.md`, build เป็น 5 milestone ที่ผู้ใช้ต้องบอกผ่านก่อนไปต่อ, เงื่อนไข "เสร็จ" 7 ข้อ และรายงานเป็นภาษาไทย
 - [เก็บข้อมูลของแอพไว้ที่ไหน รูปแบบอะไร](issues/13-data-storage.md) — JSON 3 ไฟล์ (settings / state / history) ใน `~/Library/Application Support/<bundle-id>/` แปลงไฟล์อยู่ใน Core เป็น seam ที่ 5, เขียนแบบ atomic, ไฟล์เสียย้ายไว้ข้างๆ แล้วเริ่มใหม่, บันทึกสถานะ timer ทุกครั้งที่เปลี่ยน + ทุก 30 วิ, มี `"version": 1`, ตำแหน่งแคปซูลเก็บใน state และ Restore Defaults ไม่ย้าย, ลบแอพแล้วข้อมูลยังอยู่ (README บอกวิธีลบผ่าน Finder)
+- [ชื่อแอพ, bundle identifier และไอคอน](issues/14-app-name-and-icon.md) — ชื่อ **Pomodot**, bundle id `com.teppasit.pomodot` (ห้ามเปลี่ยน), ไอคอนแอพเป็นแคปซูลขาวบนพื้นแดง agent วาด SVG แล้วแปลงเป็น `.icns` (ห้ามใช้ SVG filter), menu bar ใช้ SF Symbols สีเดียว `timer` / `cup.and.saucer.fill` / `pause.circle` (ตอน Pause ไม่บอก Phase ซึ่งแก้ข้อที่ตกลงไว้ในตั๋ว menu bar)
 
 ## Not yet specified
 
-(ตอนนี้ยังไม่มี fog ที่เหลือ เรื่องการแจกจ่ายกับชื่อแอพ/ไอคอนยกขึ้นเป็นตั๋วแล้ว)
+(ตอนนี้ไม่มี fog เหลือแล้ว ตั๋วที่ยังเปิดอยู่มีตั๋วเดียวคือ "เลข version และขั้นตอนออก GitHub Release" ปิดตั๋วนั้นแล้วก็รวบรวมทุกคำตอบเป็น `spec.md` ตาม Destination ได้เลย)
 
 ## Out of scope
 

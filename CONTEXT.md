@@ -1,6 +1,6 @@
-# Pomodoro
+# Pomodot
 
-A small floating Pomodoro timer for macOS. This glossary pins down the words the app, its spec, and the agents building it use for time and progress.
+Pomodot is a small floating Pomodoro timer for macOS. This glossary pins down the words the app, its spec, and the agents building it use for time and progress.
 
 ## Language
 
