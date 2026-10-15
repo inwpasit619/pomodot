@@ -75,6 +75,15 @@ private struct MenuContent: View {
         Button(model.timer.status.startPauseResumeTitle) {
             model.startPauseResume()
         }
+        Button("Skip") {
+            model.skip()
+        }
+        Button("Reset…") {
+            ConfirmationAlert.ask(model.timer.resetConfirmation, then: model.reset)
+        }
+        Button("New Cycle…") {
+            ConfirmationAlert.ask(model.timer.newCycleConfirmation, then: model.newCycle)
+        }
 
         Divider()
 

@@ -39,6 +39,18 @@ final class AppModel {
         send { $0.startPauseResume(at: $1) }
     }
 
+    func skip() {
+        send { $0.skip(at: $1) }
+    }
+
+    func reset() {
+        send { $0.reset(at: $1) }
+    }
+
+    func newCycle() {
+        send { $0.newCycle(at: $1) }
+    }
+
     private func sleep() {
         send { $0.sleep(at: $1) }
     }
