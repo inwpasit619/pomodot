@@ -5,6 +5,8 @@ import CoreGraphics
 public enum FloatingWindowPlacement {
     /// The collapsed capsule's size in points.
     public static let capsuleSize = CGSize(width: 128, height: 38)
+    /// The expanded card's size in points.
+    public static let cardSize = CGSize(width: 284, height: 200)
 
     /// Gap between the menu bar and the capsule's top edge.
     static let gapBelowMenuBar: CGFloat = 12
@@ -20,5 +22,47 @@ public enum FloatingWindowPlacement {
             y: top - capsuleSize.height
         )
         return CGRect(origin: origin, size: capsuleSize)
+    }
+
+    /// Where the card goes when the capsule expands: the capsule never moves and
+    /// the card grows toward the side of its screen with room.
+    /// - Parameter visibleFrame: the usable area of the screen the capsule is on.
+    public static func cardFrame(around capsule: CGRect, in visibleFrame: CGRect) -> CGRect {
+        CardLayout(capsule: capsule, visibleFrame: visibleFrame).cardFrame(around: capsule)
+    }
+}
+
+/// Which way the card grows from the capsule. Chosen when the card opens and kept
+/// until it closes, so the card never jumps away from the pointer.
+public struct CardLayout: Sendable, Equatable {
+    public enum Vertical: Sendable { case down, up }
+    /// Centred on the capsule, or lined up with the capsule's edge where centring would cross the screen's.
+    public enum Horizontal: Sendable { case centered, rightEdges, leftEdges }
+
+    public let vertical: Vertical
+    public let horizontal: Horizontal
+
+    public init(capsule: CGRect, visibleFrame: CGRect) {
+        // Top half grows down (card top = capsule top); bottom half grows up.
+        vertical = capsule.midY >= visibleFrame.midY ? .down : .up
+        let halfCard = FloatingWindowPlacement.cardSize.width / 2
+        if capsule.midX + halfCard > visibleFrame.maxX {
+            horizontal = .rightEdges
+        } else if capsule.midX - halfCard < visibleFrame.minX {
+            horizontal = .leftEdges
+        } else {
+            horizontal = .centered
+        }
+    }
+
+    public func cardFrame(around capsule: CGRect) -> CGRect {
+        let size = FloatingWindowPlacement.cardSize
+        let y = vertical == .down ? capsule.maxY - size.height : capsule.minY
+        let x = switch horizontal {
+        case .centered: capsule.midX - size.width / 2
+        case .rightEdges: capsule.maxX - size.width
+        case .leftEdges: capsule.minX
+        }
+        return CGRect(x: x, y: y, width: size.width, height: size.height)
     }
 }

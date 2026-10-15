@@ -18,3 +18,8 @@ func runPhase(_ timer: inout PomodoroTimer, from start: Date, minutes: Int) -> [
     timer.start(at: start)
     return timer.tick(at: start.addingTimeInterval(TimeInterval(minutes * 60)))
 }
+
+/// `t` seconds into a pointer scenario, e.g. `second(0.3)`.
+func second(_ t: TimeInterval) -> Date {
+    Date(timeIntervalSinceReferenceDate: 1_000_000 + t)
+}

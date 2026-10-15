@@ -214,6 +214,11 @@ public struct PomodoroTimer: Sendable {
         Int(remaining(at: now).rounded(.up))
     }
 
+    /// How much of the Phase is left, from 1 (full) to 0, for the time-left bar.
+    public func fractionLeft(at now: Date) -> Double {
+        min(max(remaining(at: now) / TimeInterval(phaseLengthSeconds), 0), 1)
+    }
+
     private func remaining(at now: Date) -> TimeInterval {
         guard let runningSince else { return remainingAtStart }
         return remainingAtStart - now.timeIntervalSince(runningSince)

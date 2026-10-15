@@ -222,3 +222,18 @@ func sleepAfterTheEndStillRecordsThePomodoro() {
     #expect(timer.phase == .shortBreak)
     #expect(timer.status == .ready)
 }
+
+@Test("Given a 25-minute Focus 2/4 Running with 10:00 left, when the time-left bar is drawn, then it is 40% full")
+func timeLeftBarIsTheShareOfThePhaseLeft() {
+    // Given
+    var timer = PomodoroTimer()
+    _ = runPhase(&timer, from: at("09:00"), minutes: 25)
+    _ = runPhase(&timer, from: at("09:25"), minutes: 5)
+    timer.start(at: at("09:30"))
+
+    // When
+    let fraction = timer.fractionLeft(at: at("09:45"))
+
+    // Then
+    #expect(fraction == 0.4)
+}
