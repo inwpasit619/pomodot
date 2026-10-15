@@ -44,10 +44,11 @@ Label: wayfinder:map
 - [spec จะสั่ง agent ให้จัดโครงสร้างโค้ดและทดสอบยังไง](issues/12-code-structure-and-testing.md) — Core (กติกาล้วน รับ `now` จากข้างนอก) + App + CoreTests ใช้ `/tdd` และ Swift Testing ชื่อ test แบบ Given/When/Then มี seam ที่กำหนดไว้ 4 จุด, checklist ทดสอบด้วยมือแบบ Given/When/Then ใน `docs/manual-test.md`, build เป็น 5 milestone ที่ผู้ใช้ต้องบอกผ่านก่อนไปต่อ, เงื่อนไข "เสร็จ" 7 ข้อ และรายงานเป็นภาษาไทย
 - [เก็บข้อมูลของแอพไว้ที่ไหน รูปแบบอะไร](issues/13-data-storage.md) — JSON 3 ไฟล์ (settings / state / history) ใน `~/Library/Application Support/<bundle-id>/` แปลงไฟล์อยู่ใน Core เป็น seam ที่ 5, เขียนแบบ atomic, ไฟล์เสียย้ายไว้ข้างๆ แล้วเริ่มใหม่, บันทึกสถานะ timer ทุกครั้งที่เปลี่ยน + ทุก 30 วิ, มี `"version": 1`, ตำแหน่งแคปซูลเก็บใน state และ Restore Defaults ไม่ย้าย, ลบแอพแล้วข้อมูลยังอยู่ (README บอกวิธีลบผ่าน Finder)
 - [ชื่อแอพ, bundle identifier และไอคอน](issues/14-app-name-and-icon.md) — ชื่อ **Pomodot**, bundle id `com.teppasit.pomodot` (ห้ามเปลี่ยน), ไอคอนแอพเป็นแคปซูลขาวบนพื้นแดง agent วาด SVG แล้วแปลงเป็น `.icns` (ห้ามใช้ SVG filter), menu bar ใช้ SF Symbols สีเดียว `timer` / `cup.and.saucer.fill` / `pause.circle` (ตอน Pause ไม่บอก Phase ซึ่งแก้ข้อที่ตกลงไว้ในตั๋ว menu bar)
+- [เลข version และขั้นตอนออก GitHub Release](issues/15-versioning-and-release.md) — repo public `inwpasit619/pomodot`, build บนเครื่อง dev แล้วอัปโหลดด้วย `gh release create`, เริ่มที่ `0.9.0` เก็บเลขไว้ในไฟล์ `VERSION`, ใช้ gitflow (ไม่มี PR), script ตรวจ 7 ขั้นก่อนอัปโหลด, release notes ภาษาอังกฤษ, README อังกฤษ + ขั้นตอนติดตั้งภาษาไทย, เมนูมี About + Check for Updates… (ไม่มี auto-update), ทดสอบเรื่องกด Open Anyway ซ้ำตอนอัปเดตใน milestone 5
 
 ## Not yet specified
 
-(ตอนนี้ไม่มี fog เหลือแล้ว ตั๋วที่ยังเปิดอยู่มีตั๋วเดียวคือ "เลข version และขั้นตอนออก GitHub Release" ปิดตั๋วนั้นแล้วก็รวบรวมทุกคำตอบเป็น `spec.md` ตาม Destination ได้เลย)
+(ไม่มี fog เหลือแล้ว ตั๋วสุดท้ายคือ [รวบรวม spec.md](issues/16-compile-spec.md))
 
 ## Out of scope
 
@@ -58,3 +59,4 @@ Label: wayfinder:map
 - Mac App Store / notarization / Apple Developer account แบบเสียเงิน
 - หลายภาษา / ภาษาไทยใน UI (v1 ใช้ภาษาอังกฤษอย่างเดียว ตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง")
 - ย้อนกลับไปใช้แอพเวอร์ชันเก่า (downgrade) แอพเก่าเจอไฟล์ที่ version สูงกว่า จะย้ายไฟล์ไว้ข้างๆ แล้วเริ่มใหม่ ([เก็บข้อมูลของแอพไว้ที่ไหน รูปแบบอะไร](issues/13-data-storage.md))
+- อัปเดตตัวเองแบบ Sparkle / แอพเช็กเวอร์ชันใหม่เองแล้วเตือน / build release ด้วย GitHub Actions (v1 มีแค่เมนู Check for Updates… ที่เปิดหน้า Releases [เลข version และขั้นตอนออก GitHub Release](issues/15-versioning-and-release.md))
