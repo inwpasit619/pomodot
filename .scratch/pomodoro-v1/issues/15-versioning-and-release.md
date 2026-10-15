@@ -1,0 +1,16 @@
+# เลข version และขั้นตอนออก GitHub Release
+
+Type: grilling
+Label: wayfinder:grilling
+Status: open
+Map: [Map: Pomodoro ลอยบนจอ](../map.md)
+Blocked by: 14
+
+## Question
+
+milestone ที่ 5 ("Settings + Appearance + แจกจ่าย") ต้องมีขั้นตอนออกเวอร์ชันที่ agent ทำได้ครบ ส่วนผู้ใช้กดเองให้น้อยที่สุด (agent เสนอทางที่แนะนำ + trade-off เป็นภาษาคน แล้วให้ผู้ใช้อนุมัติ)
+
+- รูปแบบเลข version (เช่น `1.0.0`) ใส่ไว้ตรงไหน (`CFBundleShortVersionString` / `CFBundleVersion` ใน Info.plist) และใครเป็นคนเพิ่มเลข
+- ออก GitHub Release ยังไง: agent ใช้ `gh release create` จากเครื่อง dev หรือใช้ GitHub Actions build บน runner ของ macOS (ถ้าใช้ Actions ต้องเช็กว่า runner ทำ universal build + ad-hoc sign ได้เหมือนเครื่อง dev) มี tag ไหม และ release notes ภาษาอะไร
+- ชื่อไฟล์ `.zip` สร้างยังไง (`ditto -c -k --keepParent` เพื่อให้ signature ไม่เสีย) และตรวจอะไรก่อนอัปโหลด (`codesign -v --strict --deep`)
+- อัปเดต: เพื่อนรู้ได้ยังไงว่ามีเวอร์ชันใหม่ (v1 ไม่มีระบบ auto-update หรือมีแค่ลิงก์ในเมนู) แล้วติดตั้งทับยังไงให้ข้อมูลเดิมยังอยู่ research ในตั๋ว "เพื่อนเปิดแอพที่ไม่ได้ notarize จาก GitHub ได้ยังไง" **คาดว่า**ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่ (ยังไม่ได้ทดสอบ) และร่างขั้นตอนติดตั้งใน README ไว้แล้ว ตัดสินว่าจะยอมรับข้อนี้ไปเลย หรือต้องทดสอบให้รู้แน่ก่อน

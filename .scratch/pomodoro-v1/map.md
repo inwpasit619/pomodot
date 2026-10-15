@@ -41,11 +41,11 @@ Label: wayfinder:map
 - [แจ้งเตือนกับเสียงตอนหมดเวลา ทำงานยังไง](issues/08-notification-and-sound.md) — banner + เสียงระบบดังครั้งเดียวเฉพาะตอนหมดเวลาเอง แอพเล่นเสียงเองเลยยังดังตอน Do Not Disturb เลือกเสียงได้ (ค่าเริ่มต้น Glass/Hero) ขอสิทธิ์ตอนกด ▶︎ ครั้งแรก คลิก banner = แสดง Floating Window
 - [สถิติ/ประวัติ นับอะไร แสดงยังไง](issues/09-what-stats-mean.md) — History เก็บแค่ Pomodoro (เวลาจบ + ความยาว) ไว้ตลอดไป, เมนูโชว์ `Today: 🍅 n`, หน้าต่าง Statistics มีการ์ด Today/Week/All Time + กราฟ 7 วัน + `Clear History…`, ตัดวันตอนเที่ยงคืนตามวันที่จบ
 - [หน้าตาและตำแหน่งของหน้าต่างลอย](issues/10-floating-window-look.md) — แคปซูลกระจกเล็กๆ (จุดสี + เวลา) ชี้ค้างหรือคลิกแล้วขยายเป็นการ์ดที่มีปุ่มกับ Expected finish ครบ ลากได้โดยไม่ขยาย ขยายไปทางที่มีที่ว่างตอนชิดขอบ เริ่มที่กลางบนและจำตำแหน่งไว้ มี light/dark และ Appearance System/Light/Dark ใน Settings ส่วน Settings กับ Statistics ใช้กล่องมุมโค้งแบบ System Settings (prototype อยู่ที่ branch `prototype/floating-window-look`)
+- [spec จะสั่ง agent ให้จัดโครงสร้างโค้ดและทดสอบยังไง](issues/12-code-structure-and-testing.md) — Core (กติกาล้วน รับ `now` จากข้างนอก) + App + CoreTests ใช้ `/tdd` และ Swift Testing ชื่อ test แบบ Given/When/Then มี seam ที่กำหนดไว้ 4 จุด, checklist ทดสอบด้วยมือแบบ Given/When/Then ใน `docs/manual-test.md`, build เป็น 5 milestone ที่ผู้ใช้ต้องบอกผ่านก่อนไปต่อ, เงื่อนไข "เสร็จ" 7 ข้อ และรายงานเป็นภาษาไทย
 
 ## Not yet specified
 
-- **การ package และแจกจ่าย** ที่เหลืออยู่: เลข version, ขั้นตอนทำ GitHub Release, ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่หรือเปล่า (ตกลงกันแล้วว่าใช้ zip + ad-hoc sign ทั้ง bundle และมีขั้นตอนติดตั้งเตรียมไว้ใน research แล้ว)
-- **ชื่อแอพและไอคอน**
+(ตอนนี้ยังไม่มี fog ที่เหลือ เรื่องการแจกจ่ายกับชื่อแอพ/ไอคอนยกขึ้นเป็นตั๋วแล้ว)
 
 ## Out of scope
 
