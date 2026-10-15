@@ -11,7 +11,7 @@ private let topCapsule = CGRect(x: 656, y: 831, width: 128, height: 38)
 func restingOnTheCapsuleDoesNotExpand() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    window.pointerEntered(at: second(0))
+    window.pointerEntered()
 
     // When
     window.check(at: second(2))
@@ -23,7 +23,7 @@ func restingOnTheCapsuleDoesNotExpand() {
 /// A Floating Window already opened into the card by a click, with the pointer on it.
 private func expandedWindow() -> FloatingWindowExpansion {
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    window.pointerEntered(at: second(-1))
+    window.pointerEntered()
     window.pressed(at: CGPoint(x: 720, y: 850))
     window.released(at: CGPoint(x: 720, y: 850), visibleFrame: screen)
     return window
@@ -47,7 +47,7 @@ func comingBackInTimeKeepsTheCardOpen() {
     // Given
     var window = expandedWindow()
     window.pointerExited(at: second(0))
-    window.pointerEntered(at: second(0.4))
+    window.pointerEntered()
 
     // When
     window.check(at: second(0.5))
@@ -60,7 +60,7 @@ func comingBackInTimeKeepsTheCardOpen() {
 func clickingTheCapsuleExpandsAtOnce() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    window.pointerEntered(at: second(0))
+    window.pointerEntered()
 
     // When
     window.pressed(at: CGPoint(x: 700, y: 850))
@@ -74,7 +74,7 @@ func clickingTheCapsuleExpandsAtOnce() {
 func draggingTheCapsuleDoesNotExpand() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    window.pointerEntered(at: second(0))
+    window.pointerEntered()
     window.pressed(at: CGPoint(x: 700, y: 850))
 
     // When
@@ -93,24 +93,25 @@ func draggingTheCapsuleDoesNotExpand() {
     #expect(window.isExpanded)
 }
 
-@Test("Given the card opened downward from (720, 850), when the usable area changes so the capsule is now in the bottom half, then the card keeps growing down until it closes, and grows up the next time it opens")
+@Test("Given the card opened downward from (720, 850), when it is dragged so the capsule sits in the bottom half at (720, 350), then the card keeps growing down until it closes, and grows up when clicked open again")
 func cardKeepsItsDirectionUntilItCloses() {
     // Given
     var window = expandedWindow()
-    let tallerScreen = CGRect(x: 0, y: 0, width: 1440, height: 2000)
 
     // When
-    window.check(at: second(0))
+    window.pressed(at: CGPoint(x: 720, y: 800))
+    window.dragged(to: CGPoint(x: 720, y: 300), visibleFrame: screen)
+    window.released(at: CGPoint(x: 720, y: 300), visibleFrame: screen)
     let frameWhileOpen = window.frame
     window.pointerExited(at: second(1))
     window.check(at: second(1.5))
-    window.pointerEntered(at: second(2))
-    window.pressed(at: CGPoint(x: 720, y: 850))
-    window.released(at: CGPoint(x: 720, y: 850), visibleFrame: tallerScreen)
+    window.pointerEntered()
+    window.pressed(at: CGPoint(x: 720, y: 350))
+    window.released(at: CGPoint(x: 720, y: 350), visibleFrame: screen)
 
     // Then
-    #expect(frameWhileOpen == CGRect(x: 578, y: 669, width: 284, height: 200))
-    #expect(window.frame == CGRect(x: 578, y: 831, width: 284, height: 200))
+    #expect(frameWhileOpen == CGRect(x: 578, y: 169, width: 284, height: 200))
+    #expect(window.frame == CGRect(x: 578, y: 331, width: 284, height: 200))
 }
 
 @Test("Given the pointer enters the capsule at t = 0, when the app asks when to check next, then there is nothing to check; after a click opens the card and the pointer leaves at t = 1, it is t = 1.5")
@@ -119,7 +120,7 @@ func itSaysWhenToCheckNext() {
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
 
     // When
-    window.pointerEntered(at: second(0))
+    window.pointerEntered()
     let afterEntering = window.nextCheck
     window.pressed(at: CGPoint(x: 720, y: 850))
     window.released(at: CGPoint(x: 720, y: 850), visibleFrame: screen)

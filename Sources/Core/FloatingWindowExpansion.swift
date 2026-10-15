@@ -48,7 +48,7 @@ public struct FloatingWindowExpansion: Sendable {
         cardLayout?.cardFrame(around: capsuleFrame) ?? capsuleFrame
     }
 
-    public mutating func pointerEntered(at now: Date) {
+    public mutating func pointerEntered() {
         pointerExitedAt = nil
     }
 

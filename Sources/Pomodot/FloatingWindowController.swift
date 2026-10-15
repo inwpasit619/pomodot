@@ -53,9 +53,10 @@ final class FloatingWindowDisplay {
 /// new size, so only the SwiftUI box grows and shrinks.
 @MainActor
 final class FloatingWindowController {
-    static let margin: CGFloat = 16
+    /// Room around the card for the bounce and the shadow.
+    private static let margin: CGFloat = 16
     /// The open and close animation: a spring with no bounce.
-    static let resize = Animation.smooth(duration: 0.35)
+    private static let openClose = Animation.smooth(duration: 0.35)
     /// Widening on hover: quicker, with a little bounce, like the Dynamic Island.
     private static let hover = Animation.spring(duration: 0.3, bounce: 0.3)
     /// How much wider and taller the capsule gets on hover.
@@ -101,7 +102,7 @@ final class FloatingWindowController {
         panel.hasShadow = false
         let content = PointerTrackingView()
         let hosting = FirstClickHostingView(rootView: FloatingView(model: model, display: display))
-        // The panel's size comes from Core's frames, never from the SwiftUI content.
+        // The panel's size is fixed and its place follows Core, never the SwiftUI content.
         hosting.sizingOptions = []
         hosting.frame = content.bounds
         hosting.autoresizingMask = [.width, .height]
@@ -129,9 +130,13 @@ final class FloatingWindowController {
             if model.isFloatingWindowVisible {
                 // Shows the panel without activating the app.
                 panel.orderFrontRegardless()
+                // The pointer may already be on it, or have left while it was hidden.
+                syncPointer()
             } else {
                 panel.orderOut(nil)
                 expansion.hide()
+                // No exit arrives for a window that is gone.
+                pointerIsInside = false
                 update(animated: false)
             }
         } onChange: { [weak self] in
@@ -160,7 +165,7 @@ final class FloatingWindowController {
         }
         pointerIsInside = inside
         if inside {
-            expansion.pointerEntered(at: Date())
+            expansion.pointerEntered()
         } else {
             expansion.pointerExited(at: Date())
         }
@@ -239,24 +244,26 @@ final class FloatingWindowController {
 
     /// Brings the panel and the view in line with Core, and asks to be woken for the next check.
     private func update(animated: Bool = true) {
+        if expansion.isExpanded != display.isExpanded {
+            showGlass(animation: animated ? Self.openClose : nil)
+        } else if looksHovered != display.isHovered {
+            showGlass(animation: animated ? Self.hover : nil)
+        }
+
         checkTimer?.invalidate()
         checkTimer = nil
-        if let nextCheck = expansion.nextCheck {
+        // While the capsule looks hovered, look again now and then in case an exit went missing.
+        if let nextCheck = expansion.nextCheck ?? (display.isHovered ? Date().addingTimeInterval(0.5) : nil) {
             let timer = Timer(fire: nextCheck, interval: 0, repeats: false) { [weak self] _ in
                 MainActor.assumeIsolated { self?.check() }
             }
             RunLoop.main.add(timer, forMode: .common)
             checkTimer = timer
         }
-
-        if expansion.isExpanded != display.isExpanded {
-            showGlass(animation: animated ? Self.resize : nil)
-        } else if isHovered != display.isHovered {
-            showGlass(animation: animated ? Self.hover : nil)
-        }
     }
 
-    private var isHovered: Bool { pointerIsInside && !expansion.isExpanded }
+    /// Whether the capsule should look hovered: the pointer is on it and the card is closed.
+    private var looksHovered: Bool { pointerIsInside && !expansion.isExpanded }
 
     /// The glass on screen: the card while open, else the capsule, a little wider on hover.
     /// Leaving is judged against the wider capsule, so its edge doesn't flicker.
@@ -278,7 +285,7 @@ final class FloatingWindowController {
         }
         withAnimation(Self.reduceMotion ? nil : animation) {
             display.isExpanded = expansion.isExpanded
-            display.isHovered = isHovered
+            display.isHovered = looksHovered
             display.boxFrame = boxFrame(of: glassFrame)
         }
         content.trackingRect = content.convert(display.boxFrame, from: hosting)
