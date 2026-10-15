@@ -5,6 +5,9 @@ import SwiftUI
 /// The Floating Window's content: the capsule, which opens into the card.
 /// The glass box grows from the capsule's corner, so the capsule never moves.
 struct FloatingView: View {
+    /// The view's own coordinates (top-left origin), where the card's buttons report their frames.
+    static let coordinateSpaceName = "FloatingView"
+
     let model: AppModel
     let display: FloatingWindowDisplay
 
@@ -51,6 +54,10 @@ struct FloatingView: View {
         // The panel is the capsule or card plus a margin; keep the box at the capsule's corner.
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: anchor)
         .padding(FloatingWindowController.margin)
+        .coordinateSpace(.named(Self.coordinateSpaceName))
+        .onPreferenceChange(ButtonFramesKey.self) { frames in
+            MainActor.assumeIsolated { display.buttonFrames = frames }
+        }
     }
 }
 
@@ -231,6 +238,7 @@ private struct PrimaryButtonStyle: ButtonStyle {
             .background(color.opacity(configuration.isPressed ? 0.8 : 1),
                          in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
+            .reportsButtonFrame()
     }
 }
 
@@ -242,6 +250,7 @@ private struct SquareButtonStyle: ButtonStyle {
             .background(.primary.opacity(configuration.isPressed ? 0.16 : 0.08),
                         in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
+            .reportsButtonFrame()
     }
 }
 
@@ -252,10 +261,29 @@ private struct RoundButtonStyle: ButtonStyle {
             .frame(width: 22, height: 22)
             .background(.primary.opacity(configuration.isPressed ? 0.16 : 0.08), in: Circle())
             .contentShape(Circle())
+            .reportsButtonFrame()
+    }
+}
+
+/// The frames of the card's buttons, so the window knows a press there is not a drag.
+private struct ButtonFramesKey: PreferenceKey {
+    static let defaultValue: [CGRect] = []
+
+    static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) {
+        value += nextValue()
     }
 }
 
 private extension View {
+    func reportsButtonFrame() -> some View {
+        background {
+            GeometryReader { proxy in
+                Color.clear.preference(key: ButtonFramesKey.self,
+                                       value: [proxy.frame(in: .named(FloatingView.coordinateSpaceName))])
+            }
+        }
+    }
+
     /// Paused: the time fades out and back in, like breathing. Off with Reduce Motion.
     func breathing(_ active: Bool) -> some View {
         modifier(Breathing(active: active))

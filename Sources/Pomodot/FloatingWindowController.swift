@@ -5,14 +5,25 @@ import SwiftUI
 /// A borderless panel that floats over every app, full-screen ones included,
 /// and never activates Pomodot when clicked.
 final class FloatingPanel: NSPanel {
-    /// Sees every mouse press and release before the content does.
+    /// Sees every mouse press, drag and release before the content does.
     var onMouseEvent: ((NSEvent) -> Void)?
 
     // A borderless panel can't receive clicks on its buttons unless it can become key.
     override var canBecomeKey: Bool { true }
 
+    // AppKit would push the transparent margin out from under the menu bar, moving the
+    // capsule away from where Core put it. Leave it be while the glass is on a screen;
+    // otherwise (its display went away, say) let AppKit bring it back.
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        let glass = frameRect.insetBy(dx: FloatingWindowController.margin, dy: FloatingWindowController.margin)
+        if NSScreen.screens.contains(where: { $0.visibleFrame.contains(glass) }) {
+            return frameRect
+        }
+        return super.constrainFrameRect(frameRect, to: screen)
+    }
+
     override func sendEvent(_ event: NSEvent) {
-        if event.type == .leftMouseDown || event.type == .leftMouseUp {
+        if [.leftMouseDown, .leftMouseDragged, .leftMouseUp].contains(event.type) {
             onMouseEvent?(event)
         }
         super.sendEvent(event)
@@ -26,6 +37,8 @@ final class FloatingWindowDisplay {
     var isExpanded = false
     /// Kept through the closing animation so the capsule doesn't move while the card shrinks.
     var cardLayout: CardLayout?
+    /// Where the card's buttons are, in `FloatingView.coordinateSpaceName`. A press on one never drags.
+    @ObservationIgnored var buttonFrames: [CGRect] = []
 }
 
 /// Owns the Floating Window: shows, hides and floats it, and opens it into the card
@@ -39,6 +52,7 @@ final class FloatingWindowController {
 
     private let model: AppModel
     private let panel: FloatingPanel
+    private let hosting: NSView
     private let display = FloatingWindowDisplay()
     private var expansion: FloatingWindowExpansion
     private var checkTimer: Timer?
@@ -69,9 +83,6 @@ final class FloatingWindowController {
         panel.isOpaque = false
         // The view draws its own shadow inside the margin.
         panel.hasShadow = false
-        // Simple drag for now; the real drag rules replace this in M2.
-        panel.isMovableByWindowBackground = true
-
         let content = PointerTrackingView(margin: Self.margin)
         let hosting = FirstClickHostingView(rootView: FloatingView(model: model, display: display))
         // The panel's size comes from Core's frames, never from the SwiftUI content.
@@ -80,6 +91,7 @@ final class FloatingWindowController {
         hosting.autoresizingMask = [.width, .height]
         content.addSubview(hosting)
         panel.contentView = content
+        self.hosting = hosting
 
         content.onPointerChange = { [weak self] inside in self?.pointerMoved(inside: inside) }
         panel.onMouseEvent = { [weak self] event in self?.mouse(event) }
@@ -123,6 +135,11 @@ final class FloatingWindowController {
     // MARK: Pointer
 
     private func pointerMoved(inside: Bool) {
+        // A release can go missing (Mission Control during a drag, say). Once the button
+        // is really up, end the press, or the card could never open or close again.
+        if expansion.isPressed, NSEvent.pressedMouseButtons & 1 == 0 {
+            expansion.released(at: NSEvent.mouseLocation, visibleFrame: screenArea)
+        }
         pointerIsInside = inside
         if inside {
             expansion.pointerEntered(at: Date())
@@ -132,15 +149,37 @@ final class FloatingWindowController {
         update()
     }
 
+    /// Pomodot's own drag: Core decides click or drag and keeps the window on screen.
     private func mouse(_ event: NSEvent) {
-        // Screen coordinates: a drag moves the panel along with the pointer.
+        // Screen coordinates: the panel moves along with the pointer, so window ones barely change.
         let point = NSEvent.mouseLocation
-        if event.type == .leftMouseDown {
-            expansion.pressed(at: point)
-        } else {
+        switch event.type {
+        case .leftMouseDown:
+            // Only the glass counts, not the transparent margin around it.
+            guard shownFrame.contains(point) else { return }
+            expansion.pressed(at: point, onButton: isOnButton(event))
+        case .leftMouseDragged:
+            // The screen under the pointer, so the capsule can be dragged onto another display.
+            expansion.dragged(to: point, visibleFrame: usableArea(at: point))
+            panel.setFrame(Self.panelFrame(around: shownFrame), display: true)
+        default:
             expansion.released(at: point, visibleFrame: screenArea)
         }
         update()
+    }
+
+    /// The capsule or card the view is drawing, including a card that is still closing.
+    private var shownFrame: CGRect {
+        display.cardLayout?.cardFrame(around: expansion.capsuleFrame) ?? expansion.capsuleFrame
+    }
+
+    private func isOnButton(_ event: NSEvent) -> Bool {
+        var point = hosting.convert(event.locationInWindow, from: nil)
+        // SwiftUI measures from the top-left.
+        if !hosting.isFlipped {
+            point.y = hosting.bounds.height - point.y
+        }
+        return display.buttonFrames.contains { $0.contains(point) }
     }
 
     private func check() {
@@ -155,16 +194,24 @@ final class FloatingWindowController {
         update()
     }
 
-    /// The panel was dragged while it was a capsule.
+    /// macOS moved the capsule itself, for example off a display that went away.
     private func panelMoved() {
-        guard !display.isExpanded, display.cardLayout == nil else { return }
+        // Drags and the card set the frame from Core already.
+        guard !expansion.isPressed, !display.isExpanded, display.cardLayout == nil else { return }
         expansion.moveCapsule(to: Self.contentFrame(inside: panel.frame))
     }
 
     /// The usable area of the screen the capsule is on.
     private var screenArea: CGRect {
-        let center = CGPoint(x: expansion.capsuleFrame.midX, y: expansion.capsuleFrame.midY)
-        let screen = NSScreen.screens.first { $0.frame.contains(center) } ?? NSScreen.screens.first
+        usableArea(at: CGPoint(x: expansion.capsuleFrame.midX, y: expansion.capsuleFrame.midY))
+    }
+
+    /// The usable area of the screen at `point`, else of the capsule's screen, else of the main one.
+    private func usableArea(at point: CGPoint) -> CGRect {
+        let capsule = CGPoint(x: expansion.capsuleFrame.midX, y: expansion.capsuleFrame.midY)
+        let screen = NSScreen.screens.first { $0.frame.contains(point) }
+            ?? NSScreen.screens.first { $0.frame.contains(capsule) }
+            ?? NSScreen.screens.first
         return screen?.visibleFrame ?? .zero
     }
 
@@ -197,7 +244,6 @@ final class FloatingWindowController {
         // Grow the panel at once; the view then grows the card from the capsule's corner.
         display.cardLayout = expansion.cardLayout
         panel.setFrame(Self.panelFrame(around: expansion.frame), display: true)
-        panel.isMovableByWindowBackground = false
         display.isExpanded = true
     }
 
@@ -222,7 +268,6 @@ final class FloatingWindowController {
         display.isExpanded = false
         display.cardLayout = nil
         panel.setFrame(Self.panelFrame(around: expansion.frame), display: true)
-        panel.isMovableByWindowBackground = true
     }
 }
 
