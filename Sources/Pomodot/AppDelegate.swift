@@ -3,6 +3,7 @@ import AppKit
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
+    private var floatingWindowController: FloatingWindowController?
 
     /// Every SF Symbol the app draws. Each must exist on the running macOS;
     /// a missing one is reported, never swapped for another.
@@ -24,5 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         NSLog("Pomodot: SF Symbols OK: %@", Self.requiredSymbols.joined(separator: ", "))
+
+        floatingWindowController = FloatingWindowController(model: model)
     }
 }

@@ -13,9 +13,16 @@ struct PomodotApp: App {
 }
 
 private struct MenuContent: View {
-    let model: AppModel
+    @Bindable var model: AppModel
 
     var body: some View {
+        Button(model.isFloatingWindowVisible ? "Hide Floating Window" : "Show Floating Window") {
+            model.isFloatingWindowVisible.toggle()
+        }
+        Toggle("Always on Top", isOn: $model.isAlwaysOnTop)
+
+        Divider()
+
         Button("Quit Pomodot") {
             NSApp.terminate(nil)
         }
