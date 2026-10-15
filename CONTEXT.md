@@ -33,6 +33,12 @@ _Avoid_: Round, set, session
 The clock time a Phase or a Cycle will end if it runs from now with no further pauses. A Cycle's expected finish is the end of its Long Break.
 _Avoid_: ETA, end time (when it could be confused with a Phase's length)
 
+### Surfaces
+
+**Floating Window**:
+The small timer window that floats over other apps. Closing it only hides it; the timer keeps running.
+_Avoid_: Widget, HUD, popover, mini window
+
 ### Actions
 
 **Skip**:

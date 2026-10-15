@@ -17,4 +17,6 @@ spec ต้องบอก AI coding agent ว่าจัดโค้ดแล�
 
 กติกาที่ test ต้องครอบคลุมอยู่ในตั๋ว "กติกาของ timer" ได้แก่ skip ที่ไม่ขยับตัวนับ, auto-start 2 สวิตช์ที่หยุดเสมอหลัง Long Break, auto-pause ตอนเครื่อง sleep (ล็อกจอแล้วไม่หยุด), กลับมาเป็น Pause หลังเปิดแอพใหม่, ค่าจาก Settings มีผลกับ Phase หรือ Cycle ถัดไป, Expected finish
 
+(ส่งต่อมาจากตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง") checklist ทดสอบด้วยมือต้องมี: กล่องยืนยัน Reset/New Cycle ขึ้นมาด้านหน้าเสมอ (แอพไม่มี Dock icon), เปิดแอพซ้ำตอนรันอยู่แล้วแสดง Floating Window, เวลาบน menu bar โชว์เฉพาะตอนเดิน/Pause, ซ่อน Floating Window แล้ว Quit แล้วเปิดใหม่ยังซ่อนอยู่ กติกาถามยืนยันเฉพาะตอนมีของจะหายควรมี unit test
+
 ข้อมูลที่มีแล้ว: CLT + SwiftPM, Swift 6.4, Swift Testing ใช้ได้, minimum macOS 14, หา path ที่ build ด้วย `--show-bin-path`
