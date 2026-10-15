@@ -18,11 +18,9 @@ struct FloatingView: View {
     var body: some View {
         let expanded = display.isExpanded
         let box = display.boxFrame
-        let shape = RoundedRectangle(
-            cornerRadius: expanded ? 18 : FloatingWindowPlacement.capsuleSize.height / 2,
-            style: .continuous
-        )
-        let anchor = display.cardLayout?.anchor ?? .center
+        let shape = RoundedRectangle(cornerRadius: expanded ? 18 : box.height / 2, style: .continuous)
+        // The widened capsule keeps its contents in the middle.
+        let anchor = display.isHovered ? .center : display.cardLayout?.anchor ?? .center
         let bounces = !reduceMotion
         let swap: AnyTransition = reduceMotion ? .identity : .contentSwap(from: display.cardLayout?.unitAnchor ?? .center)
 

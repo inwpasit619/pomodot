@@ -2,10 +2,9 @@ import CoreGraphics
 import Foundation
 
 /// When the Floating Window opens into the card and closes back into the capsule.
+/// A click opens it; resting the pointer on the capsule doesn't.
 /// It owns no timer: it says when it next needs a `check`, and the caller brings `now`.
 public struct FloatingWindowExpansion: Sendable {
-    /// How long the pointer must rest on the capsule before it opens.
-    static let restBeforeExpanding: TimeInterval = 0.3
     /// How long the pointer must stay away from the card before it closes.
     static let awayBeforeCollapsing: TimeInterval = 0.5
     /// How far the pointer may move between press and release and still be a click.
@@ -15,7 +14,6 @@ public struct FloatingWindowExpansion: Sendable {
     /// Chosen as the card opens and kept until it closes; nil while collapsed.
     public private(set) var cardLayout: CardLayout?
 
-    private var pointerEnteredAt: Date?
     private var pointerExitedAt: Date?
     private var press: Press?
 
@@ -40,14 +38,9 @@ public struct FloatingWindowExpansion: Sendable {
 
     /// When the caller should next call `check`; nil while nothing is pending.
     public var nextCheck: Date? {
-        // Nothing opens or closes while the button is down; `released` says what happens next.
-        if press != nil {
-            nil
-        } else if isExpanded {
-            pointerExitedAt?.addingTimeInterval(Self.awayBeforeCollapsing)
-        } else {
-            pointerEnteredAt?.addingTimeInterval(Self.restBeforeExpanding)
-        }
+        // Nothing closes while the button is down; `released` says what happens next.
+        guard press == nil, isExpanded else { return nil }
+        return pointerExitedAt?.addingTimeInterval(Self.awayBeforeCollapsing)
     }
 
     /// Where the window is: the card while open, otherwise the capsule.
@@ -56,13 +49,10 @@ public struct FloatingWindowExpansion: Sendable {
     }
 
     public mutating func pointerEntered(at now: Date) {
-        // With the button down the window is moving under the pointer: that's no rest.
-        pointerEnteredAt = press == nil ? now : nil
         pointerExitedAt = nil
     }
 
     public mutating func pointerExited(at now: Date) {
-        pointerEnteredAt = nil
         pointerExitedAt = now
     }
 
@@ -74,8 +64,6 @@ public struct FloatingWindowExpansion: Sendable {
     public mutating func pressed(at point: CGPoint, onButton: Bool = false) {
         guard !onButton else { return }
         press = Press(point: point, capsuleFrame: capsuleFrame)
-        // A press may start a drag: resting no longer opens the card until the pointer comes back.
-        pointerEnteredAt = nil
     }
 
     /// The mouse button came up at `point`. Moving no more than ~3 pt is a click,
@@ -100,13 +88,9 @@ public struct FloatingWindowExpansion: Sendable {
         capsuleFrame = moved.offsetBy(dx: nudge.dx, dy: nudge.dy)
     }
 
-    /// Applies whatever is due by `now`.
-    /// - Parameter visibleFrame: the usable area of the screen the capsule is on.
-    public mutating func check(at now: Date, visibleFrame: CGRect) {
+    /// Applies whatever is due by `now`: closing the card once the pointer has been away long enough.
+    public mutating func check(at now: Date) {
         guard press == nil else { return }
-        if let pointerEnteredAt, now.timeIntervalSince(pointerEnteredAt) >= Self.restBeforeExpanding {
-            expand(in: visibleFrame)
-        }
         if let pointerExitedAt, now.timeIntervalSince(pointerExitedAt) >= Self.awayBeforeCollapsing {
             cardLayout = nil
             self.pointerExitedAt = nil
@@ -122,7 +106,6 @@ public struct FloatingWindowExpansion: Sendable {
     /// The Floating Window was hidden; no exit arrives for a window that is gone.
     public mutating func hide() {
         cardLayout = nil
-        pointerEnteredAt = nil
         pointerExitedAt = nil
         press = nil
     }
@@ -143,5 +126,7 @@ public struct FloatingWindowExpansion: Sendable {
     private mutating func expand(in visibleFrame: CGRect) {
         guard cardLayout == nil else { return }
         cardLayout = CardLayout(capsule: capsuleFrame, visibleFrame: visibleFrame)
+        // A click means the pointer is on it, whatever an old exit said.
+        pointerExitedAt = nil
     }
 }

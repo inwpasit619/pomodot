@@ -7,38 +7,25 @@ import Core
 private let screen = CGRect(x: 0, y: 0, width: 1440, height: 875)
 private let topCapsule = CGRect(x: 656, y: 831, width: 128, height: 38)
 
-@Test("Given the pointer rests on the capsule from t = 0, when t = 0.3 comes, then it expands into the card")
-func restingThreeTenthsOfASecondExpands() {
+@Test("Given the pointer rests on the capsule from t = 0, when t = 2 comes, then it is still a capsule: only a click opens the card")
+func restingOnTheCapsuleDoesNotExpand() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
     window.pointerEntered(at: second(0))
 
     // When
-    window.check(at: second(0.3), visibleFrame: screen)
-
-    // Then
-    #expect(window.isExpanded)
-}
-
-@Test("Given the pointer enters the capsule at t = 0 and leaves at t = 0.2, when t = 0.3 comes, then it stays a capsule")
-func passingOverQuicklyDoesNotExpand() {
-    // Given
-    var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    window.pointerEntered(at: second(0))
-    window.pointerExited(at: second(0.2))
-
-    // When
-    window.check(at: second(0.3), visibleFrame: screen)
+    window.check(at: second(2))
 
     // Then
     #expect(!window.isExpanded)
 }
 
-/// A Floating Window already open into the card, with the pointer on it.
+/// A Floating Window already opened into the card by a click, with the pointer on it.
 private func expandedWindow() -> FloatingWindowExpansion {
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
     window.pointerEntered(at: second(-1))
-    window.check(at: second(-0.7), visibleFrame: screen)
+    window.pressed(at: CGPoint(x: 720, y: 850))
+    window.released(at: CGPoint(x: 720, y: 850), visibleFrame: screen)
     return window
 }
 
@@ -49,7 +36,7 @@ func leavingForHalfASecondCollapses() {
     window.pointerExited(at: second(0))
 
     // When
-    window.check(at: second(0.5), visibleFrame: screen)
+    window.check(at: second(0.5))
 
     // Then
     #expect(!window.isExpanded)
@@ -63,7 +50,7 @@ func comingBackInTimeKeepsTheCardOpen() {
     window.pointerEntered(at: second(0.4))
 
     // When
-    window.check(at: second(0.5), visibleFrame: screen)
+    window.check(at: second(0.5))
 
     // Then
     #expect(window.isExpanded)
@@ -83,7 +70,7 @@ func clickingTheCapsuleExpandsAtOnce() {
     #expect(window.isExpanded)
 }
 
-@Test("Given the pointer enters the capsule at t = 0 and presses it at t = 0.1, when it drags 40 pt and releases at t = 1, then the capsule never expands, until the pointer leaves and rests on it again for 0.3 s")
+@Test("Given the pointer enters the capsule at t = 0 and presses it at t = 0.1, when it drags 40 pt and releases at t = 1, then the capsule doesn't expand while dragging or after, until it is clicked")
 func draggingTheCapsuleDoesNotExpand() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
@@ -92,14 +79,13 @@ func draggingTheCapsuleDoesNotExpand() {
 
     // When
     window.dragged(to: CGPoint(x: 740, y: 850), visibleFrame: screen)
-    window.check(at: second(0.5), visibleFrame: screen)
+    window.check(at: second(0.5))
     let expandedWhileDragging = window.isExpanded
     window.released(at: CGPoint(x: 740, y: 850), visibleFrame: screen)
-    window.check(at: second(1), visibleFrame: screen)
+    window.check(at: second(1))
     let expandedAfterRelease = window.isExpanded
-    window.pointerExited(at: second(2))
-    window.pointerEntered(at: second(3))
-    window.check(at: second(3.3), visibleFrame: screen)
+    window.pressed(at: CGPoint(x: 740, y: 850))
+    window.released(at: CGPoint(x: 740, y: 850), visibleFrame: screen)
 
     // Then
     #expect(!expandedWhileDragging)
@@ -114,34 +100,34 @@ func cardKeepsItsDirectionUntilItCloses() {
     let tallerScreen = CGRect(x: 0, y: 0, width: 1440, height: 2000)
 
     // When
-    window.check(at: second(0), visibleFrame: tallerScreen)
+    window.check(at: second(0))
     let frameWhileOpen = window.frame
     window.pointerExited(at: second(1))
-    window.check(at: second(1.5), visibleFrame: tallerScreen)
+    window.check(at: second(1.5))
     window.pointerEntered(at: second(2))
-    window.check(at: second(2.3), visibleFrame: tallerScreen)
+    window.pressed(at: CGPoint(x: 720, y: 850))
+    window.released(at: CGPoint(x: 720, y: 850), visibleFrame: tallerScreen)
 
     // Then
     #expect(frameWhileOpen == CGRect(x: 578, y: 669, width: 284, height: 200))
     #expect(window.frame == CGRect(x: 578, y: 831, width: 284, height: 200))
 }
 
-@Test("Given the pointer enters the capsule at t = 0, when the app asks when to check next, then it is t = 0.3; after the card opens and the pointer leaves at t = 1, it is t = 1.5; with nothing pending, there is none")
+@Test("Given the pointer enters the capsule at t = 0, when the app asks when to check next, then there is nothing to check; after a click opens the card and the pointer leaves at t = 1, it is t = 1.5")
 func itSaysWhenToCheckNext() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    let idle = window.nextCheck
 
     // When
     window.pointerEntered(at: second(0))
     let afterEntering = window.nextCheck
-    window.check(at: second(0.3), visibleFrame: screen)
+    window.pressed(at: CGPoint(x: 720, y: 850))
+    window.released(at: CGPoint(x: 720, y: 850), visibleFrame: screen)
     window.pointerExited(at: second(1))
     let afterLeaving = window.nextCheck
 
     // Then
-    #expect(idle == nil)
-    #expect(afterEntering == second(0.3))
+    #expect(afterEntering == nil)
     #expect(afterLeaving == second(1.5))
 }
 
@@ -249,32 +235,15 @@ func theCardStaysOpenWhileItIsDragged() {
 
     // When
     window.pointerExited(at: second(0))
-    window.check(at: second(1), visibleFrame: screen)
+    window.check(at: second(1))
     let openWhileDragging = window.isExpanded
     let checkWhileDragging = window.nextCheck
     window.released(at: CGPoint(x: 1500, y: 800), visibleFrame: screen)
-    window.check(at: second(2), visibleFrame: screen)
+    window.check(at: second(2))
 
     // Then
     #expect(openWhileDragging)
     #expect(checkWhileDragging == nil)
-    #expect(!window.isExpanded)
-}
-
-@Test("Given the capsule is being dragged, when the moving window reports the pointer leaving at t = 0.4 and entering again at t = 0.5 and then the button comes up, then it still doesn't expand at t = 2")
-func enteringWhileDraggingDoesNotExpand() {
-    // Given
-    var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
-    window.pressed(at: CGPoint(x: 700, y: 850))
-    window.dragged(to: CGPoint(x: 700, y: 500), visibleFrame: screen)
-
-    // When
-    window.pointerExited(at: second(0.4))
-    window.pointerEntered(at: second(0.5))
-    window.released(at: CGPoint(x: 700, y: 500), visibleFrame: screen)
-    window.check(at: second(2), visibleFrame: screen)
-
-    // Then
     #expect(!window.isExpanded)
 }
 

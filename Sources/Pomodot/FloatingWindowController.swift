@@ -35,6 +35,8 @@ final class FloatingPanel: NSPanel {
 @Observable
 final class FloatingWindowDisplay {
     var isExpanded = false
+    /// The pointer is on the capsule: it widens a little, to say it can be clicked.
+    var isHovered = false
     /// The glass box inside the panel, in `FloatingView.coordinateSpaceName`: the capsule,
     /// or the card while open. Changing it animates the box between the two.
     var boxFrame: CGRect = .zero
@@ -54,6 +56,10 @@ final class FloatingWindowController {
     static let margin: CGFloat = 16
     /// The open and close animation: a spring with no bounce.
     static let resize = Animation.smooth(duration: 0.35)
+    /// Widening on hover: quicker, with a little bounce, like the Dynamic Island.
+    private static let hover = Animation.spring(duration: 0.3, bounce: 0.3)
+    /// How much wider and taller the capsule gets on hover.
+    private static let hoverGrowth = CGSize(width: 12, height: 4)
     /// How far past the capsule the panel reaches on every side.
     private static let reach = CGSize(
         width: FloatingWindowPlacement.cardSize.width - FloatingWindowPlacement.capsuleSize.width + margin,
@@ -103,7 +109,7 @@ final class FloatingWindowController {
         panel.contentView = content
         self.hosting = hosting
         self.content = content
-        showGlass(animated: false)
+        showGlass(animation: nil)
 
         content.onPointerChange = { [weak self] inside in self?.pointerMoved(inside: inside) }
         panel.onMouseEvent = { [weak self] event in self?.mouse(event) }
@@ -167,8 +173,8 @@ final class FloatingWindowController {
         let point = NSEvent.mouseLocation
         switch event.type {
         case .leftMouseDown:
-            // Only the glass counts, not the transparent margin around it.
-            guard expansion.frame.contains(point) else { return }
+            // Only the glass counts, not the transparent space around it.
+            guard glassFrame.contains(point) else { return }
             expansion.pressed(at: point, onButton: isOnButton(event))
         case .leftMouseDragged:
             // The screen under the pointer, so the capsule can be dragged onto another display.
@@ -191,7 +197,7 @@ final class FloatingWindowController {
 
     private func check() {
         if syncPointer() { return }
-        expansion.check(at: Date(), visibleFrame: screenArea)
+        expansion.check(at: Date())
         update()
     }
 
@@ -202,7 +208,7 @@ final class FloatingWindowController {
     private func syncPointer() -> Bool {
         // A hidden window has no pointer over it.
         guard panel.isVisible else { return false }
-        let inside = expansion.frame.contains(NSEvent.mouseLocation)
+        let inside = glassFrame.contains(NSEvent.mouseLocation)
         guard inside != pointerIsInside else { return false }
         pointerMoved(inside: inside)
         return true
@@ -244,23 +250,36 @@ final class FloatingWindowController {
         }
 
         if expansion.isExpanded != display.isExpanded {
-            showGlass(animated: animated)
+            showGlass(animation: animated ? Self.resize : nil)
+        } else if isHovered != display.isHovered {
+            showGlass(animation: animated ? Self.hover : nil)
         }
+    }
+
+    private var isHovered: Bool { pointerIsInside && !expansion.isExpanded }
+
+    /// The glass on screen: the card while open, else the capsule, a little wider on hover.
+    /// Leaving is judged against the wider capsule, so its edge doesn't flicker.
+    private var glassFrame: CGRect {
+        guard !expansion.isExpanded, display.isHovered else { return expansion.frame }
+        return expansion.capsuleFrame.insetBy(dx: -Self.hoverGrowth.width / 2, dy: -Self.hoverGrowth.height / 2)
     }
 
     private static var reduceMotion: Bool {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
-    /// Grows the glass box from the capsule into the card, or shrinks it back, as Core says.
-    private func showGlass(animated: Bool) {
+    /// Grows the glass box from the capsule into the card, or shrinks it back, as Core says,
+    /// and widens the capsule while the pointer is on it.
+    private func showGlass(animation: Animation?) {
         if let cardLayout = expansion.cardLayout {
             // Set before the animation, so the card grows from the right corner.
             display.cardLayout = cardLayout
         }
-        withAnimation(animated && !Self.reduceMotion ? Self.resize : nil) {
+        withAnimation(Self.reduceMotion ? nil : animation) {
             display.isExpanded = expansion.isExpanded
-            display.boxFrame = boxFrame(of: expansion.frame)
+            display.isHovered = isHovered
+            display.boxFrame = boxFrame(of: glassFrame)
         }
         content.trackingRect = content.convert(display.boxFrame, from: hosting)
         syncPointer()
