@@ -2,24 +2,30 @@ import AppKit
 import Core
 import SwiftUI
 
-/// The Floating Window's content: the collapsed capsule (Phase dot, time, status).
+/// The Floating Window's content: the collapsed capsule (Phase dot, time left, READY / PAUSED).
 struct FloatingView: View {
     let model: AppModel
 
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
+        let timer = model.timer
+        let color = PhaseColor.of(timer.phase)
         HStack(spacing: 7) {
             Circle()
-                .fill(PhaseColor.focus)
+                .fill(color)
                 .frame(width: 9, height: 9)
-            Text("25:00")
+                // A soft glow while Running.
+                .shadow(color: timer.status == .running ? color.opacity(0.9) : .clear, radius: 3.5)
+            Text(TimeText.minutesSeconds(model.remainingSeconds))
                 .font(.system(size: 17, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-            Text("READY")
-                .font(.system(size: 9, weight: .bold, design: .rounded))
-                .tracking(0.4)
-                .opacity(0.55)
+            if let label = timer.status.capsuleLabel {
+                Text(label)
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .tracking(0.4)
+                    .opacity(0.55)
+            }
         }
         .foregroundStyle(colorScheme == .dark ? Glass.darkText : Glass.lightText)
         // A fixed size: a hosting view that sizes itself to its content
@@ -35,11 +41,6 @@ struct FloatingView: View {
                 .overlay(Capsule().strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
         }
     }
-}
-
-enum PhaseColor {
-    /// Tomato red, #F0524F.
-    static let focus = Color(red: 0xF0 / 255, green: 0x52 / 255, blue: 0x4F / 255)
 }
 
 /// The glass colours from the chosen prototype.
