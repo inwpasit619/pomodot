@@ -15,4 +15,6 @@ spec ต้องบอก AI coding agent ว่าจัดโค้ดแล�
 - checklist ทดสอบด้วยมือที่ผู้ใช้ทำตามได้เอง: ขึ้นทับแอพ fullscreen, ไม่แย่ง focus, อยู่ทุก Space, menu bar อัปเดตสด, notification + เสียง, เปิดบนเครื่องเพื่อนผ่าน Open Anyway
 - เงื่อนไข "เสร็จ" ที่ agent ต้องผ่านก่อนส่งงาน (build universal ผ่าน, test ผ่าน, ไม่มี warning ที่ไม่ได้อธิบาย)
 
+กติกาที่ test ต้องครอบคลุมอยู่ในตั๋ว "กติกาของ timer" ได้แก่ skip ที่ไม่ขยับตัวนับ, auto-start 2 สวิตช์ที่หยุดเสมอหลัง Long Break, auto-pause ตอนเครื่อง sleep (ล็อกจอแล้วไม่หยุด), กลับมาเป็น Pause หลังเปิดแอพใหม่, ค่าจาก Settings มีผลกับ Phase หรือ Cycle ถัดไป, Expected finish
+
 ข้อมูลที่มีแล้ว: CLT + SwiftPM, Swift 6.4, Swift Testing ใช้ได้, minimum macOS 14, หา path ที่ build ด้วย `--show-bin-path`

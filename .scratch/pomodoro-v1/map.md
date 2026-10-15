@@ -20,7 +20,9 @@ Label: wayfinder:map
   - ไอคอนบน menu bar
   - สถิติ/ประวัติ
   - หน้าต่างลอย มีสวิตช์ **เปิด/ปิด always-on-top โดยค่าเริ่มต้นคือเปิด**
-  - auto-start ช่วงถัดไป **เป็น option เปิด/ปิดได้**
+  - auto-start ช่วงถัดไป **เป็น option เปิด/ปิดได้** (แยกเป็น 2 สวิตช์: Break / Focus)
+  - แสดง **Expected finish** คือเวลาจบของ Phase ปัจจุบันและของ Cycle (เพิ่มในตั๋ว "กติกาของ timer")
+  - ศัพท์ของ domain อยู่ใน `CONTEXT.md` ที่ root (Phase, Pomodoro, Cycle, Reset, New Cycle ฯลฯ)
 
 ## Decisions so far
 
@@ -32,10 +34,11 @@ Label: wayfinder:map
 - [ติดตั้ง Xcode หรือใช้แค่ Command Line Tools](issues/04-xcode-or-clt.md) — ใช้ CLT + SwiftPM อย่างเดียว ไม่ลง Xcode (ดิสก์ไม่พอ และ v1 ไม่ต้องใช้) ซ่อม CLT ด้วยการติดตั้งใหม่
 - [ติดตั้ง CLT ใหม่แล้วตรวจว่า build ผ่าน](issues/11-reinstall-clt-verify.md) — ได้ Swift 6.4 / SDK 27.0 build กับ test ผ่านโดยไม่ต้องใช้ workaround build universal ในคำสั่งเดียวได้แล้ว และ spec ต้องหา path ของไฟล์ที่ build ด้วย `--show-bin-path`
 - [ต้องรองรับ macOS ต่ำสุดเวอร์ชันไหน](issues/05-minimum-macos.md) — macOS 14 (Sonoma) เพื่อนไม่มีใครใช้ Mac เก่า และใช้ API ที่แนะนำได้ครบโดยไม่ต้องเขียนทางสำรอง
+- [กติกาของ timer: pause, skip, reset, Mac sleep และ auto-start](issues/06-timer-rules.md) — Pomodoro = Focus ที่ทำครบ, skip Focus ตัวนับไม่ขยับ, เครื่อง sleep แล้ว auto-pause, auto-start มี 2 สวิตช์และหยุดเสมอหลัง Long Break, เปิดแอพใหม่กลับมาเป็น Pause, มี Expected finish ของ Phase และ Cycle
 
 ## Not yet specified
 
-- **วิธีเก็บข้อมูลสถิติ** (รูปแบบไฟล์, เก็บย้อนหลังนานแค่ไหน, ลบ/reset ได้ไหม) รอตั๋ว "สถิติ/ประวัติ นับอะไร แสดงยังไง"
+- **วิธีเก็บข้อมูลสถิติ** (รูปแบบไฟล์, เก็บย้อนหลังนานแค่ไหน, ลบ/reset ได้ไหม) รอตั๋ว "สถิติ/ประวัติ นับอะไร แสดงยังไง" ต้องเก็บสถานะ timer ไว้ให้เปิดแอพใหม่แล้วกลับมาที่เดิมได้ด้วย (ตั๋ว "กติกาของ timer")
 - **การ package และแจกจ่าย** ที่เหลืออยู่: เลข version, ขั้นตอนทำ GitHub Release, ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่หรือเปล่า (ตกลงกันแล้วว่าใช้ zip + ad-hoc sign ทั้ง bundle และมีขั้นตอนติดตั้งเตรียมไว้ใน research แล้ว)
 - **ชื่อแอพและไอคอน**
 - **หน้า Settings** (อยู่ตรงไหน หน้าตาแบบไหน) รอตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง"

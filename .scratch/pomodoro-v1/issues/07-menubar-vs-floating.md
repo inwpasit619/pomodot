@@ -15,3 +15,4 @@ Map: [Map: Pomodoro ลอยบนจอ](../map.md)
 - สวิตช์ always-on-top, หน้า Settings และสถิติ อยู่ตรงไหน
 - มี Dock icon ไหม
 - ปิดหน้าต่างลอยแล้ว = ซ่อนเฉยๆ หรือออกจากแอพ
+- (ส่งต่อมาจากตั๋ว "กติกาของ timer") คำสั่ง **New Cycle** อยู่ในเมนูไหน และสวิตช์ auto-start 2 ตัว (Break / Focus) อยู่ใน Settings
