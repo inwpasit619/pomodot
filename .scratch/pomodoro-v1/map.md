@@ -27,6 +27,7 @@ Label: wayfinder:map
 <!-- the index — one line per closed ticket -->
 
 - [เพื่อนเปิดแอพที่ไม่ได้ notarize จาก GitHub ได้ยังไง](issues/02-run-unsigned-app-gatekeeper.md) — แจกฟรีได้: ad-hoc sign ทั้ง bundle แล้วแจกเป็น .zip เพื่อนเปิดผ่าน Privacy & Security › Open Anyway ส่วน Homebrew ใช้ไม่ได้แล้ว
+- [หน้าต่างลอยบนสุด + menu bar ทำได้ด้วย API อะไร ต้อง macOS ขั้นต่ำเท่าไหร่](issues/03-floating-window-apis.md) — ใช้ SwiftUI + `MenuBarExtra` + AppKit `NSPanel` ทำหน้าต่างลอย macOS ขั้นต่ำที่แนะนำคือ 14 (ถ้าใช้ SwiftUI ล้วนจะแย่ง focus และขึ้นทับ fullscreen ไม่ได้)
 
 ## Not yet specified
 
@@ -34,7 +35,7 @@ Label: wayfinder:map
 - **การ package และแจกจ่าย** ที่เหลืออยู่: เลข version, ขั้นตอนทำ GitHub Release, ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่หรือเปล่า (ตกลงกันแล้วว่าใช้ zip + ad-hoc sign ทั้ง bundle และมีขั้นตอนติดตั้งเตรียมไว้ใน research แล้ว)
 - **ชื่อแอพและไอคอน**
 - **หน้า Settings** (อยู่ตรงไหน หน้าตาแบบไหน) รอตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง"
-- **โครงสร้างโค้ดและการทดสอบ** ที่จะเขียนลงใน spec ให้ agent (เช่นแยก logic ของ timer ออกมาให้ test ได้) รอเรื่อง toolchain กับ minimum macOS ให้ชัดก่อน
+- **โครงสร้างโค้ดและการทดสอบ** ที่จะเขียนลงใน spec ให้ agent (เช่นแยก logic ของ timer ออกมาให้ test ได้ และมี checklist ทดสอบด้วยมือเรื่องขึ้นทับแอพ fullscreen กับการไม่แย่ง focus) รอเรื่อง toolchain กับ minimum macOS ให้ชัดก่อน
 
 ## Out of scope
 
