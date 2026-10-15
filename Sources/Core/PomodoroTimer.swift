@@ -2,6 +2,15 @@ import Foundation
 
 public enum Phase: Sendable {
     case focus, shortBreak, longBreak
+
+    /// As the UI writes it: "Focus", "Short Break", "Long Break".
+    public var name: String {
+        switch self {
+        case .focus: "Focus"
+        case .shortBreak: "Short Break"
+        case .longBreak: "Long Break"
+        }
+    }
 }
 
 /// Ready: full or held, never run yet. Running: counting down. Paused: has run, now held.
@@ -77,12 +86,12 @@ public struct PomodoroTimer: Sendable {
     /// Holds the time left. First ends any Phase that already ran out (as `tick` does).
     /// - Returns: the Pomodoros that catching up produced.
     public mutating func pause(at now: Date) -> [Pomodoro] {
-        let pomodoros = tick(at: now)
-        guard status == .running else { return pomodoros }
-        remainingAtStart = remaining(at: now)
-        runningSince = nil
-        status = .paused
-        return pomodoros
+        catchingUp(at: now) { timer in
+            guard timer.status == .running else { return }
+            timer.remainingAtStart = timer.remaining(at: now)
+            timer.runningSince = nil
+            timer.status = .paused
+        }
     }
 
     /// The one Start / Pause / Resume button: Pause while Running, otherwise Start or Resume.
@@ -92,6 +101,46 @@ public struct PomodoroTimer: Sendable {
         }
         start(at: now)
         return []
+    }
+
+    /// Ends the current Phase early and moves to the next, as if it had run out now,
+    /// except that a skipped Focus is not a Pomodoro and always leads to a Short Break.
+    /// - Returns: the Pomodoros that catching up produced, never the skipped Focus.
+    public mutating func skip(at now: Date) -> [Pomodoro] {
+        catchingUp(at: now) { timer in
+            if timer.phase == .focus {
+                timer.startBreak(.shortBreak, at: now)
+            } else {
+                timer.leaveBreak(at: now)
+            }
+        }
+    }
+
+    /// Puts the current Phase back to its full length from the latest Settings, Ready.
+    /// The Cycle is untouched, and a reset Focus is not a Pomodoro.
+    /// - Returns: the Pomodoros that catching up produced.
+    public mutating func reset(at now: Date) -> [Pomodoro] {
+        catchingUp(at: now) { $0.enter($0.phase) }
+    }
+
+    /// Discards progress in the current Cycle and goes back to Focus 1/N, Ready.
+    /// History is not touched.
+    /// - Returns: the Pomodoros that catching up produced.
+    public mutating func newCycle(at now: Date) -> [Pomodoro] {
+        catchingUp(at: now) { $0.beginCycle() }
+    }
+
+    /// New Settings. A Phase that has started keeps its length to the end; the next
+    /// Phase of each kind uses the new one. A new Pomodoros-per-Cycle waits for a new Cycle.
+    public mutating func apply(_ settings: TimerSettings) {
+        self.settings = settings
+        // Exceptions: a Phase that hasn't started takes its new length now,
+        // and a Cycle with no progress at all takes its new Pomodoros per Cycle now.
+        guard status == .ready else { return }
+        enter(phase)
+        if pomodorosDone == 0 {
+            pomodorosPerCycle = settings.pomodorosPerCycle
+        }
     }
 
     /// The Mac is about to sleep: Pause, so it wakes up Paused. Locking the screen is not sleep.
@@ -112,6 +161,14 @@ public struct PomodoroTimer: Sendable {
         return pomodoros
     }
 
+    /// Every event first ends any Phase that already ran out by `now`, as `tick` does,
+    /// so a press that lands just before the next tick still counts that Pomodoro.
+    private mutating func catchingUp(at now: Date, then event: (inout PomodoroTimer) -> Void) -> [Pomodoro] {
+        let pomodoros = tick(at: now)
+        event(&self)
+        return pomodoros
+    }
+
     /// When the running Phase will run out; nil unless Running.
     private var scheduledEnd: Date? {
         runningSince?.addingTimeInterval(remainingAtStart)
@@ -119,24 +176,37 @@ public struct PomodoroTimer: Sendable {
 
     /// Moves past the Phase that ran out at `end`. Returns the Pomodoro if it was a Focus.
     private mutating func endPhase(at end: Date) -> Pomodoro? {
-        var pomodoro: Pomodoro?
-        switch phase {
-        case .focus:
-            pomodoro = Pomodoro(end: end, durationSeconds: phaseLengthSeconds)
-            pomodorosDone += 1
-            // A Break keeps the number of the Focus before it, so a Long Break is always N/N.
-            enter(pomodorosDone >= pomodorosPerCycle ? .longBreak : .shortBreak,
-                  startingAt: settings.autoStartBreaks ? end : nil)
-        case .shortBreak:
-            displayNumber = pomodorosDone + 1
-            enter(.focus, startingAt: settings.autoStartFocus ? end : nil)
-        case .longBreak:
-            pomodorosDone = 0
-            displayNumber = 1
-            pomodorosPerCycle = settings.pomodorosPerCycle
-            enter(.focus)
+        guard phase == .focus else {
+            leaveBreak(at: end)
+            return nil
         }
+        let pomodoro = Pomodoro(end: end, durationSeconds: phaseLengthSeconds)
+        pomodorosDone += 1
+        startBreak(pomodorosDone >= pomodorosPerCycle ? .longBreak : .shortBreak, at: end)
         return pomodoro
+    }
+
+    /// A Break keeps the number of the Focus before it, so a Long Break is always N/N.
+    private mutating func startBreak(_ next: Phase, at time: Date) {
+        enter(next, startingAt: settings.autoStartBreaks ? time : nil)
+    }
+
+    /// Short Break → the next Focus; Long Break → Focus 1/N of a new Cycle, always Ready.
+    private mutating func leaveBreak(at time: Date) {
+        if phase == .longBreak {
+            beginCycle()
+        } else {
+            displayNumber = pomodorosDone + 1
+            enter(.focus, startingAt: settings.autoStartFocus ? time : nil)
+        }
+    }
+
+    /// Focus 1/N, Ready, with N from the latest Settings.
+    private mutating func beginCycle() {
+        pomodorosDone = 0
+        displayNumber = 1
+        pomodorosPerCycle = settings.pomodorosPerCycle
+        enter(.focus)
     }
 
     /// Whole seconds left, rounded up, so a fresh 25-minute Focus reads 25:00.
