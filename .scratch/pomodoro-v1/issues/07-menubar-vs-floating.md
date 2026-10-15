@@ -96,4 +96,5 @@ Notifications & Sound
   - แต่ละ Phase ตั้งได้ 1–120 นาที (จำนวนเต็ม) และ Pomodoro ต่อ Cycle ตั้งได้ 1–10
   - เปลี่ยนแล้วมีผลทันที ไม่มีปุ่ม Save (จะมีผลกับ Phase ไหนเป็นไปตามตั๋ว "กติกาของ timer")
   - Restore Defaults จะกลับไปใช้ 25 / 5 / 15 / 4 และปิด auto-start ทั้งสองตัว
+  - (เพิ่มภายหลังจากตั๋ว "หน้าตาและตำแหน่งของหน้าต่างลอย") Settings มีส่วน **Appearance** (`System` / `Light` / `Dark`) ต่อจาก Notifications & Sound และหน้าตาของฟอร์มนี้ดูที่ตั๋วนั้น
 

@@ -6,7 +6,7 @@ Status: resolved
 Assignee: teppasit
 Map: [Map: Pomodoro ลอยบนจอ](../map.md)
 Blocked by: 03, 07
-Prototype: branch `prototype/floating-window-look` (commit 656ea5b) → `.scratch/pomodoro-v1/prototypes/floating-window-prototype.html` (เปิดด้วย `open <ไฟล์>` แล้วสลับแบบด้วย ← →)
+Prototype: branch `prototype/floating-window-look` (commit 656ea5b) → `.scratch/pomodoro-v1/prototypes/floating-window-prototype.html` (ไฟล์อยู่แค่ใน branch นั้น เปิดดูด้วย `git show prototype/floating-window-look:.scratch/pomodoro-v1/prototypes/floating-window-prototype.html > /tmp/fw-prototype.html && open /tmp/fw-prototype.html` แล้วสลับแบบด้วย ← →)
 
 ## Question
 
