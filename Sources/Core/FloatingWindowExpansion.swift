@@ -17,7 +17,20 @@ public struct FloatingWindowExpansion: Sendable {
 
     private var pointerEnteredAt: Date?
     private var pointerExitedAt: Date?
-    private var pressedAt: CGPoint?
+    private var press: Press?
+
+    /// A mouse press on the Floating Window, kept until the button comes up.
+    private struct Press {
+        let point: CGPoint
+        /// Where the capsule was when the press began; a drag moves it from here.
+        let capsuleFrame: CGRect
+        /// Set once the pointer has moved more than `clickTolerance`, even if it comes back.
+        var isDrag = false
+
+        func isBeyondClick(_ other: CGPoint) -> Bool {
+            hypot(other.x - point.x, other.y - point.y) > FloatingWindowExpansion.clickTolerance
+        }
+    }
 
     public init(capsuleFrame: CGRect) {
         self.capsuleFrame = capsuleFrame
@@ -27,7 +40,10 @@ public struct FloatingWindowExpansion: Sendable {
 
     /// When the caller should next call `check`; nil while nothing is pending.
     public var nextCheck: Date? {
-        if isExpanded {
+        // Nothing opens or closes while the button is down; `released` says what happens next.
+        if press != nil {
+            nil
+        } else if isExpanded {
             pointerExitedAt?.addingTimeInterval(Self.awayBeforeCollapsing)
         } else {
             pointerEnteredAt?.addingTimeInterval(Self.restBeforeExpanding)
@@ -40,7 +56,8 @@ public struct FloatingWindowExpansion: Sendable {
     }
 
     public mutating func pointerEntered(at now: Date) {
-        pointerEnteredAt = now
+        // With the button down the window is moving under the pointer: that's no rest.
+        pointerEnteredAt = press == nil ? now : nil
         pointerExitedAt = nil
     }
 
@@ -49,9 +66,14 @@ public struct FloatingWindowExpansion: Sendable {
         pointerExitedAt = now
     }
 
-    /// The mouse button went down at `point` (screen coordinates).
-    public mutating func pressed(at point: CGPoint) {
-        pressedAt = point
+    /// Between a press that can drag and its release.
+    public var isPressed: Bool { press != nil }
+
+    /// The mouse button went down at `point` (screen coordinates). A press on one of
+    /// the card's buttons belongs to the button: it never drags or opens anything.
+    public mutating func pressed(at point: CGPoint, onButton: Bool = false) {
+        guard !onButton else { return }
+        press = Press(point: point, capsuleFrame: capsuleFrame)
         // A press may start a drag: resting no longer opens the card until the pointer comes back.
         pointerEnteredAt = nil
     }
@@ -59,14 +81,29 @@ public struct FloatingWindowExpansion: Sendable {
     /// The mouse button came up at `point`. Moving no more than ~3 pt is a click,
     /// and a click opens the card at once; anything further was a drag.
     public mutating func released(at point: CGPoint, visibleFrame: CGRect) {
-        defer { pressedAt = nil }
-        guard let pressedAt, hypot(point.x - pressedAt.x, point.y - pressedAt.y) <= Self.clickTolerance else { return }
+        defer { press = nil }
+        guard let press, !press.isDrag, !press.isBeyondClick(point) else { return }
         expand(in: visibleFrame)
+    }
+
+    /// The pointer moved to `point` with the button down. Once it is more than ~3 pt
+    /// from where it was pressed, this is a drag: the capsule (and the card, if open) follows the pointer,
+    /// kept inside `visibleFrame`, the usable area of the screen the pointer is on.
+    public mutating func dragged(to point: CGPoint, visibleFrame: CGRect) {
+        guard var press, press.isDrag || press.isBeyondClick(point) else { return }
+        press.isDrag = true
+        self.press = press
+        let moved = press.capsuleFrame.offsetBy(dx: point.x - press.point.x, dy: point.y - press.point.y)
+        // Keep whatever is showing inside, the whole card while it is open.
+        let shown = cardLayout?.cardFrame(around: moved) ?? moved
+        let nudge = Self.nudge(keeping: shown, inside: visibleFrame)
+        capsuleFrame = moved.offsetBy(dx: nudge.dx, dy: nudge.dy)
     }
 
     /// Applies whatever is due by `now`.
     /// - Parameter visibleFrame: the usable area of the screen the capsule is on.
     public mutating func check(at now: Date, visibleFrame: CGRect) {
+        guard press == nil else { return }
         if let pointerEnteredAt, now.timeIntervalSince(pointerEnteredAt) >= Self.restBeforeExpanding {
             expand(in: visibleFrame)
         }
@@ -76,7 +113,8 @@ public struct FloatingWindowExpansion: Sendable {
         }
     }
 
-    /// The capsule was dragged to `frame`.
+    /// Something other than a drag moved the capsule to `frame`, such as macOS
+    /// bringing it back after its display went away.
     public mutating func moveCapsule(to frame: CGRect) {
         capsuleFrame = frame
     }
@@ -86,7 +124,20 @@ public struct FloatingWindowExpansion: Sendable {
         cardLayout = nil
         pointerEnteredAt = nil
         pointerExitedAt = nil
-        pressedAt = nil
+        press = nil
+    }
+
+    /// How far to move `frame` so it sits inside `area`.
+    private static func nudge(keeping frame: CGRect, inside area: CGRect) -> CGVector {
+        func along(_ low: CGFloat, _ high: CGFloat, _ minimum: CGFloat, _ maximum: CGFloat) -> CGFloat {
+            if high > maximum { return maximum - high }
+            if low < minimum { return minimum - low }
+            return 0
+        }
+        return CGVector(
+            dx: along(frame.minX, frame.maxX, area.minX, area.maxX),
+            dy: along(frame.minY, frame.maxY, area.minY, area.maxY)
+        )
     }
 
     private mutating func expand(in visibleFrame: CGRect) {
