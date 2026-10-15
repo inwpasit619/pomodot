@@ -26,10 +26,12 @@ Label: wayfinder:map
 
 <!-- the index — one line per closed ticket -->
 
+- [เพื่อนเปิดแอพที่ไม่ได้ notarize จาก GitHub ได้ยังไง](issues/02-run-unsigned-app-gatekeeper.md) — แจกฟรีได้: ad-hoc sign ทั้ง bundle แล้วแจกเป็น .zip เพื่อนเปิดผ่าน Privacy & Security › Open Anyway ส่วน Homebrew ใช้ไม่ได้แล้ว
+
 ## Not yet specified
 
 - **วิธีเก็บข้อมูลสถิติ** (รูปแบบไฟล์, เก็บย้อนหลังนานแค่ไหน, ลบ/reset ได้ไหม) รอตั๋ว "สถิติ/ประวัติ นับอะไร แสดงยังไง"
-- **การ package และแจกจ่าย** (zip หรือ dmg, เลข version, หน้า GitHub Release, README สอนเพื่อนติดตั้ง) รอตั๋ว research เรื่อง Gatekeeper
+- **การ package และแจกจ่าย** ที่เหลืออยู่: เลข version, ขั้นตอนทำ GitHub Release, ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่หรือเปล่า (ตกลงกันแล้วว่าใช้ zip + ad-hoc sign ทั้ง bundle และมีขั้นตอนติดตั้งเตรียมไว้ใน research แล้ว)
 - **ชื่อแอพและไอคอน**
 - **หน้า Settings** (อยู่ตรงไหน หน้าตาแบบไหน) รอตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง"
 - **โครงสร้างโค้ดและการทดสอบ** ที่จะเขียนลงใน spec ให้ agent (เช่นแยก logic ของ timer ออกมาให้ test ได้) รอเรื่อง toolchain กับ minimum macOS ให้ชัดก่อน
