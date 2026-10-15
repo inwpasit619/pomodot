@@ -40,7 +40,7 @@ _Avoid_: ETA, end time (when it could be confused with a Phase's length)
 ### Surfaces
 
 **Floating Window**:
-The small timer window that floats over other apps. Closing it only hides it; the timer keeps running.
+The small timer window that floats over other apps. It is a compact pill (Phase colour + time) that expands into a card with every control while the pointer rests on it or after a click. Closing it only hides it; the timer keeps running.
 _Avoid_: Widget, HUD, popover, mini window
 
 ### Actions

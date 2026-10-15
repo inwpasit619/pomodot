@@ -23,7 +23,7 @@ Label: wayfinder:map
   - auto-start ช่วงถัดไป **เป็น option เปิด/ปิดได้** (แยกเป็น 2 สวิตช์: Break / Focus)
   - แสดง **Expected finish** คือเวลาจบของ Phase ปัจจุบันและของ Cycle (เพิ่มในตั๋ว "กติกาของ timer")
   - แอพบน menu bar ไม่มี Dock icon, UI ภาษาอังกฤษ (ตั๋ว "menu bar กับหน้าต่างลอย")
-  - **ผู้ใช้อยากได้ UI แบบ modern** (บอกไว้ 2026-10-15) ใช้กับทุกหน้าจอ ทั้ง Floating Window, เมนู, Settings และสถิติ ส่วน "modern" แปลว่าอะไรให้ไปเคาะกันในตั๋ว "หน้าตาและตำแหน่งของหน้าต่างลอย"
+  - **ผู้ใช้อยากได้ UI แบบ modern** (บอกไว้ 2026-10-15) ใช้กับทุกหน้าจอ ทั้ง Floating Window, เมนู, Settings และสถิติ ตัดสินแล้วในตั๋ว "หน้าตาและตำแหน่งของหน้าต่างลอย" ได้แก่ กระจกโปร่งแสง, มุมโค้ง, SF Rounded, สีประจำ Phase, รองรับ light/dark และมีตัวเลือก Appearance System/Light/Dark
   - ศัพท์ของ domain อยู่ใน `CONTEXT.md` ที่ root (Phase, Pomodoro, Cycle, Reset, New Cycle ฯลฯ)
 
 ## Decisions so far
@@ -40,6 +40,7 @@ Label: wayfinder:map
 - [menu bar กับหน้าต่างลอย เกี่ยวกันยังไง](issues/07-menubar-vs-floating.md) — แอพบน menu bar ไม่มี Dock icon, menu bar โชว์เวลาตอนเดิน/Pause, คลิกได้เมนู dropdown ที่ควบคุมได้ครบ, ปิด Floating Window = ซ่อน, Always on Top อยู่ในเมนู, Settings กับสถิติเป็นหน้าต่างแยก, ถามยืนยันก่อน Reset/New Cycle, UI ภาษาอังกฤษ
 - [แจ้งเตือนกับเสียงตอนหมดเวลา ทำงานยังไง](issues/08-notification-and-sound.md) — banner + เสียงระบบดังครั้งเดียวเฉพาะตอนหมดเวลาเอง แอพเล่นเสียงเองเลยยังดังตอน Do Not Disturb เลือกเสียงได้ (ค่าเริ่มต้น Glass/Hero) ขอสิทธิ์ตอนกด ▶︎ ครั้งแรก คลิก banner = แสดง Floating Window
 - [สถิติ/ประวัติ นับอะไร แสดงยังไง](issues/09-what-stats-mean.md) — History เก็บแค่ Pomodoro (เวลาจบ + ความยาว) ไว้ตลอดไป, เมนูโชว์ `Today: 🍅 n`, หน้าต่าง Statistics มีการ์ด Today/Week/All Time + กราฟ 7 วัน + `Clear History…`, ตัดวันตอนเที่ยงคืนตามวันที่จบ
+- [หน้าตาและตำแหน่งของหน้าต่างลอย](issues/10-floating-window-look.md) — แคปซูลกระจกเล็กๆ (จุดสี + เวลา) ชี้ค้างหรือคลิกแล้วขยายเป็นการ์ดที่มีปุ่มกับ Expected finish ครบ ลากได้โดยไม่ขยาย ขยายไปทางที่มีที่ว่างตอนชิดขอบ เริ่มที่กลางบนและจำตำแหน่งไว้ มี light/dark และ Appearance System/Light/Dark ใน Settings ส่วน Settings กับ Statistics ใช้กล่องมุมโค้งแบบ System Settings (prototype อยู่ที่ branch `prototype/floating-window-look`)
 
 ## Not yet specified
 
