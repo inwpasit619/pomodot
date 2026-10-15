@@ -20,14 +20,15 @@ struct FloatingView: View {
         let shape = RoundedRectangle(cornerRadius: expanded ? 18 : size.height / 2, style: .continuous)
         let anchor = display.cardLayout?.anchor ?? .center
         let bounces = !reduceMotion
+        let swap: AnyTransition = reduceMotion ? .identity : .contentSwap(from: display.cardLayout?.unitAnchor ?? .center)
 
         ZStack(alignment: anchor) {
             if expanded {
                 FloatingCard(model: model)
-                    .transition(.opacity)
+                    .transition(swap)
             } else {
                 FloatingCapsule(model: model)
-                    .transition(.opacity)
+                    .transition(swap)
             }
         }
         .foregroundStyle(colorScheme == .dark ? Glass.darkText : Glass.lightText)
@@ -50,7 +51,6 @@ struct FloatingView: View {
             SpringKeyframe(1.0, duration: 0.45)
         }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: model.timer.phase)
-        .animation(reduceMotion ? nil : .smooth(duration: FloatingWindowController.resizeDuration), value: expanded)
         // The panel is the capsule or card plus a margin; keep the box at the capsule's corner.
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: anchor)
         .padding(FloatingWindowController.margin)
@@ -307,7 +307,44 @@ private struct Breathing: ViewModifier {
     }
 }
 
+/// How the capsule's and the card's contents swap while the glass grows or shrinks:
+/// the old contents fade out quickly, then the new ones fade and sharpen in, so the
+/// two never show on top of each other.
+private extension AnyTransition {
+    static func contentSwap(from anchor: UnitPoint) -> AnyTransition {
+        let hidden = SoftlyHidden(amount: 1, anchor: anchor)
+        let shown = SoftlyHidden(amount: 0, anchor: anchor)
+        return .asymmetric(
+            insertion: .modifier(active: hidden, identity: shown)
+                .animation(.smooth(duration: 0.26).delay(0.1)),
+            removal: .modifier(active: hidden, identity: shown)
+                .animation(.easeOut(duration: 0.1))
+        )
+    }
+}
+
+/// Faded, slightly blurred and slightly smaller as `amount` goes from 0 to 1.
+private struct SoftlyHidden: ViewModifier {
+    let amount: Double
+    let anchor: UnitPoint
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(1 - amount)
+            .blur(radius: 4 * amount)
+            .scaleEffect(1 - 0.04 * amount, anchor: anchor)
+    }
+}
+
 extension CardLayout {
+    /// `anchor` as a point, for scaling from the same corner or edge.
+    var unitAnchor: UnitPoint {
+        let a = anchor
+        let x: CGFloat = a.horizontal == .leading ? 0 : a.horizontal == .trailing ? 1 : 0.5
+        let y: CGFloat = a.vertical == .top ? 0 : a.vertical == .bottom ? 1 : 0.5
+        return UnitPoint(x: x, y: y)
+    }
+
     /// Where the capsule sits inside the card: the corner or edge the card grows from.
     var anchor: Alignment {
         let vertical: VerticalAlignment = self.vertical == .down ? .top : .bottom

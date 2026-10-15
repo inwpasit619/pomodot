@@ -47,8 +47,8 @@ final class FloatingWindowDisplay {
 @MainActor
 final class FloatingWindowController {
     static let margin: CGFloat = 16
-    /// The open and close animation.
-    static let resizeDuration: TimeInterval = 0.35
+    /// The open and close animation: a spring with no bounce.
+    static let resize = Animation.smooth(duration: 0.35)
 
     private let model: AppModel
     private let panel: FloatingPanel
@@ -56,7 +56,8 @@ final class FloatingWindowController {
     private let display = FloatingWindowDisplay()
     private var expansion: FloatingWindowExpansion
     private var checkTimer: Timer?
-    private var pendingClose: Task<Void, Never>?
+    /// Counts opens, so a close that finishes after the card opened again is ignored.
+    private var openings = 0
     private var pointerIsInside = false
 
     init(model: AppModel) {
@@ -183,15 +184,22 @@ final class FloatingWindowController {
     }
 
     private func check() {
-        // Enter and exit events can arrive late or out of order when the pointer jumps,
-        // so trust where the pointer really is before acting on them.
-        let inside = Self.contentFrame(inside: panel.frame).contains(NSEvent.mouseLocation)
-        if inside != pointerIsInside {
-            pointerMoved(inside: inside)
-            return
-        }
+        if syncPointer() { return }
         expansion.check(at: Date(), visibleFrame: screenArea)
         update()
+    }
+
+    /// Enter and exit events can arrive late or out of order when the pointer jumps, and go
+    /// missing when the panel resizes under it, so trust where the pointer really is.
+    /// - Returns: whether it was somewhere else than the events said.
+    @discardableResult
+    private func syncPointer() -> Bool {
+        // A hidden window has no pointer over it.
+        guard panel.isVisible else { return false }
+        let inside = Self.contentFrame(inside: panel.frame).contains(NSEvent.mouseLocation)
+        guard inside != pointerIsInside else { return false }
+        pointerMoved(inside: inside)
+        return true
     }
 
     /// macOS moved the capsule itself, for example off a display that went away.
@@ -238,36 +246,40 @@ final class FloatingWindowController {
         }
     }
 
+    private static var reduceMotion: Bool {
+        NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+    }
+
     private func open() {
-        pendingClose?.cancel()
-        pendingClose = nil
+        openings += 1
         // Grow the panel at once; the view then grows the card from the capsule's corner.
         display.cardLayout = expansion.cardLayout
         panel.setFrame(Self.panelFrame(around: expansion.frame), display: true)
-        display.isExpanded = true
+        withAnimation(Self.reduceMotion ? nil : Self.resize) {
+            display.isExpanded = true
+        }
     }
 
     private func close(animated: Bool) {
-        display.isExpanded = false
-        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-        guard animated, !reduceMotion else {
+        guard animated, !Self.reduceMotion else {
             finishClosing()
             return
         }
-        // Shrink the panel once the view has shrunk the card back into the capsule.
-        pendingClose = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(Self.resizeDuration))
-            guard !Task.isCancelled else { return }
-            self?.finishClosing()
+        let opening = openings
+        // Shrink the panel only once the spring has fully settled, so its tail isn't cut off.
+        withAnimation(Self.resize, completionCriteria: .removed) {
+            display.isExpanded = false
+        } completion: { [weak self] in
+            guard let self, self.openings == opening, !self.display.isExpanded else { return }
+            self.finishClosing()
         }
     }
 
     private func finishClosing() {
-        pendingClose?.cancel()
-        pendingClose = nil
         display.isExpanded = false
         display.cardLayout = nil
         panel.setFrame(Self.panelFrame(around: expansion.frame), display: true)
+        syncPointer()
     }
 }
 
