@@ -11,12 +11,12 @@ final class FloatingPanel: NSPanel {
     // A borderless panel can't receive clicks on its buttons unless it can become key.
     override var canBecomeKey: Bool { true }
 
-    // AppKit would push the transparent margin out from under the menu bar, moving the
-    // capsule away from where Core put it. Leave it be while the glass is on a screen;
+    // AppKit would push the panel's transparent edges out from under the menu bar, moving
+    // the capsule away from where Core put it. Leave it be while the capsule is on a screen;
     // otherwise (its display went away, say) let AppKit bring it back.
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
-        let glass = frameRect.insetBy(dx: FloatingWindowController.margin, dy: FloatingWindowController.margin)
-        if NSScreen.screens.contains(where: { $0.visibleFrame.contains(glass) }) {
+        let capsule = FloatingWindowController.capsuleFrame(inside: frameRect)
+        if NSScreen.screens.contains(where: { $0.visibleFrame.contains(capsule) }) {
             return frameRect
         }
         return super.constrainFrameRect(frameRect, to: screen)
@@ -35,29 +35,38 @@ final class FloatingPanel: NSPanel {
 @Observable
 final class FloatingWindowDisplay {
     var isExpanded = false
-    /// Kept through the closing animation so the capsule doesn't move while the card shrinks.
+    /// The glass box inside the panel, in `FloatingView.coordinateSpaceName`: the capsule,
+    /// or the card while open. Changing it animates the box between the two.
+    var boxFrame: CGRect = .zero
+    /// Which corner or edge the card grows from; kept after closing so the card shrinks back into it.
     var cardLayout: CardLayout?
     /// Where the card's buttons are, in `FloatingView.coordinateSpaceName`. A press on one never drags.
     @ObservationIgnored var buttonFrames: [CGRect] = []
 }
 
 /// Owns the Floating Window: shows, hides and floats it, and opens it into the card
-/// when Core's rules say so. The panel is larger than the capsule or card by `margin`
-/// on every side, so the bounce and the shadow have room to draw.
+/// when Core's rules say so. The panel never changes size: it is centred on the capsule
+/// with room for the card to grow any way, plus `margin` for the bounce and the shadow.
+/// Resizing a window during the animation would show a frame of the old layout in the
+/// new size, so only the SwiftUI box grows and shrinks.
 @MainActor
 final class FloatingWindowController {
     static let margin: CGFloat = 16
     /// The open and close animation: a spring with no bounce.
     static let resize = Animation.smooth(duration: 0.35)
+    /// How far past the capsule the panel reaches on every side.
+    private static let reach = CGSize(
+        width: FloatingWindowPlacement.cardSize.width - FloatingWindowPlacement.capsuleSize.width + margin,
+        height: FloatingWindowPlacement.cardSize.height - FloatingWindowPlacement.capsuleSize.height + margin
+    )
 
     private let model: AppModel
     private let panel: FloatingPanel
     private let hosting: NSView
     private let display = FloatingWindowDisplay()
     private var expansion: FloatingWindowExpansion
+    private let content: PointerTrackingView
     private var checkTimer: Timer?
-    /// Counts opens, so a close that finishes after the card opened again is ignored.
-    private var openings = 0
     private var pointerIsInside = false
 
     init(model: AppModel) {
@@ -70,7 +79,7 @@ final class FloatingWindowController {
             capsuleFrame: FloatingWindowPlacement.startingCapsuleFrame(in: visibleFrame)
         )
         panel = FloatingPanel(
-            contentRect: Self.panelFrame(around: expansion.frame),
+            contentRect: Self.panelFrame(around: expansion.capsuleFrame),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -84,7 +93,7 @@ final class FloatingWindowController {
         panel.isOpaque = false
         // The view draws its own shadow inside the margin.
         panel.hasShadow = false
-        let content = PointerTrackingView(margin: Self.margin)
+        let content = PointerTrackingView()
         let hosting = FirstClickHostingView(rootView: FloatingView(model: model, display: display))
         // The panel's size comes from Core's frames, never from the SwiftUI content.
         hosting.sizingOptions = []
@@ -93,6 +102,8 @@ final class FloatingWindowController {
         content.addSubview(hosting)
         panel.contentView = content
         self.hosting = hosting
+        self.content = content
+        showGlass(animated: false)
 
         content.onPointerChange = { [weak self] inside in self?.pointerMoved(inside: inside) }
         panel.onMouseEvent = { [weak self] event in self?.mouse(event) }
@@ -123,14 +134,14 @@ final class FloatingWindowController {
         }
     }
 
-    /// The panel is the capsule or card plus the margin on every side.
-    private static func panelFrame(around frame: CGRect) -> CGRect {
-        frame.insetBy(dx: -margin, dy: -margin)
+    /// The panel around a capsule: centred on it, with room for the card on every side.
+    private static func panelFrame(around capsule: CGRect) -> CGRect {
+        capsule.insetBy(dx: -reach.width, dy: -reach.height)
     }
 
-    /// The capsule or card inside a panel frame.
-    private static func contentFrame(inside panelFrame: CGRect) -> CGRect {
-        panelFrame.insetBy(dx: margin, dy: margin)
+    /// The capsule at the centre of a panel frame.
+    static func capsuleFrame(inside panelFrame: CGRect) -> CGRect {
+        panelFrame.insetBy(dx: reach.width, dy: reach.height)
     }
 
     // MARK: Pointer
@@ -157,21 +168,16 @@ final class FloatingWindowController {
         switch event.type {
         case .leftMouseDown:
             // Only the glass counts, not the transparent margin around it.
-            guard shownFrame.contains(point) else { return }
+            guard expansion.frame.contains(point) else { return }
             expansion.pressed(at: point, onButton: isOnButton(event))
         case .leftMouseDragged:
             // The screen under the pointer, so the capsule can be dragged onto another display.
             expansion.dragged(to: point, visibleFrame: usableArea(at: point))
-            panel.setFrame(Self.panelFrame(around: shownFrame), display: true)
+            panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
         default:
             expansion.released(at: point, visibleFrame: screenArea)
         }
         update()
-    }
-
-    /// The capsule or card the view is drawing, including a card that is still closing.
-    private var shownFrame: CGRect {
-        display.cardLayout?.cardFrame(around: expansion.capsuleFrame) ?? expansion.capsuleFrame
     }
 
     private func isOnButton(_ event: NSEvent) -> Bool {
@@ -190,13 +196,13 @@ final class FloatingWindowController {
     }
 
     /// Enter and exit events can arrive late or out of order when the pointer jumps, and go
-    /// missing when the panel resizes under it, so trust where the pointer really is.
+    /// missing when the tracked area changes under it, so trust where the pointer really is.
     /// - Returns: whether it was somewhere else than the events said.
     @discardableResult
     private func syncPointer() -> Bool {
         // A hidden window has no pointer over it.
         guard panel.isVisible else { return false }
-        let inside = Self.contentFrame(inside: panel.frame).contains(NSEvent.mouseLocation)
+        let inside = expansion.frame.contains(NSEvent.mouseLocation)
         guard inside != pointerIsInside else { return false }
         pointerMoved(inside: inside)
         return true
@@ -204,9 +210,9 @@ final class FloatingWindowController {
 
     /// macOS moved the capsule itself, for example off a display that went away.
     private func panelMoved() {
-        // Drags and the card set the frame from Core already.
-        guard !expansion.isPressed, !display.isExpanded, display.cardLayout == nil else { return }
-        expansion.moveCapsule(to: Self.contentFrame(inside: panel.frame))
+        // Drags set the frame from Core already.
+        guard !expansion.isPressed else { return }
+        expansion.moveCapsule(to: Self.capsuleFrame(inside: panel.frame))
     }
 
     /// The usable area of the screen the capsule is on.
@@ -237,12 +243,8 @@ final class FloatingWindowController {
             checkTimer = timer
         }
 
-        if expansion.isExpanded, !display.isExpanded {
-            open()
-        } else if !expansion.isExpanded, display.isExpanded {
-            close(animated: animated)
-        } else if !expansion.isExpanded, display.cardLayout != nil, !animated {
-            finishClosing()
+        if expansion.isExpanded != display.isExpanded {
+            showGlass(animated: animated)
         }
     }
 
@@ -250,53 +252,42 @@ final class FloatingWindowController {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
-    private func open() {
-        openings += 1
-        // Grow the panel at once; the view then grows the card from the capsule's corner.
-        display.cardLayout = expansion.cardLayout
-        panel.setFrame(Self.panelFrame(around: expansion.frame), display: true)
-        withAnimation(Self.reduceMotion ? nil : Self.resize) {
-            display.isExpanded = true
+    /// Grows the glass box from the capsule into the card, or shrinks it back, as Core says.
+    private func showGlass(animated: Bool) {
+        if let cardLayout = expansion.cardLayout {
+            // Set before the animation, so the card grows from the right corner.
+            display.cardLayout = cardLayout
         }
-    }
-
-    private func close(animated: Bool) {
-        guard animated, !Self.reduceMotion else {
-            finishClosing()
-            return
+        withAnimation(animated && !Self.reduceMotion ? Self.resize : nil) {
+            display.isExpanded = expansion.isExpanded
+            display.boxFrame = boxFrame(of: expansion.frame)
         }
-        let opening = openings
-        // Shrink the panel only once the spring has fully settled, so its tail isn't cut off.
-        withAnimation(Self.resize, completionCriteria: .removed) {
-            display.isExpanded = false
-        } completion: { [weak self] in
-            guard let self, self.openings == opening, !self.display.isExpanded else { return }
-            self.finishClosing()
-        }
-    }
-
-    private func finishClosing() {
-        display.isExpanded = false
-        display.cardLayout = nil
-        panel.setFrame(Self.panelFrame(around: expansion.frame), display: true)
+        content.trackingRect = content.convert(display.boxFrame, from: hosting)
         syncPointer()
+    }
+
+    /// `frame` (screen coordinates) inside the panel, measured from its top-left as SwiftUI does.
+    /// The panel is always where Core's capsule says, even while macOS is still moving it.
+    private func boxFrame(of frame: CGRect) -> CGRect {
+        let panelFrame = Self.panelFrame(around: expansion.capsuleFrame)
+        return CGRect(
+            x: frame.minX - panelFrame.minX,
+            y: panelFrame.maxY - frame.maxY,
+            width: frame.width,
+            height: frame.height
+        )
     }
 }
 
 /// The panel's content: reports the pointer entering and leaving the visible capsule
-/// or card (not the transparent margin), even while another app is active.
+/// or card (not the transparent space around it), even while another app is active.
 final class PointerTrackingView: NSView {
     var onPointerChange: ((Bool) -> Void)?
-    private let margin: CGFloat
-    private var trackingArea: NSTrackingArea?
-
-    init(margin: CGFloat) {
-        self.margin = margin
-        super.init(frame: .zero)
+    /// The capsule or card, in this view's coordinates.
+    var trackingRect: CGRect = .zero {
+        didSet { updateTrackingAreas() }
     }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
+    private var trackingArea: NSTrackingArea?
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -304,7 +295,7 @@ final class PointerTrackingView: NSView {
             removeTrackingArea(trackingArea)
         }
         let area = NSTrackingArea(
-            rect: bounds.insetBy(dx: margin, dy: margin),
+            rect: trackingRect,
             options: [.mouseEnteredAndExited, .activeAlways],
             owner: self
         )

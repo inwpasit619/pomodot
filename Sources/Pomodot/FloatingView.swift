@@ -4,6 +4,7 @@ import SwiftUI
 
 /// The Floating Window's content: the capsule, which opens into the card.
 /// The glass box grows from the capsule's corner, so the capsule never moves.
+/// The panel doesn't change size; the box moves and resizes inside it.
 struct FloatingView: View {
     /// The view's own coordinates (top-left origin), where the card's buttons report their frames.
     static let coordinateSpaceName = "FloatingView"
@@ -16,8 +17,11 @@ struct FloatingView: View {
 
     var body: some View {
         let expanded = display.isExpanded
-        let size = expanded ? FloatingWindowPlacement.cardSize : FloatingWindowPlacement.capsuleSize
-        let shape = RoundedRectangle(cornerRadius: expanded ? 18 : size.height / 2, style: .continuous)
+        let box = display.boxFrame
+        let shape = RoundedRectangle(
+            cornerRadius: expanded ? 18 : FloatingWindowPlacement.capsuleSize.height / 2,
+            style: .continuous
+        )
         let anchor = display.cardLayout?.anchor ?? .center
         let bounces = !reduceMotion
         let swap: AnyTransition = reduceMotion ? .identity : .contentSwap(from: display.cardLayout?.unitAnchor ?? .center)
@@ -34,7 +38,7 @@ struct FloatingView: View {
         .foregroundStyle(colorScheme == .dark ? Glass.darkText : Glass.lightText)
         // Fixed sizes: a hosting view that sizes itself to its content
         // crashes Auto Layout when the text changes.
-        .frame(width: size.width, height: size.height, alignment: anchor)
+        .frame(width: box.width, height: box.height, alignment: anchor)
         .clipShape(shape)
         .background {
             GlassBackground()
@@ -51,9 +55,8 @@ struct FloatingView: View {
             SpringKeyframe(1.0, duration: 0.45)
         }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.7), value: model.timer.phase)
-        // The panel is the capsule or card plus a margin; keep the box at the capsule's corner.
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: anchor)
-        .padding(FloatingWindowController.margin)
+        .offset(x: box.minX, y: box.minY)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .coordinateSpace(.named(Self.coordinateSpaceName))
         .onPreferenceChange(ButtonFramesKey.self) { frames in
             MainActor.assumeIsolated { display.buttonFrames = frames }
