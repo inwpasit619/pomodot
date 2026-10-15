@@ -51,6 +51,13 @@ public struct Pomodoro: Sendable, Equatable {
     }
 }
 
+/// The clock times the current Phase and the Cycle end if the timer runs on from now
+/// with no more pauses. The Cycle ends at the end of its Long Break.
+public struct ExpectedFinish: Sendable, Equatable {
+    public let phaseEnds: Date
+    public let cycleEnds: Date
+}
+
 /// The timer's rules. It never reads the clock: every event takes `now` from the caller.
 /// While Running it remembers only when it started and how much was left then.
 public struct PomodoroTimer: Sendable {
@@ -207,6 +214,39 @@ public struct PomodoroTimer: Sendable {
         displayNumber = 1
         pomodorosPerCycle = settings.pomodorosPerCycle
         enter(.focus)
+    }
+
+    /// Steady while Running; while Paused or Ready it moves on with `now`.
+    public func expectedFinish(at now: Date) -> ExpectedFinish {
+        // While Running it ends when scheduled, even if that has just passed and no tick
+        // has moved the timer on yet.
+        let phaseEnds = scheduledEnd ?? now.addingTimeInterval(remaining(at: now))
+        return ExpectedFinish(
+            phaseEnds: phaseEnds,
+            cycleEnds: phaseEnds.addingTimeInterval(TimeInterval(secondsLeftInCycleAfterThisPhase))
+        )
+    }
+
+    /// Every Phase still to come in this Cycle, through its Long Break. Phases that haven't
+    /// started use the latest Settings; how many Focuses are left uses this Cycle's N.
+    private var secondsLeftInCycleAfterThisPhase: Int {
+        let focus = settings.lengthSeconds(of: .focus)
+        let shortBreak = settings.lengthSeconds(of: .shortBreak)
+        let longBreak = settings.lengthSeconds(of: .longBreak)
+        /// `focuses` Focuses, a Short Break between each, then the Long Break.
+        func focusesThenLongBreak(_ focuses: Int) -> Int {
+            focuses * focus + (focuses - 1) * shortBreak + longBreak
+        }
+        switch phase {
+        case .focus:
+            // This Focus will be a Pomodoro, so one fewer is left after it.
+            let focusesAfter = pomodorosPerCycle - pomodorosDone - 1
+            return focusesAfter > 0 ? shortBreak + focusesThenLongBreak(focusesAfter) : longBreak
+        case .shortBreak:
+            return focusesThenLongBreak(pomodorosPerCycle - pomodorosDone)
+        case .longBreak:
+            return 0
+        }
     }
 
     /// Whole seconds left, rounded up, so a fresh 25-minute Focus reads 25:00.
