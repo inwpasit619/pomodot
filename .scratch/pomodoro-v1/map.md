@@ -42,6 +42,7 @@ Label: wayfinder:map
 - [สถิติ/ประวัติ นับอะไร แสดงยังไง](issues/09-what-stats-mean.md) — History เก็บแค่ Pomodoro (เวลาจบ + ความยาว) ไว้ตลอดไป, เมนูโชว์ `Today: 🍅 n`, หน้าต่าง Statistics มีการ์ด Today/Week/All Time + กราฟ 7 วัน + `Clear History…`, ตัดวันตอนเที่ยงคืนตามวันที่จบ
 - [หน้าตาและตำแหน่งของหน้าต่างลอย](issues/10-floating-window-look.md) — แคปซูลกระจกเล็กๆ (จุดสี + เวลา) ชี้ค้างหรือคลิกแล้วขยายเป็นการ์ดที่มีปุ่มกับ Expected finish ครบ ลากได้โดยไม่ขยาย ขยายไปทางที่มีที่ว่างตอนชิดขอบ เริ่มที่กลางบนและจำตำแหน่งไว้ มี light/dark และ Appearance System/Light/Dark ใน Settings ส่วน Settings กับ Statistics ใช้กล่องมุมโค้งแบบ System Settings (prototype อยู่ที่ branch `prototype/floating-window-look`)
 - [spec จะสั่ง agent ให้จัดโครงสร้างโค้ดและทดสอบยังไง](issues/12-code-structure-and-testing.md) — Core (กติกาล้วน รับ `now` จากข้างนอก) + App + CoreTests ใช้ `/tdd` และ Swift Testing ชื่อ test แบบ Given/When/Then มี seam ที่กำหนดไว้ 4 จุด, checklist ทดสอบด้วยมือแบบ Given/When/Then ใน `docs/manual-test.md`, build เป็น 5 milestone ที่ผู้ใช้ต้องบอกผ่านก่อนไปต่อ, เงื่อนไข "เสร็จ" 7 ข้อ และรายงานเป็นภาษาไทย
+- [เก็บข้อมูลของแอพไว้ที่ไหน รูปแบบอะไร](issues/13-data-storage.md) — JSON 3 ไฟล์ (settings / state / history) ใน `~/Library/Application Support/<bundle-id>/` แปลงไฟล์อยู่ใน Core เป็น seam ที่ 5, เขียนแบบ atomic, ไฟล์เสียย้ายไว้ข้างๆ แล้วเริ่มใหม่, บันทึกสถานะ timer ทุกครั้งที่เปลี่ยน + ทุก 30 วิ, มี `"version": 1`, ตำแหน่งแคปซูลเก็บใน state และ Restore Defaults ไม่ย้าย, ลบแอพแล้วข้อมูลยังอยู่ (README บอกวิธีลบผ่าน Finder)
 
 ## Not yet specified
 
@@ -55,3 +56,4 @@ Label: wayfinder:map
 - เปิดแอพอัตโนมัติตอน login
 - Mac App Store / notarization / Apple Developer account แบบเสียเงิน
 - หลายภาษา / ภาษาไทยใน UI (v1 ใช้ภาษาอังกฤษอย่างเดียว ตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง")
+- ย้อนกลับไปใช้แอพเวอร์ชันเก่า (downgrade) แอพเก่าเจอไฟล์ที่ version สูงกว่า จะย้ายไฟล์ไว้ข้างๆ แล้วเริ่มใหม่ ([เก็บข้อมูลของแอพไว้ที่ไหน รูปแบบอะไร](issues/13-data-storage.md))
