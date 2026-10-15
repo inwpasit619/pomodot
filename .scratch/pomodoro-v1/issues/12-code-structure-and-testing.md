@@ -20,3 +20,5 @@ spec ต้องบอก AI coding agent ว่าจัดโค้ดแล�
 (ส่งต่อมาจากตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง") checklist ทดสอบด้วยมือต้องมี: กล่องยืนยัน Reset/New Cycle ขึ้นมาด้านหน้าเสมอ (แอพไม่มี Dock icon), เปิดแอพซ้ำตอนรันอยู่แล้วแสดง Floating Window, เวลาบน menu bar โชว์เฉพาะตอนเดิน/Pause, ซ่อน Floating Window แล้ว Quit แล้วเปิดใหม่ยังซ่อนอยู่ กติกาถามยืนยันเฉพาะตอนมีของจะหายควรมี unit test
 
 ข้อมูลที่มีแล้ว: CLT + SwiftPM, Swift 6.4, Swift Testing ใช้ได้, minimum macOS 14, หา path ที่ build ด้วย `--show-bin-path`
+
+(ส่งต่อมาจากตั๋ว "แจ้งเตือนกับเสียงตอนหมดเวลา ทำงานยังไง") checklist ทดสอบด้วยมือต้องมี: กล่องขอสิทธิ์ notification ขึ้นตอนกด ▶︎ ครั้งแรก (ไม่ใช่ตอนเปิดแอพ), กด Don't Allow แล้วเสียงยังดังและขึ้นบรรทัดเตือนใน Settings, banner ขึ้นถึงแอพจะเป็นแอพที่ใช้อยู่, คลิก banner แล้ว Floating Window โผล่มา, ตอนเปิด Do Not Disturb เสียงยังดัง, เลือกเสียงใน dropdown แล้วได้ยินทันที ส่วนที่ควรมี unit test: เลือกข้อความ banner ให้ถูกกรณี (4 เหตุการณ์ × เริ่มเอง/รอกด) และไม่แจ้งเตือนตอน Skip / Reset / New Cycle / auto-pause

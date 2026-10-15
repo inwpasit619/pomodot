@@ -16,7 +16,7 @@ Label: wayfinder:map
 - ผล research เก็บไว้ที่ branch `research/<name>` ไฟล์ `docs/research/<name>.md`
 - **ฟีเจอร์ v1 ที่ตกลงกันแล้ว** (ขั้นตอนการ charting):
   - ตั้งเวลาเองได้: focus / short break / long break / จำนวนรอบก่อน long break (ค่าเริ่มต้น 25 / 5 / 15 / 4)
-  - แจ้งเตือน + เสียงเมื่อหมดแต่ละช่วง
+  - แจ้งเตือน + เสียงเมื่อหมดแต่ละช่วง (รายละเอียดในตั๋ว "แจ้งเตือนกับเสียงตอนหมดเวลา")
   - ไอคอนบน menu bar
   - สถิติ/ประวัติ
   - หน้าต่างลอย มีสวิตช์ **เปิด/ปิด always-on-top โดยค่าเริ่มต้นคือเปิด**
@@ -38,6 +38,7 @@ Label: wayfinder:map
 - [ต้องรองรับ macOS ต่ำสุดเวอร์ชันไหน](issues/05-minimum-macos.md) — macOS 14 (Sonoma) เพื่อนไม่มีใครใช้ Mac เก่า และใช้ API ที่แนะนำได้ครบโดยไม่ต้องเขียนทางสำรอง
 - [กติกาของ timer: pause, skip, reset, Mac sleep และ auto-start](issues/06-timer-rules.md) — Pomodoro = Focus ที่ทำครบ, skip Focus ตัวนับไม่ขยับ, เครื่อง sleep แล้ว auto-pause, auto-start มี 2 สวิตช์และหยุดเสมอหลัง Long Break, เปิดแอพใหม่กลับมาเป็น Pause, มี Expected finish ของ Phase และ Cycle
 - [menu bar กับหน้าต่างลอย เกี่ยวกันยังไง](issues/07-menubar-vs-floating.md) — แอพบน menu bar ไม่มี Dock icon, menu bar โชว์เวลาตอนเดิน/Pause, คลิกได้เมนู dropdown ที่ควบคุมได้ครบ, ปิด Floating Window = ซ่อน, Always on Top อยู่ในเมนู, Settings กับสถิติเป็นหน้าต่างแยก, ถามยืนยันก่อน Reset/New Cycle, UI ภาษาอังกฤษ
+- [แจ้งเตือนกับเสียงตอนหมดเวลา ทำงานยังไง](issues/08-notification-and-sound.md) — banner + เสียงระบบดังครั้งเดียวเฉพาะตอนหมดเวลาเอง แอพเล่นเสียงเองเลยยังดังตอน Do Not Disturb เลือกเสียงได้ (ค่าเริ่มต้น Glass/Hero) ขอสิทธิ์ตอนกด ▶︎ ครั้งแรก คลิก banner = แสดง Floating Window
 
 ## Not yet specified
 
