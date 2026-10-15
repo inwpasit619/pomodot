@@ -1,0 +1,18 @@
+# spec จะสั่ง agent ให้จัดโครงสร้างโค้ดและทดสอบยังไง
+
+Type: grilling
+Label: wayfinder:grilling
+Status: open
+Map: [Map: Pomodoro ลอยบนจอ](../map.md)
+Blocked by: 06, 07
+
+## Question
+
+spec ต้องบอก AI coding agent ว่าจัดโค้ดและพิสูจน์ว่าแอพทำงานถูกยังไง โดยที่ผู้ใช้ไม่ต้องอ่าน Swift (agent เสนอทางที่แนะนำ + trade-off เป็นภาษาคน แล้วให้ผู้ใช้อนุมัติ)
+
+- แบ่ง Swift package เป็น target อะไรบ้าง (เช่น library ที่มี logic ของ timer ล้วนๆ ไม่ import AppKit/SwiftUI แยกจาก executable ที่เป็น UI) เพื่อให้ `swift test` ทดสอบกติกาของ timer ได้โดยไม่ต้องเปิดแอพ
+- logic ไหนต้องมี unit test (กติกาจากตั๋ว "กติกาของ timer" เช่น pause/skip/reset, ตัวนับรอบ, Mac sleep) และต้องจำลองเวลา (fake clock) ยังไงให้ test ไม่ต้องรอจริง
+- checklist ทดสอบด้วยมือที่ผู้ใช้ทำตามได้เอง: ขึ้นทับแอพ fullscreen, ไม่แย่ง focus, อยู่ทุก Space, menu bar อัปเดตสด, notification + เสียง, เปิดบนเครื่องเพื่อนผ่าน Open Anyway
+- เงื่อนไข "เสร็จ" ที่ agent ต้องผ่านก่อนส่งงาน (build universal ผ่าน, test ผ่าน, ไม่มี warning ที่ไม่ได้อธิบาย)
+
+ข้อมูลที่มีแล้ว: CLT + SwiftPM, Swift 6.4, Swift Testing ใช้ได้, minimum macOS 14, หา path ที่ build ด้วย `--show-bin-path`

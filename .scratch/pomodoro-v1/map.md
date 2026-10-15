@@ -31,6 +31,7 @@ Label: wayfinder:map
 - [หน้าต่างลอยบนสุด + menu bar ทำได้ด้วย API อะไร ต้อง macOS ขั้นต่ำเท่าไหร่](issues/03-floating-window-apis.md) — ใช้ SwiftUI + `MenuBarExtra` + AppKit `NSPanel` ทำหน้าต่างลอย macOS ขั้นต่ำที่แนะนำคือ 14 (ถ้าใช้ SwiftUI ล้วนจะแย่ง focus และขึ้นทับ fullscreen ไม่ได้)
 - [ติดตั้ง Xcode หรือใช้แค่ Command Line Tools](issues/04-xcode-or-clt.md) — ใช้ CLT + SwiftPM อย่างเดียว ไม่ลง Xcode (ดิสก์ไม่พอ และ v1 ไม่ต้องใช้) ซ่อม CLT ด้วยการติดตั้งใหม่
 - [ติดตั้ง CLT ใหม่แล้วตรวจว่า build ผ่าน](issues/11-reinstall-clt-verify.md) — ได้ Swift 6.4 / SDK 27.0 build กับ test ผ่านโดยไม่ต้องใช้ workaround build universal ในคำสั่งเดียวได้แล้ว และ spec ต้องหา path ของไฟล์ที่ build ด้วย `--show-bin-path`
+- [ต้องรองรับ macOS ต่ำสุดเวอร์ชันไหน](issues/05-minimum-macos.md) — macOS 14 (Sonoma) เพื่อนไม่มีใครใช้ Mac เก่า และใช้ API ที่แนะนำได้ครบโดยไม่ต้องเขียนทางสำรอง
 
 ## Not yet specified
 
@@ -38,7 +39,6 @@ Label: wayfinder:map
 - **การ package และแจกจ่าย** ที่เหลืออยู่: เลข version, ขั้นตอนทำ GitHub Release, ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่หรือเปล่า (ตกลงกันแล้วว่าใช้ zip + ad-hoc sign ทั้ง bundle และมีขั้นตอนติดตั้งเตรียมไว้ใน research แล้ว)
 - **ชื่อแอพและไอคอน**
 - **หน้า Settings** (อยู่ตรงไหน หน้าตาแบบไหน) รอตั๋ว "menu bar กับหน้าต่างลอย เกี่ยวกันยังไง"
-- **โครงสร้างโค้ดและการทดสอบ** ที่จะเขียนลงใน spec ให้ agent (เช่นแยก logic ของ timer ออกมาให้ test ได้ และมี checklist ทดสอบด้วยมือเรื่องขึ้นทับแอพ fullscreen กับการไม่แย่ง focus) toolchain ชัดแล้ว (CLT, Swift 6.4) เหลือรอ minimum macOS
 
 ## Out of scope
 
