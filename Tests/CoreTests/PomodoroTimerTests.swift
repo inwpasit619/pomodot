@@ -2,18 +2,6 @@ import Foundation
 import Testing
 import Core
 
-/// A clock time on one fixed day, e.g. `at("09:25:03")`.
-private func at(_ time: String) -> Date {
-    let parts = time.split(separator: ":").map { Int($0)! }
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: "UTC")!
-    let components = DateComponents(
-        year: 2026, month: 10, day: 15,
-        hour: parts[0], minute: parts[1], second: parts.count > 2 ? parts[2] : 0
-    )
-    return calendar.date(from: components)!
-}
-
 @Test("Given a Focus started at 08:55 and paused at 09:00 with 20:00 left, when it is resumed at 09:10, then it is Running from 20:00 and 15:00 is left at 09:15")
 func pauseThenResumeKeepsTheTimeLeft() {
     // Given
@@ -92,12 +80,6 @@ func pausedFocusThatRunsOutIsStillAPomodoro() {
     // Then
     #expect(pomodoros == [Pomodoro(end: at("09:35"), durationSeconds: 1500)])
     #expect(timer.pomodorosDone == 1)
-}
-
-/// Starts the current Phase at `start` and ticks once `minutes` later.
-private func runPhase(_ timer: inout PomodoroTimer, from start: Date, minutes: Int) -> [Pomodoro] {
-    timer.start(at: start)
-    return timer.tick(at: start.addingTimeInterval(TimeInterval(minutes * 60)))
 }
 
 @Test("Given a new Cycle with default Settings, when every Phase runs to the end, then the timer goes Focus 1/4 → Short Break 1/4 → … → Focus 4/4 → Long Break 4/4 → Focus 1/4 Ready with done 0")
