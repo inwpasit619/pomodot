@@ -29,6 +29,10 @@ _Avoid_: Using "Pomodoro" for any Focus, or for the whole Focus + break pair
 A run of N Pomodoros (4 by default) that ends with one Long Break. Progress within it is shown as "2/4".
 _Avoid_: Round, set, session
 
+**History**:
+The record of every Pomodoro (when it ended and how long it was), kept until the user clears it. New Cycle and Reset never touch it; a Focus that wasn't a Pomodoro never enters it.
+_Avoid_: Log, sessions, stats (for the stored record itself; "Statistics" is the window that shows it)
+
 **Expected finish**:
 The clock time a Phase or a Cycle will end if it runs from now with no further pauses. A Cycle's expected finish is the end of its Long Break.
 _Avoid_: ETA, end time (when it could be confused with a Phase's length)

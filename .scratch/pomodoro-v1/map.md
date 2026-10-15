@@ -39,10 +39,10 @@ Label: wayfinder:map
 - [กติกาของ timer: pause, skip, reset, Mac sleep และ auto-start](issues/06-timer-rules.md) — Pomodoro = Focus ที่ทำครบ, skip Focus ตัวนับไม่ขยับ, เครื่อง sleep แล้ว auto-pause, auto-start มี 2 สวิตช์และหยุดเสมอหลัง Long Break, เปิดแอพใหม่กลับมาเป็น Pause, มี Expected finish ของ Phase และ Cycle
 - [menu bar กับหน้าต่างลอย เกี่ยวกันยังไง](issues/07-menubar-vs-floating.md) — แอพบน menu bar ไม่มี Dock icon, menu bar โชว์เวลาตอนเดิน/Pause, คลิกได้เมนู dropdown ที่ควบคุมได้ครบ, ปิด Floating Window = ซ่อน, Always on Top อยู่ในเมนู, Settings กับสถิติเป็นหน้าต่างแยก, ถามยืนยันก่อน Reset/New Cycle, UI ภาษาอังกฤษ
 - [แจ้งเตือนกับเสียงตอนหมดเวลา ทำงานยังไง](issues/08-notification-and-sound.md) — banner + เสียงระบบดังครั้งเดียวเฉพาะตอนหมดเวลาเอง แอพเล่นเสียงเองเลยยังดังตอน Do Not Disturb เลือกเสียงได้ (ค่าเริ่มต้น Glass/Hero) ขอสิทธิ์ตอนกด ▶︎ ครั้งแรก คลิก banner = แสดง Floating Window
+- [สถิติ/ประวัติ นับอะไร แสดงยังไง](issues/09-what-stats-mean.md) — History เก็บแค่ Pomodoro (เวลาจบ + ความยาว) ไว้ตลอดไป, เมนูโชว์ `Today: 🍅 n`, หน้าต่าง Statistics มีการ์ด Today/Week/All Time + กราฟ 7 วัน + `Clear History…`, ตัดวันตอนเที่ยงคืนตามวันที่จบ
 
 ## Not yet specified
 
-- **วิธีเก็บข้อมูลสถิติ** (รูปแบบไฟล์, เก็บย้อนหลังนานแค่ไหน, ลบ/reset ได้ไหม) รอตั๋ว "สถิติ/ประวัติ นับอะไร แสดงยังไง" ต้องเก็บสถานะ timer ไว้ให้เปิดแอพใหม่แล้วกลับมาที่เดิมได้ด้วย (ตั๋ว "กติกาของ timer")
 - **การ package และแจกจ่าย** ที่เหลืออยู่: เลข version, ขั้นตอนทำ GitHub Release, ทุกครั้งที่อัปเดตต้องกด Open Anyway ใหม่หรือเปล่า (ตกลงกันแล้วว่าใช้ zip + ad-hoc sign ทั้ง bundle และมีขั้นตอนติดตั้งเตรียมไว้ใน research แล้ว)
 - **ชื่อแอพและไอคอน**
 
