@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Pomodot app icon, design A "capsule on tomato red". Apple 1024 grid: 824x824 body at (100,100), corner radius 185.
+       No SVG filters: sips does not render them. The capsule shadow is a plain offset shape. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF7B68"/>
+      <stop offset="1" stop-color="#E0343A"/>
+    </linearGradient>
+    <radialGradient id="highlight" cx="0.3" cy="0.15" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="0.6" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.97"/>
+      <stop offset="1" stop-color="#FFF1EF" stop-opacity="0.92"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#highlight)"/>
+  <rect x="200" y="420" width="624" height="228" rx="114" fill="#7A0F14" opacity="0.18"/>
+  <rect x="196" y="398" width="632" height="228" rx="114" fill="url(#glass)"/>
+  <circle cx="312" cy="512" r="82" fill="#F0524F" opacity="0.18"/>
+  <circle cx="312" cy="512" r="58" fill="#F0524F"/>
+  <rect x="418" y="490" width="320" height="44" rx="22" fill="#F3D4D2"/>
+  <rect x="418" y="490" width="214" height="44" rx="22" fill="#3A2224"/>
+</svg>

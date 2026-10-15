@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.teppasit.pomodot</string>
+	<key>CFBundleName</key>
+	<string>Pomodot</string>
+	<key>CFBundleDisplayName</key>
+	<string>Pomodot</string>
+	<key>CFBundleExecutable</key>
+	<string>Pomodot</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<!-- Filled in by scripts/build-app.sh from VERSION. Do not edit here. -->
+	<key>CFBundleShortVersionString</key>
+	<string>__FROM_VERSION_FILE__</string>
+	<!-- Filled in by scripts/build-app.sh from `git rev-list --count HEAD`. Do not edit here. -->
+	<key>CFBundleVersion</key>
+	<string>__FROM_GIT_COMMIT_COUNT__</string>
+	<key>CFBundleIconFile</key>
+	<string>Pomodot</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
+</dict>
+</plist>
