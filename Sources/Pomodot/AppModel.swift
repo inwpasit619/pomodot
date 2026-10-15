@@ -21,6 +21,8 @@ final class AppModel {
     @ObservationIgnored private var ticker: Timer?
     /// Keeps macOS from delaying the ticks while Running; idle sleep still allowed.
     @ObservationIgnored private var activity: NSObjectProtocol?
+    /// While not Running, moves `now` on when the Expected finish minute next changes.
+    @ObservationIgnored private var clock: Timer?
 
     init() {
         // Only real sleep (lid closed, Sleep chosen). Locking the screen, the display
@@ -30,9 +32,24 @@ final class AppModel {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.sleep() }
         }
+        // Expected finish is "from now": after waking or a clock change, now is somewhere else.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.update(Date()) }
+        }
+        NotificationCenter.default.addObserver(
+            forName: .NSSystemClockDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.update(Date()) }
+        }
+        // Ready from launch: Expected finish already moves with the clock.
+        scheduleClock()
     }
 
     var remainingSeconds: Int { timer.remainingSeconds(at: now) }
+
+    var expectedFinish: ExpectedFinish { timer.expectedFinish(at: now) }
 
     /// The one Start / Pause / Resume button.
     func startPauseResume() {
@@ -73,6 +90,29 @@ final class AppModel {
         } else {
             stopTicking()
         }
+        scheduleClock()
+    }
+
+    /// While Running, the ticks keep `now` fresh and Expected finish stays put. Otherwise
+    /// Expected finish moves on with the clock ("if I pressed Start now"), so wake exactly
+    /// when the minute it shows next changes, rather than redrawing every second.
+    private func scheduleClock() {
+        clock?.invalidate()
+        clock = nil
+        guard timer.status != .running else { return }
+        let finish = expectedFinish
+        let fire = min(nextMinuteChange(of: finish.phaseEnds), nextMinuteChange(of: finish.cycleEnds))
+        let clock = Timer(fire: fire, interval: 0, repeats: false) { [weak self] _ in
+            MainActor.assumeIsolated { self?.update(Date()) }
+        }
+        RunLoop.main.add(clock, forMode: .common)
+        self.clock = clock
+    }
+
+    /// When `end`, which moves along with the clock, next shows a different minute.
+    private func nextMinuteChange(of end: Date) -> Date {
+        let nextMinute = ((end.timeIntervalSinceReferenceDate / 60).rounded(.down) + 1) * 60
+        return now.addingTimeInterval(nextMinute - end.timeIntervalSinceReferenceDate)
     }
 
     private func startTicking() {

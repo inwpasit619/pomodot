@@ -104,7 +104,7 @@ private struct FloatingCard: View {
             HStack(spacing: 8) {
                 PhaseChip(phase: timer.phase, color: color)
                 ProgressDots(done: timer.pomodorosDone, total: timer.pomodorosPerCycle, color: color)
-                Text("\(timer.displayNumber)/\(timer.pomodorosPerCycle)")
+                Text(timer.progressText)
                     .font(.system(size: 11))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
@@ -136,6 +136,10 @@ private struct FloatingCard: View {
             .padding(.bottom, 8)
 
             TimeLeftBar(fraction: timer.fractionLeft(at: model.now), color: color)
+
+            Spacer(minLength: 0)
+
+            ExpectedFinishRow(finish: model.expectedFinish)
 
             Spacer(minLength: 0)
 
@@ -207,6 +211,30 @@ private struct ProgressDots: View {
                     .frame(width: 6, height: 6)
             }
         }
+    }
+}
+
+/// When the Phase and the Cycle end, the same times as the menu.
+private struct ExpectedFinishRow: View {
+    let finish: ExpectedFinish
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            column("Phase ends", finish.phaseEnds)
+            column("Cycle ends", finish.cycleEnds)
+        }
+    }
+
+    private func column(_ title: String, _ time: Date) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title)
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+            Text(time.clockText)
+                .font(.system(size: 13, weight: .semibold))
+                .monospacedDigit()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

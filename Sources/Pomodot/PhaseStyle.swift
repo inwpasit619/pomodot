@@ -40,6 +40,13 @@ extension PhaseStatus {
     }
 }
 
+extension PomodoroTimer {
+    /// Progress in the Cycle as the card and the menu write it: "2/4".
+    var progressText: String {
+        "\(displayNumber)/\(pomodorosPerCycle)"
+    }
+}
+
 extension Phase {
     /// The menu bar icon while this Phase is Running or Ready.
     var menuBarSymbol: String {

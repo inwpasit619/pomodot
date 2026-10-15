@@ -72,6 +72,14 @@ private struct MenuContent: View {
     @Bindable var model: AppModel
 
     var body: some View {
+        let timer = model.timer
+        let finish = model.expectedFinish
+        // Two lines that can't be clicked: the Phase now and when it and the Cycle end.
+        Text("\(timer.phase.name) \(timer.progressText) · ends \(finish.phaseEnds.clockText)")
+        Text("Cycle ends \(finish.cycleEnds.clockText)")
+
+        Divider()
+
         Button(model.timer.status.startPauseResumeTitle) {
             model.startPauseResume()
         }
