@@ -26,6 +26,7 @@ Label: wayfinder:map
 
 <!-- the index — one line per closed ticket -->
 
+- [ใช้แค่ Command Line Tools สร้าง .app ที่ใช้งานได้จริงไหม](issues/01-build-app-without-xcode.md) — ได้ ทดสอบแล้วครบรวมถึง notification แต่ CLT บนเครื่องนี้พังอยู่ ต้องติดตั้งใหม่ และมีกติกา build ที่ต้องใส่ใน spec
 - [เพื่อนเปิดแอพที่ไม่ได้ notarize จาก GitHub ได้ยังไง](issues/02-run-unsigned-app-gatekeeper.md) — แจกฟรีได้: ad-hoc sign ทั้ง bundle แล้วแจกเป็น .zip เพื่อนเปิดผ่าน Privacy & Security › Open Anyway ส่วน Homebrew ใช้ไม่ได้แล้ว
 - [หน้าต่างลอยบนสุด + menu bar ทำได้ด้วย API อะไร ต้อง macOS ขั้นต่ำเท่าไหร่](issues/03-floating-window-apis.md) — ใช้ SwiftUI + `MenuBarExtra` + AppKit `NSPanel` ทำหน้าต่างลอย macOS ขั้นต่ำที่แนะนำคือ 14 (ถ้าใช้ SwiftUI ล้วนจะแย่ง focus และขึ้นทับ fullscreen ไม่ได้)
 
