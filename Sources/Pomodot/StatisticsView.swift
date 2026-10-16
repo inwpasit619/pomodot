@@ -133,8 +133,8 @@ private struct LastSevenDaysChart: View {
     }
 }
 
-/// A section title in small grey type, as System Settings does it.
-private struct SectionTitle: View {
+/// A section title in small grey type, as System Settings does it. Settings uses it too.
+struct SectionTitle: View {
     let text: String
 
     init(_ text: String) {
@@ -144,6 +144,8 @@ private struct SectionTitle: View {
     var body: some View {
         Text(text)
             .font(.subheadline)
+            // A Form's section header is bold by default.
+            .fontWeight(.regular)
             .foregroundStyle(.secondary)
     }
 }

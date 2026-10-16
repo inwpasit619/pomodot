@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     private var floatingWindowController: FloatingWindowController?
     private lazy var statisticsWindowController = StatisticsWindowController(model: model)
+    private lazy var settingsWindowController = SettingsWindowController(model: model)
 
     /// Every SF Symbol the app draws. Each must exist on the running macOS;
     /// a missing one is reported, never swapped for another.
@@ -48,5 +49,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// The menu's Statistics….
     func showStatistics() {
         statisticsWindowController.show()
+    }
+
+    /// The menu's Settings….
+    func showSettings() {
+        settingsWindowController.show()
     }
 }

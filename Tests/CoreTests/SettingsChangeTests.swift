@@ -77,3 +77,53 @@ func aCycleWithNoProgressTakesTheNewLength() {
     #expect(timer.displayNumber == 1)
     #expect(timer.pomodorosPerCycle == 6)
 }
+
+@Test("Given Focus 1/4 Running since 09:00, when Start breaks automatically is switched on in Settings, then the Focus runs out at 09:25 into a Short Break 1/4 already Running")
+func autoStartBreaksFromSettingsIsUsed() {
+    // Given
+    var timer = PomodoroTimer()
+    timer.start(at: at("09:00"))
+    var settings = Settings()
+
+    // When
+    settings.timer.autoStartBreaks = true
+    timer.apply(settings.timer)
+
+    // Then
+    _ = timer.tick(at: at("09:25"))
+    #expect(timer.phase == .shortBreak)
+    #expect(timer.status == .running)
+    #expect(timer.remainingSeconds(at: at("09:26")) == 4 * 60)
+}
+
+@Test("Given the Settings window, when 200 minutes is typed for Focus and 0 for Short Break, then Focus is 120 minutes and Short Break is 1, the nearest lengths allowed")
+func aPhaseLengthIsKeptWithin1To120Minutes() {
+    // Given
+    var settings = Settings()
+
+    // When
+    settings.timer.focusMinutes = 200
+    settings.timer.shortBreakMinutes = 0
+
+    // Then
+    #expect(settings.timer.focusMinutes == 120)
+    #expect(settings.timer.shortBreakMinutes == 1)
+}
+
+@Test("Given the Settings window, when 11 is typed for Pomodoros per Cycle, then it is 10; and when 0 is typed, then it is 1")
+func pomodorosPerCycleIsKeptWithin1To10() {
+    // Given
+    var settings = Settings()
+
+    // When
+    settings.timer.pomodorosPerCycle = 11
+
+    // Then
+    #expect(settings.timer.pomodorosPerCycle == 10)
+
+    // When
+    settings.timer.pomodorosPerCycle = 0
+
+    // Then
+    #expect(settings.timer.pomodorosPerCycle == 1)
+}

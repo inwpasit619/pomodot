@@ -21,9 +21,22 @@ final class AppModel {
     @ObservationIgnored var capsuleCenter: CGPoint? {
         didSet { saveState() }
     }
-    /// On by default; Settings (M5) can turn it off. Off: no permission asked, no banners,
-    /// but the sounds still play.
-    var showNotifications = true
+    /// Every value in the Settings window, remembered in settings.json. A change takes effect
+    /// straight away by the timer's rules: a Phase that has started keeps its length to the end.
+    var settings: Settings {
+        didSet {
+            guard settings != oldValue else { return }
+            settingsFile.save(SettingsFile.encode(settings))
+            let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
+            send { timer, _ in
+                timer.apply(timerSettings)
+                return TimerOutcome()
+            }
+        }
+    }
+
+    /// Off: no permission asked, no banners, but the sounds still play.
+    var showNotifications: Bool { settings.showNotifications }
 
     private(set) var timer: PomodoroTimer
     /// Every Pomodoro, loaded from history.json at launch.
@@ -39,6 +52,9 @@ final class AppModel {
     @ObservationIgnored private var clock: Timer?
     @ObservationIgnored private let historyFile = StoredFile(name: "history")
     @ObservationIgnored private let stateFile = StoredFile(name: "state")
+    @ObservationIgnored private let settingsFile = StoredFile(name: "settings")
+    /// A Focus length for this run only, from the launch arguments; never saved.
+    @ObservationIgnored private let focusMinutesForThisRun = AppModel.focusMinutesFromLaunchArguments()
     /// While Running, state.json is saved at least this often, so a Force Quit loses no more.
     private static let saveInterval: TimeInterval = 30
     @ObservationIgnored private var lastStateSave = Date.distantPast
@@ -47,10 +63,13 @@ final class AppModel {
 
     init() {
         history = historyFile.load(HistoryFile.decode)
+        // Settings first: a fresh timer, and a Phase that never started, take their lengths.
+        let settings = settingsFile.load(SettingsFile.decode)
+        self.settings = settings
+        let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
         // Where the app was at the last Quit, Paused (or Ready if it hadn't started).
-        let settings = Self.launchSettings()
-        let saved = stateFile.load { StateFile.decode($0, settings: settings) }
-        timer = PomodoroTimer(restoring: saved.timer, settings: settings)
+        let saved = stateFile.load { StateFile.decode($0, settings: timerSettings) }
+        timer = PomodoroTimer(restoring: saved.timer, settings: timerSettings)
         isFloatingWindowVisible = saved.floatingWindow.visible
         isAlwaysOnTop = saved.floatingWindow.alwaysOnTop
         capsuleCenter = saved.floatingWindow.center
@@ -80,16 +99,21 @@ final class AppModel {
         bannerNotifier.onClick = { [weak self] in self?.isFloatingWindowVisible = true }
     }
 
-    /// The default Settings until the Settings window (M5). For manual tests that would
-    /// otherwise wait 25 minutes, `open Pomodot.app --args -focusMinutes 1` shortens Focus;
-    /// a normal launch never passes it.
-    private static func launchSettings() -> TimerSettings {
-        var settings = TimerSettings()
+    /// For manual tests that would otherwise wait 25 minutes, `open Pomodot.app --args
+    /// -focusMinutes 1` shortens Focus for that run only, whatever Settings say; it is never
+    /// written to settings.json. A normal launch never passes it.
+    private static func focusMinutesFromLaunchArguments() -> Int? {
         let arguments = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)
-        if let minutes = (arguments["focusMinutes"] as? String).flatMap(Int.init), minutes >= 1 {
-            settings.focusMinutes = minutes
+        return (arguments["focusMinutes"] as? String).flatMap(Int.init).flatMap { $0 >= 1 ? $0 : nil }
+    }
+
+    /// What the timer runs on: Settings, with this run's Focus length if one was passed.
+    private static func timerSettings(from settings: Settings, focusMinutes: Int?) -> TimerSettings {
+        var timerSettings = settings.timer
+        if let focusMinutes {
+            timerSettings.focusMinutes = focusMinutes
         }
-        return settings
+        return timerSettings
     }
 
     var remainingSeconds: Int { timer.remainingSeconds(at: now) }

@@ -7,7 +7,11 @@ struct PomodotApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(model: appDelegate.model, showStatistics: appDelegate.showStatistics)
+            MenuContent(
+                model: appDelegate.model,
+                showStatistics: appDelegate.showStatistics,
+                showSettings: appDelegate.showSettings
+            )
         } label: {
             MenuBarLabel(model: appDelegate.model)
         }
@@ -71,6 +75,7 @@ private struct MenuBarImage: View {
 private struct MenuContent: View {
     @Bindable var model: AppModel
     let showStatistics: () -> Void
+    let showSettings: () -> Void
 
     var body: some View {
         let timer = model.timer
@@ -108,6 +113,7 @@ private struct MenuContent: View {
         Divider()
 
         Button("Statistics…", action: showStatistics)
+        Button("Settings…", action: showSettings)
 
         Divider()
 

@@ -17,11 +17,7 @@ final class StatisticsWindowController {
     func show() {
         let window = window ?? makeWindow()
         self.window = window
-        // Pomodot has no Dock icon: without this the window can open behind the active app.
-        NSApp.activate()
-        window.makeKeyAndOrderFront(nil)
-        // macOS may still turn the activation down; the window comes to the front anyway.
-        window.orderFrontRegardless()
+        window.showInFront()
     }
 
     private func makeWindow() -> NSWindow {
