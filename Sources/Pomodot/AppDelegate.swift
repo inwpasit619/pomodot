@@ -9,7 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Every SF Symbol the app draws. Each must exist on the running macOS;
     /// a missing one is reported, never swapped for another.
-    static let requiredSymbols = ["timer", "cup.and.saucer.fill", "pause.circle"]
+    static let requiredSymbols = ["timer", "cup.and.saucer.fill", "pause.circle", "exclamationmark.triangle.fill"]
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let missing = Self.requiredSymbols.filter {

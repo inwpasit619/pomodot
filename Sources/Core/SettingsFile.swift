@@ -25,6 +25,44 @@ public struct Settings: Sendable, Equatable {
     public mutating func restoreDefaults() {
         self = Settings()
     }
+
+    /// The system sound that plays when a Phase runs out by itself; nil for None.
+    public func soundName(for sound: Sound) -> String? {
+        switch sound {
+        case .focus: focusEndSound
+        case .break: breakEndSound
+        }
+    }
+
+    /// A sound picked in a dropdown: nil for None.
+    public mutating func setSoundName(_ name: String?, for sound: Sound) {
+        switch sound {
+        case .focus: focusEndSound = name
+        case .break: breakEndSound = name
+        }
+    }
+
+    /// A saved sound this Mac doesn't have goes back to that slot's default (Glass / Hero).
+    /// None stays None.
+    /// - Parameter sounds: the names in /System/Library/Sounds, without the extension.
+    public mutating func replaceMissingSounds(onThisMac sounds: [String]) {
+        for sound in [Sound.focus, .break] {
+            if let name = soundName(for: sound), !sounds.contains(name) {
+                setSoundName(sound.defaultSystemSoundName, for: sound)
+            }
+        }
+    }
+
+    /// Each sound dropdown: None at the top, then every sound on this Mac in alphabetical order.
+    public static func soundChoices(onThisMac sounds: [String]) -> [String?] {
+        [nil] + sounds.sorted()
+    }
+
+    /// The orange line under Show notifications: only while it is on and macOS has turned
+    /// Pomodot's notifications off. With it off, nothing is asked or posted, so nothing to warn about.
+    public func warnsNotificationsAreOff(turnedOffInSystemSettings: Bool) -> Bool {
+        showNotifications && turnedOffInSystemSettings
+    }
 }
 
 /// settings.json, version 1: every value in the Settings window.

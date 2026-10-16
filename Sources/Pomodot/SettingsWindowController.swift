@@ -16,11 +16,15 @@ final class SettingsWindowController {
     func show() {
         let window = window ?? makeWindow()
         self.window = window
+        model.checkWhetherNotificationsAreTurnedOff()
         window.showInFront()
     }
 
     private func makeWindow() -> NSWindow {
-        let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(model: model, corrections: corrections)))
+        let hosting = NSHostingController(rootView: SettingsView(model: model, corrections: corrections))
+        // The window grows and shrinks with its content, e.g. when the notifications warning shows.
+        hosting.sizingOptions = .preferredContentSize
+        let window = NSWindow(contentViewController: hosting)
         window.title = "Settings"
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false

@@ -65,6 +65,12 @@
 - [x] (M3) **Given** กด `Hide Floating Window` ไว้ และ Phase กำลังเดินอยู่ **When** Phase หมดเวลาแล้วคลิกที่ banner (หรือที่รายการใน Notification Center) **Then** แคปซูลโผล่กลับมาที่เดิม
 - [x] (M3) **Given** เปิด Do Not Disturb (Control Center › Focus › Do Not Disturb) และ Phase กำลังเดินอยู่ **When** Phase หมดเวลา **Then** ไม่มี banner ขึ้น แต่ยังได้ยินเสียง (ทดสอบเสร็จแล้วอย่าลืมปิด Do Not Disturb)
 - [x] (M3) **Given** ไปที่ System Settings › Notifications › Pomodot แล้วปิดสวิตช์ `Allow notifications` (เหมือนกด `Don't Allow`) **When** กลับมาที่ Pomodot กด `Start` แล้วปล่อยให้ Phase หมดเวลา จากนั้นกด `Start` อีกหลายครั้ง และลอง `Quit Pomodot` แล้วเปิดใหม่กด `Start` **Then** ไม่มี banner แต่ยังได้ยินเสียง timer ใช้ได้ปกติ และกล่องขอสิทธิ์ไม่ขึ้นมาถามซ้ำอีก (ทดสอบเสร็จแล้วเปิดสวิตช์กลับ)
+- [ ] (M5) **Given** เปิดเสียงเครื่องไว้ และเปิด `Settings…` **When** กด dropdown `End of Focus sound` แล้วเลือก `Submarine` จากนั้นเลือกเสียงอื่นอีกสองสามเสียง **Then** ได้ยินเสียงที่เลือกทันทีทุกครั้ง (ไม่มีปุ่มเล่นแยก ไม่มีปุ่มปรับความดัง) และรายการใน dropdown มี `None` อยู่บนสุด ตามด้วยเสียงระบบเรียงตามตัวอักษร
+- [ ] (M5) **Given** ตั้ง Focus เป็น `1` นาที และเลือก `End of Focus sound` เป็น `Submarine` **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** ได้ยินเสียง Submarine ไม่ใช่ Glass
+- [ ] (M5) **Given** ตั้ง Focus เป็น `1` นาที และเลือก `End of Focus sound` เป็น `None` **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** banner ยังขึ้นตามปกติแต่ไม่มีเสียงเลย จากนั้นกด `Start` ให้ Short Break เดินจนหมดเวลา → ได้ยินเสียง Hero (ทดสอบเสร็จแล้วกด `Restore Defaults`)
+- [ ] (M5) **Given** ไปที่ System Settings › Notifications › Pomodot แล้วปิดสวิตช์ `Allow notifications` **When** กลับมาเปิด `Settings…` ของ Pomodot **Then** ใต้ `Show notifications` มีบรรทัดสีส้มที่มีรูปสามเหลี่ยมตกใจ ข้อความ `Notifications are turned off for Pomodot in System Settings.` และปุ่ม `Open System Settings…` กดปุ่มแล้วไปที่หน้า Notifications ของ Pomodot ใน System Settings
+- [ ] (M5) **Given** บรรทัดเตือนสีส้มขึ้นอยู่ (ข้อบน) **When** เปิดสวิตช์ `Allow notifications` ใน System Settings กลับ แล้วคลิกที่หน้าต่าง Settings ของ Pomodot **Then** บรรทัดเตือนหายไปเองโดยไม่ต้องปิดเปิดหน้าต่างใหม่
+- [ ] (M5) **Given** บรรทัดเตือนสีส้มขึ้นอยู่ **When** ปิดสวิตช์ `Show notifications` **Then** บรรทัดเตือนหายทันที; และเมื่อ Phase หมดเวลา ไม่มี banner แต่ยังได้ยินเสียง (ทดสอบเสร็จแล้วเปิดสิทธิ์ใน System Settings กลับ และกด `Restore Defaults`)
 
 ## Statistics
 

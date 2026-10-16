@@ -35,6 +35,17 @@ final class BannerNotifier: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    /// Whether macOS has turned Pomodot's notifications off (Don't Allow, or switched off in
+    /// System Settings). Not asked yet is not off: the question comes on the first Start.
+    /// Outside Pomodot.app nothing can be posted anyway, so it never says off.
+    func checkTurnedOffInSystemSettings(_ answer: @escaping @MainActor (Bool) -> Void) {
+        guard let center else { return answer(false) }
+        center.getNotificationSettings { settings in
+            let turnedOff = settings.authorizationStatus == .denied
+            Task { @MainActor in answer(turnedOff) }
+        }
+    }
+
     func post(_ banner: Banner) {
         guard let center else { return }
         let content = UNMutableNotificationContent()

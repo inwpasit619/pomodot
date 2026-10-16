@@ -45,6 +45,17 @@ struct SettingsView: View {
                 } header: {
                     SectionTitle("Auto-start")
                 }
+
+                Section {
+                    Toggle("Show notifications", isOn: $model.settings.showNotifications)
+                    if model.warnsNotificationsAreOff {
+                        NotificationsOffWarning()
+                    }
+                    SoundPicker("End of Focus sound", sound: .focus, model: model)
+                    SoundPicker("End of Break sound", sound: .break, model: model)
+                } header: {
+                    SectionTitle("Notifications & Sound")
+                }
             }
             .formStyle(.grouped)
             .scrollDisabled(true)
@@ -114,6 +125,55 @@ private struct NumberRow: View {
                     .accessibilityHidden(unit == nil)
                 Stepper(title, value: value, in: range)
                     .labelsHidden()
+            }
+        }
+    }
+}
+
+/// Shown under Show notifications while macOS has Pomodot's notifications turned off.
+private struct NotificationsOffWarning: View {
+    /// Pomodot's own page under Notifications in System Settings.
+    private static let systemSettingsURL = URL(
+        string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=\(Bundle.main.bundleIdentifier ?? "")"
+    )!
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Notifications are turned off for Pomodot in System Settings.", systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            Button("Open System Settings…") {
+                NSWorkspace.shared.open(Self.systemSettingsURL)
+            }
+            // Its own grey button: the tomato red is for the window's main button and switches.
+            .tint(nil)
+        }
+    }
+}
+
+/// A sound dropdown: None, then every system sound. Picking one saves it and plays it straight
+/// away; there is no separate play button.
+private struct SoundPicker: View {
+    let title: String
+    let sound: Sound
+    let model: AppModel
+
+    init(_ title: String, sound: Sound, model: AppModel) {
+        self.title = title
+        self.sound = sound
+        self.model = model
+    }
+
+    var body: some View {
+        // Through the model, not straight into Settings: only a pick plays the sound,
+        // never Restore Defaults.
+        let choice = Binding(
+            get: { model.settings.soundName(for: sound) },
+            set: { model.chooseSound($0, for: sound) }
+        )
+        Picker(title, selection: choice) {
+            ForEach(model.soundChoices, id: \.self) { name in
+                // Every tag is a String?, as the selection is: None is nil.
+                Text(name ?? "None").tag(name)
             }
         }
     }

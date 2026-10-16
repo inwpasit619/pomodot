@@ -2,7 +2,7 @@
 public enum Sound: Sendable, Equatable {
     case focus, `break`
 
-    /// The macOS system sound each one plays until Settings can change it (M5).
+    /// The macOS system sound each one plays by default; Settings can change it.
     public var defaultSystemSoundName: String {
         switch self {
         case .focus: "Glass"

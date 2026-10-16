@@ -38,6 +38,18 @@ final class AppModel {
     /// Off: no permission asked, no banners, but the sounds still play.
     var showNotifications: Bool { settings.showNotifications }
 
+    /// macOS has turned Pomodot's notifications off. Checked when Settings opens and
+    /// whenever Pomodot comes back active, e.g. from System Settings.
+    private(set) var notificationsTurnedOffInSystemSettings = false
+
+    /// The orange line under Show notifications in Settings.
+    var warnsNotificationsAreOff: Bool {
+        settings.warnsNotificationsAreOff(turnedOffInSystemSettings: notificationsTurnedOffInSystemSettings)
+    }
+
+    /// Each sound dropdown: None, then every system sound.
+    let soundChoices = Settings.soundChoices(onThisMac: SoundPlayer.systemSoundNames)
+
     private(set) var timer: PomodoroTimer
     /// Every Pomodoro, loaded from history.json at launch.
     private(set) var history: History
@@ -64,7 +76,8 @@ final class AppModel {
     init() {
         history = historyFile.load(HistoryFile.decode)
         // Settings first: a fresh timer, and a Phase that never started, take their lengths.
-        let settings = settingsFile.load(SettingsFile.decode)
+        var settings = settingsFile.load(SettingsFile.decode)
+        settings.replaceMissingSounds(onThisMac: SoundPlayer.systemSoundNames)
         self.settings = settings
         let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
         // Where the app was at the last Quit, Paused (or Ready if it hadn't started).
@@ -95,6 +108,12 @@ final class AppModel {
         }
         // Ready from launch: Expected finish already moves with the clock.
         scheduleClock()
+        // Back from System Settings, perhaps with notifications allowed or turned off.
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.checkWhetherNotificationsAreTurnedOff() }
+        }
         // Clicking a banner brings the Floating Window back if it was hidden.
         bannerNotifier.onClick = { [weak self] in self?.isFloatingWindowVisible = true }
     }
@@ -132,6 +151,19 @@ final class AppModel {
         // Asked on the first Start, after the timer is already running.
         if timer.status == .running, showNotifications {
             bannerNotifier.askPermission()
+        }
+    }
+
+    /// A sound picked in Settings: saved, and played straight away so it can be heard.
+    func chooseSound(_ name: String?, for sound: Sound) {
+        settings.setSoundName(name, for: sound)
+        soundPlayer.play(name)
+    }
+
+    /// Asks macOS whether Pomodot's notifications are turned off, for the warning in Settings.
+    func checkWhetherNotificationsAreTurnedOff() {
+        bannerNotifier.checkTurnedOffInSystemSettings { [weak self] turnedOff in
+            self?.notificationsTurnedOffInSystemSettings = turnedOff
         }
     }
 
@@ -185,7 +217,7 @@ final class AppModel {
     /// A Phase ran out by itself (the last one, after a late tick): play its sound once
     /// and post its banner.
     private func announce(_ ranOut: PhaseRanOut) {
-        soundPlayer.play(ranOut.sound)
+        soundPlayer.play(settings.soundName(for: ranOut.sound))
         if let banner = ranOut.banner(showNotifications: showNotifications) {
             bannerNotifier.post(banner)
         }
