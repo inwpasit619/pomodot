@@ -21,8 +21,8 @@ private func capsule(centeredAt x: CGFloat, _ y: CGFloat) -> CGRect {
     CGRect(x: x - 64, y: y - 19, width: 128, height: 38)
 }
 
-@Test("Given the capsule is centred at (720, 850) in the top half, when it expands, then the card grows down to x 578–862, y 669–869")
-func cardGrowsDownFromTheTopHalf() {
+@Test("Given the capsule is centred at (720, 850) near the top edge, when it expands, then the card grows down to x 578–862, y 669–869")
+func cardGrowsDownNearTheTopEdge() {
     // Given
     let capsule = capsule(centeredAt: 720, 850)
 
@@ -33,16 +33,28 @@ func cardGrowsDownFromTheTopHalf() {
     #expect(card == CGRect(x: 578, y: 669, width: 284, height: 200))
 }
 
-@Test("Given the capsule is centred at (720, 100) in the bottom half, when it expands, then the card grows up to x 578–862, y 81–281")
-func cardGrowsUpFromTheBottomHalf() {
+@Test("Given the capsule is centred at (720, 60) near the bottom edge, when it expands, then the card grows up to x 578–862, y 41–241")
+func cardGrowsUpNearTheBottomEdge() {
     // Given
-    let capsule = capsule(centeredAt: 720, 100)
+    let capsule = capsule(centeredAt: 720, 60)
 
     // When
     let card = FloatingWindowPlacement.cardFrame(around: capsule, in: screen)
 
     // Then
-    #expect(card == CGRect(x: 578, y: 81, width: 284, height: 200))
+    #expect(card == CGRect(x: 578, y: 41, width: 284, height: 200))
+}
+
+@Test("Given the capsule is centred at (720, 450), away from every edge, when it expands, then the card grows out from its middle to x 578–862, y 350–550")
+func cardGrowsFromTheMiddleAwayFromTheEdges() {
+    // Given
+    let capsule = capsule(centeredAt: 720, 450)
+
+    // When
+    let card = FloatingWindowPlacement.cardFrame(around: capsule, in: screen)
+
+    // Then
+    #expect(card == CGRect(x: 578, y: 350, width: 284, height: 200))
 }
 
 @Test("Given the capsule is centred at (1370, 850) near the right edge, when it expands, then the card lines up with the capsule's right edge at x 1150–1434")

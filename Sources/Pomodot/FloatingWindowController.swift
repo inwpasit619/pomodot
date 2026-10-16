@@ -40,7 +40,7 @@ final class FloatingWindowDisplay {
     /// The glass box inside the panel, in `FloatingView.coordinateSpaceName`: the capsule,
     /// or the card while open. Changing it animates the box between the two.
     var boxFrame: CGRect = .zero
-    /// Which corner or edge the card grows from; kept after closing so the card shrinks back into it.
+    /// Which middle, edge or corner the card grows from; kept after closing so the card shrinks back into it.
     var cardLayout: CardLayout?
     /// Where the card's buttons are, in `FloatingView.coordinateSpaceName`. A press on one never drags.
     @ObservationIgnored var buttonFrames: [CGRect] = []
@@ -307,7 +307,7 @@ final class FloatingWindowController {
     /// and widens the capsule while the pointer is on it.
     private func showGlass(animation: Animation?) {
         if let cardLayout = expansion.cardLayout {
-            // Set before the animation, so the card grows from the right corner.
+            // Set before the animation, so the card grows from the right place.
             display.cardLayout = cardLayout
         }
         withAnimation(Self.reduceMotion ? nil : animation) {

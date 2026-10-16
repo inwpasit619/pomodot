@@ -3,7 +3,7 @@ import Core
 import SwiftUI
 
 /// The Floating Window's content: the capsule, which opens into the card.
-/// The glass box grows from the capsule's corner, so the capsule never moves.
+/// The glass box grows from the capsule's middle, edge or corner, so the capsule never moves.
 /// The panel doesn't change size; the box moves and resizes inside it.
 struct FloatingView: View {
     /// The view's own coordinates (top-left origin), where the card's buttons report their frames.
@@ -374,9 +374,13 @@ extension CardLayout {
         return UnitPoint(x: x, y: y)
     }
 
-    /// Where the capsule sits inside the card: the corner or edge the card grows from.
+    /// Where the capsule sits inside the card: the middle, edge or corner the card grows from.
     var anchor: Alignment {
-        let vertical: VerticalAlignment = self.vertical == .down ? .top : .bottom
+        let vertical: VerticalAlignment = switch self.vertical {
+        case .centered: .center
+        case .down: .top
+        case .up: .bottom
+        }
         let horizontal: HorizontalAlignment = switch self.horizontal {
         case .centered: .center
         case .rightEdges: .trailing

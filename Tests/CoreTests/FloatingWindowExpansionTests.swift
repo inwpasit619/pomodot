@@ -93,7 +93,7 @@ func draggingTheCapsuleDoesNotExpand() {
     #expect(window.isExpanded)
 }
 
-@Test("Given the card opened downward from (720, 850), when it is dragged so the capsule sits in the bottom half at (720, 350), then the card keeps growing down until it closes, and grows up when clicked open again")
+@Test("Given the card opened downward from (720, 850), when it is dragged so the capsule sits away from every edge at (720, 350), then the card keeps growing down until it closes, and grows out from its middle when clicked open again")
 func cardKeepsItsDirectionUntilItCloses() {
     // Given
     var window = expandedWindow()
@@ -111,7 +111,7 @@ func cardKeepsItsDirectionUntilItCloses() {
 
     // Then
     #expect(frameWhileOpen == CGRect(x: 578, y: 169, width: 284, height: 200))
-    #expect(window.frame == CGRect(x: 578, y: 331, width: 284, height: 200))
+    #expect(window.frame == CGRect(x: 578, y: 250, width: 284, height: 200))
 }
 
 @Test("Given the pointer enters the capsule at t = 0, when the app asks when to check next, then there is nothing to check; after a click opens the card and the pointer leaves at t = 1, it is t = 1.5")
@@ -145,20 +145,20 @@ func hidingClosesTheCard() {
     #expect(window.nextCheck == nil)
 }
 
-@Test("Given the capsule was dragged from the top to be centred at (720, 100), when it expands, then the card grows up from its new place")
+@Test("Given the capsule was dragged from the top to be centred at (720, 60), near the bottom edge, when it expands, then the card grows up from its new place")
 func theCardOpensFromWhereTheCapsuleIsNow() {
     // Given
     var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
     window.pressed(at: CGPoint(x: 720, y: 850))
-    window.dragged(to: CGPoint(x: 720, y: 100), visibleFrame: screen)
-    window.released(at: CGPoint(x: 720, y: 100), visibleFrame: screen)
+    window.dragged(to: CGPoint(x: 720, y: 60), visibleFrame: screen)
+    window.released(at: CGPoint(x: 720, y: 60), visibleFrame: screen)
 
     // When
-    window.pressed(at: CGPoint(x: 720, y: 100))
-    window.released(at: CGPoint(x: 720, y: 100), visibleFrame: screen)
+    window.pressed(at: CGPoint(x: 720, y: 60))
+    window.released(at: CGPoint(x: 720, y: 60), visibleFrame: screen)
 
     // Then
-    #expect(window.frame == CGRect(x: 578, y: 81, width: 284, height: 200))
+    #expect(window.frame == CGRect(x: 578, y: 41, width: 284, height: 200))
 }
 
 @Test("Given the capsule is pressed at (700, 850), when it is dragged to (1500, 850) and then to (700, -200), then it stops at the right edge of the usable area, then at the bottom edge")

@@ -50,7 +50,8 @@ public enum FloatingWindowPlacement {
 /// Which way the card grows from the capsule. Chosen when the card opens and kept
 /// until it closes, so the card never jumps away from the pointer.
 public struct CardLayout: Sendable, Equatable {
-    public enum Vertical: Sendable { case down, up }
+    /// Centred on the capsule, or growing away from the top or bottom edge where centring would cross it.
+    public enum Vertical: Sendable { case centered, down, up }
     /// Centred on the capsule, or lined up with the capsule's edge where centring would cross the screen's.
     public enum Horizontal: Sendable { case centered, rightEdges, leftEdges }
 
@@ -58,8 +59,15 @@ public struct CardLayout: Sendable, Equatable {
     public let horizontal: Horizontal
 
     public init(capsule: CGRect, visibleFrame: CGRect) {
-        // Top half grows down (card top = capsule top); bottom half grows up.
-        vertical = capsule.midY >= visibleFrame.midY ? .down : .up
+        // Near the top it grows down (card top = capsule top); near the bottom, up.
+        let halfHeight = FloatingWindowPlacement.cardSize.height / 2
+        if capsule.midY + halfHeight > visibleFrame.maxY {
+            vertical = .down
+        } else if capsule.midY - halfHeight < visibleFrame.minY {
+            vertical = .up
+        } else {
+            vertical = .centered
+        }
         let halfCard = FloatingWindowPlacement.cardSize.width / 2
         if capsule.midX + halfCard > visibleFrame.maxX {
             horizontal = .rightEdges
@@ -72,7 +80,11 @@ public struct CardLayout: Sendable, Equatable {
 
     public func cardFrame(around capsule: CGRect) -> CGRect {
         let size = FloatingWindowPlacement.cardSize
-        let y = vertical == .down ? capsule.maxY - size.height : capsule.minY
+        let y = switch vertical {
+        case .centered: capsule.midY - size.height / 2
+        case .down: capsule.maxY - size.height
+        case .up: capsule.minY
+        }
         let x = switch horizontal {
         case .centered: capsule.midX - size.width / 2
         case .rightEdges: capsule.maxX - size.width
