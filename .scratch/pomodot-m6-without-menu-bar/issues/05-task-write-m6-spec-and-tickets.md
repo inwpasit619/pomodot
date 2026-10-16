@@ -3,7 +3,7 @@
 **Parent:** [map](../map.md)
 **Type:** `wayfinder:task` (AFK)
 **Assignee:** —
-**Blocked by:** [03](03-grilling-bring-back-hidden-capsule.md), [04](04-grilling-today-on-card.md), [06](06-grilling-quit-from-card.md) และตั๋วใหม่ที่งอกจากหมอก (01, 02 ปิดแล้ว)
+**Blocked by:** [04](04-grilling-today-on-card.md), [06](06-grilling-quit-from-card.md), [08](08-grilling-launch-at-login-setting.md), [10](10-grilling-dock-icon-setting.md) และตั๋วใหม่ที่งอกจากหมอก (01–03 ปิดแล้ว; 07, 09 เป็น research ที่ 08, 10 รอ)
 **Status:** open
 
 ## Question
