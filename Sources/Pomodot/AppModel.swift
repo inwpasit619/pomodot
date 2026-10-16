@@ -16,7 +16,7 @@ final class AppModel {
     /// but the sounds still play.
     var showNotifications = true
 
-    private(set) var timer = PomodoroTimer()
+    private(set) var timer = PomodoroTimer(settings: AppModel.launchSettings())
     /// Every Pomodoro, loaded from history.json at launch.
     private(set) var history: History
     /// The clock time the views draw from. Each tick moves it on.
@@ -58,6 +58,18 @@ final class AppModel {
         scheduleClock()
         // Clicking a banner brings the Floating Window back if it was hidden.
         bannerNotifier.onClick = { [weak self] in self?.isFloatingWindowVisible = true }
+    }
+
+    /// The default Settings until the Settings window (M5). For manual tests that would
+    /// otherwise wait 25 minutes, `open Pomodot.app --args -focusMinutes 1` shortens Focus;
+    /// a normal launch never passes it.
+    private static func launchSettings() -> TimerSettings {
+        var settings = TimerSettings()
+        let arguments = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)
+        if let minutes = (arguments["focusMinutes"] as? String).flatMap(Int.init), minutes >= 1 {
+            settings.focusMinutes = minutes
+        }
+        return settings
     }
 
     var remainingSeconds: Int { timer.remainingSeconds(at: now) }
