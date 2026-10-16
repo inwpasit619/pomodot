@@ -117,3 +117,8 @@
 - [ ] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` และเครื่องเป็นโหมด Light **When** กด `Restore Defaults` **Then** Appearance กลับเป็น `System` และแคปซูลกับทุกหน้าต่างเปลี่ยนเป็นแบบสว่างตามเครื่องทันที
 
 ## ติดตั้งบนเครื่องเพื่อน
+
+- [ ] (M5) **Given** ติดตั้ง Pomodot ไว้ใน Applications แล้ว มี Pomodoro ใน History อย่างน้อย 1 อัน และเปลี่ยน Focus ใน Settings เป็น `30` **When** กด `Quit Pomodot` แล้วลาก Pomodot เวอร์ชันใหม่ไปทับตัวเดิมใน Applications (กด Replace) แล้วเปิด **Then** Statistics ยังมี Pomodoro เท่าเดิม และ Settings ยังเป็น `30` (ทดสอบเสร็จแล้วกด `Restore Defaults`)
+- [ ] (M5) **Given** มี Pomodoro ใน History อย่างน้อย 1 อัน **When** กด `Quit Pomodot` ลาก Pomodot จาก Applications ลงถังขยะ แล้วลากตัวใหม่จากไฟล์ zip ไปใส่ Applications แล้วเปิด **Then** Statistics ยังมี Pomodoro เท่าเดิม
+- [ ] (M5) **Given** กด `Quit Pomodot` แล้ว **When** ใน Finder เลือกเมนู Go › Go to Folder… พิมพ์ `~/Library/Application Support/com.teppasit.pomodot` กด Return แล้วลบโฟลเดอร์นั้นลงถังขยะ จากนั้นเปิด Pomodot **Then** เริ่มใหม่สะอาด: แคปซูลอยู่ตำแหน่งเริ่มต้นกลางด้านบน เป็น Focus `1/4` `25:00` `READY`, Statistics ว่าง และ Settings เป็นค่าเริ่มต้นทั้งหมด
+- [ ] (M5) **Given** เครื่องของเพื่อนที่ไม่เคยมี Pomodot **When** เพื่อนเปิด `https://github.com/inwpasit619/pomodot/releases/latest` ดาวน์โหลด `Pomodot-0.9.0.zip` ลาก Pomodot ไป Applications แล้วทำตามขั้น Open Anyway ใน README **Then** หน้าต่างเตือนและหน้า Privacy & Security เขียนชื่อว่า `Pomodot` เปิดได้ เห็นแคปซูลกับไอคอนบน menu bar และกด `Start` แล้ว timer เดิน
