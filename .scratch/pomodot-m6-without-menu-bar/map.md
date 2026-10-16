@@ -26,11 +26,12 @@
 - [Today อยู่บนการ์ดตรงไหน](issues/04-grilling-today-on-card.md) — บรรทัดแรกของเมนู `…` (จาง กดไม่ได้) การ์ดไม่เปลี่ยน; เมนูของการ์ดมีแค่ Today + คำสั่งที่การ์ดไม่มี
 - [Quit จากเมนูของการ์ดต้องถามยืนยันไหม](issues/06-grilling-quit-from-card.md) — ไม่ถาม ออกทันทีเหมือนทุกทาง Quit อื่น
 - [สวิตช์ "เปิดตอน login" อยู่ตรงไหน ค่าเริ่มต้นอะไร](issues/08-grilling-launch-at-login-setting.md) — หัวข้อใหม่ General บนสุด สวิตช์ Open at login ค่าเริ่มต้นปิด แสดงตามสถานะจริงของระบบ ไม่เก็บใน settings.json, Restore Defaults ไม่แตะ, ต้องอนุมัติ → บรรทัดส้ม + ปุ่ม Open Login Items…
+- [ไอคอนบน Dock: ค่าเริ่มต้น สวิตช์ และสิ่งที่ได้มาด้วย](issues/10-grilling-dock-icon-setting.md) — `Show in Dock` ใน General ค่าเริ่มต้นเปิด เก็บใน settings.json, Restore Defaults คืนเป็นเปิด; คลิก Dock = แคปซูลโผล่+ขึ้นหน้า; คลิกขวา Dock = เมนูเดียวกับการ์ด; เมนูแอพมาตรฐาน + Settings… ⌘,
 - [สลับไอคอนบน Dock ตอนแอพทำงานอยู่ได้ไหม และมีผลอะไรบ้าง](issues/09-research-dock-icon-toggle.md) — ได้ เสี่ยงต่ำ: สลับทันทีโดยคง `LSUIElement`; คลิก Dock เอาแคปซูลกลับด้วยโค้ดเดิม; ต้องกัน ⌘H ซ่อนแคปซูล; สลับตอนแอพ active ยังต้องตรวจด้วยมือ
 
 ## Not yet specified
 
-- README: นอกจากวิธีเอาแคปซูลกลับ (ตัดสินแล้ว) จะเขียนอะไรอีก เช่น ปุ่ม `…`/คลิกขวา, เปิดตอน login, ไอคอน Dock — ชัดเมื่อตั๋ว login และ Dock ปิด
+<!-- ไม่มีหมอกเหลือ: README ย้ายเข้าตั๋ว 05 แล้ว -->
 
 ## Out of scope
 
