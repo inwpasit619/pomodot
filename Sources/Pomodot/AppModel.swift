@@ -8,15 +8,24 @@ import Observation
 @MainActor
 @Observable
 final class AppModel {
-    /// Shown on first launch. Not remembered across launches yet.
-    var isFloatingWindowVisible = true
-    /// On by default. Not remembered across launches yet.
-    var isAlwaysOnTop = true
+    /// Shown on first launch; remembered in state.json.
+    var isFloatingWindowVisible: Bool {
+        didSet { saveState() }
+    }
+    /// On by default; remembered in state.json.
+    var isAlwaysOnTop: Bool {
+        didSet { saveState() }
+    }
+    /// The collapsed capsule's centre, set when it is dragged or macOS moves it. Nil until
+    /// then: the Floating Window opens at the starting position.
+    @ObservationIgnored var capsuleCenter: CGPoint? {
+        didSet { saveState() }
+    }
     /// On by default; Settings (M5) can turn it off. Off: no permission asked, no banners,
     /// but the sounds still play.
     var showNotifications = true
 
-    private(set) var timer = PomodoroTimer(settings: AppModel.launchSettings())
+    private(set) var timer: PomodoroTimer
     /// Every Pomodoro, loaded from history.json at launch.
     private(set) var history: History
     /// The clock time the views draw from. Each tick moves it on.
@@ -29,11 +38,22 @@ final class AppModel {
     /// While not Running, moves `now` on when the Expected finish minute next changes.
     @ObservationIgnored private var clock: Timer?
     @ObservationIgnored private let historyFile = StoredFile(name: "history")
+    @ObservationIgnored private let stateFile = StoredFile(name: "state")
+    /// While Running, state.json is saved at least this often, so a Force Quit loses no more.
+    private static let saveInterval: TimeInterval = 30
+    @ObservationIgnored private var lastStateSave = Date.distantPast
     @ObservationIgnored private let soundPlayer = SoundPlayer()
     @ObservationIgnored private let bannerNotifier = BannerNotifier()
 
     init() {
         history = historyFile.load(HistoryFile.decode)
+        // Where the app was at the last Quit, Paused (or Ready if it hadn't started).
+        let settings = Self.launchSettings()
+        let saved = stateFile.load { StateFile.decode($0, settings: settings) }
+        timer = PomodoroTimer(restoring: saved.timer, settings: settings)
+        isFloatingWindowVisible = saved.floatingWindow.visible
+        isAlwaysOnTop = saved.floatingWindow.alwaysOnTop
+        capsuleCenter = saved.floatingWindow.center
         // Only real sleep (lid closed, Sleep chosen). Locking the screen, the display
         // going off and the screensaver send nothing: the timer keeps running.
         NSWorkspace.shared.notificationCenter.addObserver(
@@ -114,14 +134,24 @@ final class AppModel {
     }
 
     private func tick() {
-        send { $0.tick(at: $1) }
+        send(isTick: true) { $0.tick(at: $1) }
     }
 
-    /// Hands one event to Core with the current time, then redraws.
-    private func send(_ event: (inout PomodoroTimer, Date) -> TimerOutcome) {
+    /// Quit Pomodot: counts a Phase that has just run out, without a sound or banner,
+    /// as any press does, then saves where the timer is.
+    func saveBeforeQuitting() {
+        send { TimerOutcome(pomodoros: $0.tick(at: $1).pomodoros) }
+    }
+
+    /// Hands one event to Core with the current time, saves, then redraws.
+    /// - Parameter isTick: a tick that only moved the time on saves at most every 30 s.
+    private func send(isTick: Bool = false, _ event: (inout PomodoroTimer, Date) -> TimerOutcome) {
         let now = Date()
         let outcome = event(&timer, now)
         record(outcome.pomodoros)
+        if !isTick || outcome != TimerOutcome() || now.timeIntervalSince(lastStateSave) >= Self.saveInterval {
+            saveState(at: now)
+        }
         update(now)
         if let ranOut = outcome.ranOut {
             announce(ranOut)
@@ -202,5 +232,14 @@ final class AppModel {
     /// Rewrites history.json whole.
     private func saveHistory() {
         historyFile.save(HistoryFile.encode(history))
+    }
+
+    /// Rewrites state.json whole: the timer as if paused at `now`, and the Floating Window.
+    private func saveState(at now: Date = Date()) {
+        let window = FloatingWindowState(
+            visible: isFloatingWindowVisible, alwaysOnTop: isAlwaysOnTop, center: capsuleCenter
+        )
+        stateFile.save(StateFile.encode(SavedState(timer: timer.snapshot(at: now), floatingWindow: window)))
+        lastStateSave = now
     }
 }

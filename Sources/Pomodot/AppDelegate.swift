@@ -30,6 +30,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         floatingWindowController = FloatingWindowController(model: model)
     }
 
+    /// Quit Pomodot, a restart or a log out: save where the timer is, to come back Paused.
+    func applicationWillTerminate(_ notification: Notification) {
+        model.saveBeforeQuitting()
+    }
+
+    /// Opening Pomodot again from Finder or Spotlight while it runs (its menu bar icon may be
+    /// hidden behind the notch): show the Floating Window instead of a second copy.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        NSLog("Pomodot: opened again while running; showing the Floating Window")
+        model.isFloatingWindowVisible = true
+        // Already showing, perhaps behind other windows with Always on Top off: bring it forward.
+        floatingWindowController?.bringToFront()
+        return false
+    }
+
     /// The menu's Statistics….
     func showStatistics() {
         statisticsWindowController.show()

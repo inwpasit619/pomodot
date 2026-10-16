@@ -75,6 +75,8 @@ final class FloatingWindowController {
     private let content: PointerTrackingView
     private var checkTimer: Timer?
     private var pointerIsInside = false
+    /// Where the capsule was when the mouse went down, to tell whether a drag moved it.
+    private var capsuleAtPress: CGRect?
 
     init(model: AppModel) {
         self.model = model
@@ -83,7 +85,11 @@ final class FloatingWindowController {
         // .main follows the key window, and this app never activates.
         let visibleFrame = NSScreen.screens.first?.visibleFrame ?? .zero
         expansion = FloatingWindowExpansion(
-            capsuleFrame: FloatingWindowPlacement.startingCapsuleFrame(in: visibleFrame)
+            capsuleFrame: FloatingWindowPlacement.capsuleFrame(
+                remembering: model.capsuleCenter,
+                screens: NSScreen.screens.map(\.visibleFrame),
+                mainScreen: visibleFrame
+            )
         )
         panel = FloatingPanel(
             contentRect: Self.panelFrame(around: expansion.capsuleFrame),
@@ -180,6 +186,7 @@ final class FloatingWindowController {
         case .leftMouseDown:
             // Only the glass counts, not the transparent space around it.
             guard glassFrame.contains(point) else { return }
+            capsuleAtPress = expansion.capsuleFrame
             expansion.pressed(at: point, onButton: isOnButton(event))
         case .leftMouseDragged:
             // The screen under the pointer, so the capsule can be dragged onto another display.
@@ -187,8 +194,19 @@ final class FloatingWindowController {
             panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
         default:
             expansion.released(at: point, visibleFrame: screenArea)
+            // Remembered once the drag ends, not on every step of it.
+            if let capsuleAtPress, capsuleAtPress != expansion.capsuleFrame {
+                rememberCapsule()
+            }
+            capsuleAtPress = nil
         }
         update()
+    }
+
+    /// Saves the collapsed capsule's centre, even while the card is open: the card grows
+    /// from the capsule, which stays put.
+    private func rememberCapsule() {
+        model.capsuleCenter = CGPoint(x: expansion.capsuleFrame.midX, y: expansion.capsuleFrame.midY)
     }
 
     private func isOnButton(_ event: NSEvent) -> Bool {
@@ -223,7 +241,16 @@ final class FloatingWindowController {
     private func panelMoved() {
         // Drags set the frame from Core already.
         guard !expansion.isPressed else { return }
+        // Not remembered: with the display plugged back in before the next launch,
+        // the capsule goes back where it was dragged.
         expansion.moveCapsule(to: Self.capsuleFrame(inside: panel.frame))
+    }
+
+    /// Opening Pomodot again while it runs: the Floating Window comes to the front,
+    /// without activating the app.
+    func bringToFront() {
+        guard model.isFloatingWindowVisible else { return }
+        panel.orderFrontRegardless()
     }
 
     /// The usable area of the screen the capsule is on.
