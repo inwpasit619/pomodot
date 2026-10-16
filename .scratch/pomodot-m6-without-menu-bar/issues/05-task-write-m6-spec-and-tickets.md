@@ -3,7 +3,7 @@
 **Parent:** [map](../map.md)
 **Type:** `wayfinder:task` (AFK)
 **Assignee:** —
-**Blocked by:** [08](08-grilling-launch-at-login-setting.md), [10](10-grilling-dock-icon-setting.md) และตั๋วใหม่ที่งอกจากหมอก (01–04, 06 ปิดแล้ว; 07, 09 เป็น research ที่ 08, 10 รอ)
+**Blocked by:** [10](10-grilling-dock-icon-setting.md) และตั๋วใหม่ที่งอกจากหมอก (01–04, 06–08 ปิดแล้ว; 07, 09 เป็น research ที่ 08, 10 รอ)
 **Status:** open
 
 ## Question

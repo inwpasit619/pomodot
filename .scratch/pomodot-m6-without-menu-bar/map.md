@@ -25,6 +25,7 @@
 - [แอพที่ไม่ได้ notarize เปิดเองตอน login ได้ไหม](issues/07-research-launch-at-login.md) — ได้: `SMAppService.mainApp` ใช้กับแอพ ad-hoc ได้ ไม่ต้องอนุมัติ อัปเดตทับแล้วยังอยู่; ลบแอพแล้วรายการค้าง; login จริงยังต้องตรวจด้วยมือ
 - [Today อยู่บนการ์ดตรงไหน](issues/04-grilling-today-on-card.md) — บรรทัดแรกของเมนู `…` (จาง กดไม่ได้) การ์ดไม่เปลี่ยน; เมนูของการ์ดมีแค่ Today + คำสั่งที่การ์ดไม่มี
 - [Quit จากเมนูของการ์ดต้องถามยืนยันไหม](issues/06-grilling-quit-from-card.md) — ไม่ถาม ออกทันทีเหมือนทุกทาง Quit อื่น
+- [สวิตช์ "เปิดตอน login" อยู่ตรงไหน ค่าเริ่มต้นอะไร](issues/08-grilling-launch-at-login-setting.md) — หัวข้อใหม่ General บนสุด สวิตช์ Open at login ค่าเริ่มต้นปิด แสดงตามสถานะจริงของระบบ ไม่เก็บใน settings.json, Restore Defaults ไม่แตะ, ต้องอนุมัติ → บรรทัดส้ม + ปุ่ม Open Login Items…
 - [สลับไอคอนบน Dock ตอนแอพทำงานอยู่ได้ไหม และมีผลอะไรบ้าง](issues/09-research-dock-icon-toggle.md) — ได้ เสี่ยงต่ำ: สลับทันทีโดยคง `LSUIElement`; คลิก Dock เอาแคปซูลกลับด้วยโค้ดเดิม; ต้องกัน ⌘H ซ่อนแคปซูล; สลับตอนแอพ active ยังต้องตรวจด้วยมือ
 
 ## Not yet specified
