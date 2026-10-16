@@ -222,11 +222,12 @@ public enum StateFile {
         func snapshot(settings: TimerSettings) -> TimerSnapshot {
             let phase = phase?.phase ?? .focus
             // As far as Settings allow: 1–10 Pomodoros per Cycle, Phases of 1–120 minutes.
-            let perCycle = pomodorosPerCycle.flatMap { (1...10).contains($0) ? $0 : nil } ?? settings.pomodorosPerCycle
+            let perCycle = pomodorosPerCycle.flatMap { TimerSettings.pomodorosPerCycleRange.contains($0) ? $0 : nil }
+                ?? settings.pomodorosPerCycle
             let done = pomodorosDone.flatMap { (0...perCycle).contains($0) ? $0 : nil } ?? 0
             let number = displayNumber.flatMap { (1...perCycle).contains($0) ? $0 : nil }
                 ?? min(done + 1, perCycle)
-            let length = phaseLengthSeconds.flatMap { (60...7200).contains($0) ? $0 : nil }
+            let length = phaseLengthSeconds.flatMap { TimerSettings.lengthSecondsRange.contains($0) ? $0 : nil }
                 ?? settings.lengthSeconds(of: phase)
             let remaining = remainingSeconds.flatMap { (0...length).contains($0) ? $0 : nil } ?? length
             return TimerSnapshot(

@@ -7,7 +7,7 @@ struct PomodotApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(model: appDelegate.model, showStatistics: appDelegate.showStatistics)
+            MenuContent(app: appDelegate)
         } label: {
             MenuBarLabel(model: appDelegate.model)
         }
@@ -69,8 +69,14 @@ private struct MenuBarImage: View {
 }
 
 private struct MenuContent: View {
+    /// Opens the windows and pages the menu leads to.
+    let app: AppDelegate
     @Bindable var model: AppModel
-    let showStatistics: () -> Void
+
+    init(app: AppDelegate) {
+        self.app = app
+        model = app.model
+    }
 
     var body: some View {
         let timer = model.timer
@@ -107,7 +113,13 @@ private struct MenuContent: View {
 
         Divider()
 
-        Button("Statistics…", action: showStatistics)
+        Button("Statistics…", action: app.showStatistics)
+        Button("Settings…", action: app.showSettings)
+
+        Divider()
+
+        Button("About Pomodot", action: app.showAbout)
+        Button("Check for Updates…", action: app.checkForUpdates)
 
         Divider()
 

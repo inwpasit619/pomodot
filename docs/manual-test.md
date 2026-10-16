@@ -52,6 +52,9 @@
 - [x] (M2) **Given** Focus กำลังเดินอยู่ **When** เปิดเมนูของ Pomodot ดู 2 บรรทัดบนสุด แล้วคลิกแคปซูลให้การ์ดขยาย **Then** เมนูขึ้น `Focus 1/4 · ends …` กับ `Cycle ends …` เป็นสีจางกดไม่ได้ เวลาเป็นแบบเดียวกับนาฬิกาของเครื่อง (12/24 ชม.) ไม่มีวินาที และบนการ์ด `Phase ends` / `Cycle ends` เป็นเวลาเดียวกันเป๊ะ
 - [x] (M2) **Given** จดเวลา `ends` ในเมนูไว้ **When** ปล่อยให้เดินต่อ 2 นาทีแล้วเปิดเมนูอีกครั้ง จากนั้นกด `Pause` รอ 2 นาทีแล้วเปิดเมนูอีกครั้ง **Then** ตอนเดิน เวลา `ends` เท่าเดิมไม่ขยับ ส่วนตอน Pause เวลา `ends` เลื่อนออกไปประมาณ 2 นาที
 - [x] (M2) **Given** Pomodot เปิดอยู่ และกด `Hide Floating Window` ไว้ **When** เปิด Pomodot ซ้ำอีกครั้งจาก Finder (ดับเบิลคลิก `Pomodot` ในโฟลเดอร์ `dist`) หรือจาก Spotlight (Command-Space พิมพ์ `Pomodot` แล้วกด Return) **Then** แคปซูลโผล่กลับมาที่เดิม ในเมนูเป็น `Hide Floating Window` และบน menu bar ยังมีไอคอน Pomodot แค่อันเดียว (ไม่มีแอพตัวที่สอง)
+- [x] (M5) **Given** เปิดเมนูของ Pomodot **When** ไล่ดูทุกบรรทัดจากบนลงล่าง **Then** เรียงเป็น `Today: 🍅 …` / บรรทัด Phase กับเวลาจบ / `Cycle ends …` / เส้นคั่น / `Start` (หรือ `Pause` / `Resume`) / `Skip` / `Reset…` / `New Cycle…` / เส้นคั่น / `Hide Floating Window` / `Always on Top` / เส้นคั่น / `Statistics…` / `Settings…` / เส้นคั่น / `About Pomodot` / `Check for Updates…` / เส้นคั่น / `Quit Pomodot`
+- [x] (M5) **Given** เปิดเมนูของ Pomodot **When** กด `About Pomodot` **Then** หน้าต่าง About ของ macOS ขึ้นมาอยู่ด้านหน้า มีไอคอนแคปซูลบนพื้นแดงมะเขือเทศ ชื่อ `Pomodot` และ `Version 0.9.0 (build …)` ตามด้วยเลข build
+- [x] (M5) **Given** เปิดเมนูของ Pomodot **When** กด `Check for Updates…` **Then** browser เปิดหน้า Releases ของ `inwpasit619/pomodot` บน GitHub (Pomodot ไม่ได้ต่อเน็ตเอง ไม่มีกล่องถามอะไร)
 
 ## Notification & Sound
 
@@ -65,6 +68,12 @@
 - [x] (M3) **Given** กด `Hide Floating Window` ไว้ และ Phase กำลังเดินอยู่ **When** Phase หมดเวลาแล้วคลิกที่ banner (หรือที่รายการใน Notification Center) **Then** แคปซูลโผล่กลับมาที่เดิม
 - [x] (M3) **Given** เปิด Do Not Disturb (Control Center › Focus › Do Not Disturb) และ Phase กำลังเดินอยู่ **When** Phase หมดเวลา **Then** ไม่มี banner ขึ้น แต่ยังได้ยินเสียง (ทดสอบเสร็จแล้วอย่าลืมปิด Do Not Disturb)
 - [x] (M3) **Given** ไปที่ System Settings › Notifications › Pomodot แล้วปิดสวิตช์ `Allow notifications` (เหมือนกด `Don't Allow`) **When** กลับมาที่ Pomodot กด `Start` แล้วปล่อยให้ Phase หมดเวลา จากนั้นกด `Start` อีกหลายครั้ง และลอง `Quit Pomodot` แล้วเปิดใหม่กด `Start` **Then** ไม่มี banner แต่ยังได้ยินเสียง timer ใช้ได้ปกติ และกล่องขอสิทธิ์ไม่ขึ้นมาถามซ้ำอีก (ทดสอบเสร็จแล้วเปิดสวิตช์กลับ)
+- [x] (M5) **Given** เปิดเสียงเครื่องไว้ และเปิด `Settings…` **When** กด dropdown `End of Focus sound` แล้วเลือก `Submarine` จากนั้นเลือกเสียงอื่นอีกสองสามเสียง **Then** ได้ยินเสียงที่เลือกทันทีทุกครั้ง (ไม่มีปุ่มเล่นแยก ไม่มีปุ่มปรับความดัง) และรายการใน dropdown มี `None` อยู่บนสุด ตามด้วยเสียงระบบเรียงตามตัวอักษร
+- [x] (M5) **Given** ตั้ง Focus เป็น `1` นาที และเลือก `End of Focus sound` เป็น `Submarine` **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** ได้ยินเสียง Submarine ไม่ใช่ Glass
+- [x] (M5) **Given** ตั้ง Focus เป็น `1` นาที และเลือก `End of Focus sound` เป็น `None` **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** banner ยังขึ้นตามปกติแต่ไม่มีเสียงเลย จากนั้นกด `Start` ให้ Short Break เดินจนหมดเวลา → ได้ยินเสียง Hero (ทดสอบเสร็จแล้วกด `Restore Defaults`)
+- [x] (M5) **Given** ไปที่ System Settings › Notifications › Pomodot แล้วปิดสวิตช์ `Allow notifications` **When** กลับมาเปิด `Settings…` ของ Pomodot **Then** ใต้ `Show notifications` มีบรรทัดสีส้มที่มีรูปสามเหลี่ยมตกใจ ข้อความ `Notifications are turned off for Pomodot in System Settings.` และปุ่ม `Open System Settings…` กดปุ่มแล้วไปที่หน้า Notifications ของ Pomodot ใน System Settings
+- [x] (M5) **Given** บรรทัดเตือนสีส้มขึ้นอยู่ (ข้อบน) **When** เปิดสวิตช์ `Allow notifications` ใน System Settings กลับ แล้วคลิกที่หน้าต่าง Settings ของ Pomodot **Then** บรรทัดเตือนหายไปเองโดยไม่ต้องปิดเปิดหน้าต่างใหม่
+- [x] (M5) **Given** บรรทัดเตือนสีส้มขึ้นอยู่ **When** ปิดสวิตช์ `Show notifications` **Then** บรรทัดเตือนหายทันที; และเมื่อ Phase หมดเวลา ไม่มี banner แต่ยังได้ยินเสียง (ทดสอบเสร็จแล้วเปิดสิทธิ์ใน System Settings กลับ และกด `Restore Defaults`)
 
 ## Statistics
 
@@ -79,6 +88,17 @@
 - [x] (M4) **Given** History ว่าง (เพิ่งติดตั้งหรือเพิ่ง Clear History) **When** เปิด `Statistics…` **Then** ปุ่ม `Clear History…` เป็นสีจางกดไม่ได้
 - [x] (M4) **Given** มี Pomodoro อยู่ในรอบนี้ (เช่น ตัวนับเป็น 2/4) **When** กด `New Cycle…` ในเมนูแล้วกด `New Cycle` **Then** ตัวนับกลับเป็น 1/4 แต่ตัวเลขใน Statistics และ `Today` ในเมนูไม่ลดลง
 
+## Settings
+
+- [x] (M5) **Given** เปิดเมนูของ Pomodot **When** กด `Settings…` (อยู่ใต้ `Statistics…`) **Then** หน้าต่าง `Settings` ขึ้นมาอยู่ด้านหน้าสุด มีปุ่มปิดสีแดง ไม่ลอยทับแอพอื่นเมื่อคลิกแอพอื่น ข้างในเป็นกล่องมุมโค้งแบบ System Settings มีหัวข้อตัวเล็กสีเทา `Timer` กับ `Auto-start` ช่อง Focus / Short Break / Long Break / Pomodoros per Cycle เป็น `25` / `5` / `15` / `4` มีลูกศรขึ้น/ลงข้างช่อง สวิตช์สองอันปิดอยู่ ใต้ `Start Focus automatically` มีคำว่า `(never after a Long Break)` ปุ่ม `Restore Defaults` สีแดงมะเขือเทศชิดขวาล่าง **ไม่มี**ปุ่ม Save, ปุ่มลบข้อมูลทั้งหมด หรือปุ่ม Show Data Folder
+- [x] (M5) **Given** Focus ยังเป็น `READY` (ยังไม่ได้กด Start) **When** กดลูกศรขึ้นข้างช่อง Focus ให้เป็น `26` แล้วพิมพ์ `30` ทับในช่องแล้วกด Return **Then** แคปซูลเปลี่ยนเป็น `26:00` ทันทีที่กดลูกศร และเป็น `30:00` ทันทีที่กด Return โดยไม่ต้องกด Save
+- [x] (M5) **Given** หน้าต่าง Settings เปิดอยู่ **When** พิมพ์ `200` ในช่อง Focus แล้วกด Return จากนั้นพิมพ์ `0` แล้วกด Return **Then** ช่องเปลี่ยนเองเป็น `120` (ยาวสุดที่ตั้งได้) และ `1` (สั้นสุด) ตามลำดับ; ช่อง Pomodoros per Cycle พิมพ์ `11` ได้ `10` (ทดสอบเสร็จแล้วกด `Restore Defaults`)
+- [x] (M5) **Given** Focus กำลังเดินอยู่ (เช่น เหลือ `24:10`) **When** เปลี่ยน Focus ใน Settings เป็น `30` **Then** Focus ที่เดินอยู่ยังนับต่อจากเดิม ไม่กระโดดเป็น `30:00` แต่เมื่อกด `Skip` ในเมนูสองครั้ง (ผ่าน Short Break) Focus ถัดไปเป็น `30:00`
+- [x] (M5) **Given** ตัวนับเป็น `1/4` ที่ยังไม่ได้กด Start และยังไม่มี Pomodoro ในรอบนี้ **When** เปลี่ยน Pomodoros per Cycle เป็น `6` **Then** ตัวนับเป็น `1/6` ทันที; แต่ถ้ารอบนี้มี Pomodoro แล้ว (เช่น `2/4`) ตัวนับยังเป็น `x/4` จนจบรอบนี้
+- [x] (M5) **Given** ตั้ง Focus เป็น `1` นาที แล้วเปิดสวิตช์ `Start breaks automatically` (สวิตช์เป็นสีแดงมะเขือเทศ) **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** Short Break เริ่มเดินทันทีโดยไม่ต้องกด Start; ทำซ้ำโดยเปิด `Start Focus automatically` ด้วย แล้วรอ Short Break หมดเวลา → Focus ถัดไปเดินเอง (ทดสอบเสร็จแล้วกด `Restore Defaults`)
+- [x] (M5) **Given** เปลี่ยน Focus เป็น `30`, Pomodoros per Cycle เป็น `6` และเปิดสวิตช์ทั้งสอง **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ แล้วเปิด `Settings…` **Then** ค่าทุกค่ายังเป็นแบบที่เปลี่ยนไว้
+- [x] (M5) **Given** ค่าใน Settings ไม่ใช่ค่าเริ่มต้น (เช่น ข้อบน) ลากแคปซูลไปไว้มุมล่างซ้ายของจอ และเอาเครื่องหมายถูกหน้า `Always on Top` ออก **When** กด `Restore Defaults` **Then** ช่องกลับเป็น `25` / `5` / `15` / `4` สวิตช์ทั้งสองปิด แต่แคปซูลยังอยู่มุมล่างซ้ายไม่ขยับ และ `Always on Top` ในเมนูยังไม่มีเครื่องหมายถูก (ทดสอบเสร็จแล้วติ๊กกลับ)
+
 ## ข้อมูลที่บันทึกไว้
 
 - [x] (M2) **Given** Focus กำลังเดินอยู่ (เช่น `2/4` เหลือราว `14:00`) **When** กด `Quit Pomodot` รอ 2 นาทีแล้วเปิด Pomodot ใหม่ **Then** เป็น Focus เดิม ตัวนับเดิม (`2/4`) เวลาที่เหลือเท่ากับตอนกด Quit (ไม่ลดลง 2 นาที) และเป็น `PAUSED` ต้องกด `Resume` เอง
@@ -91,5 +111,14 @@
 
 - [x] (M1) **Given** เห็นแคปซูลอยู่ **When** เปลี่ยน System Settings › Appearance ระหว่าง Light กับ Dark **Then** Light เป็นกระจกขาวตัวอักษรเข้ม Dark เป็นกระจกเทาเข้มตัวอักษรขาว
 - [x] (M1) **Given** เปิด Finder ไปที่โฟลเดอร์ `dist` ในโปรเจกต์ **When** ดูไฟล์ `Pomodot` **Then** ชื่อแสดงเป็น `Pomodot` และไอคอนเป็นแคปซูลสีขาวบนพื้นสีแดงมะเขือเทศ (เงาเป็นรูปทรงธรรมดา ไม่เบลอ) **บอกว่าหน้าตาไอคอนผ่านหรือไม่**
+- [x] (M5) **Given** เปิด `Settings…` แล้วเลือก `System` ในส่วน `Appearance` (ค่าเริ่มต้น) และเปิดหน้าต่าง Statistics ไว้ด้วย **When** เปลี่ยน System Settings › Appearance ระหว่าง Light กับ Dark **Then** แคปซูล หน้าต่าง Settings และหน้าต่าง Statistics เปลี่ยนตามเครื่องทันทีทุกครั้ง
+- [x] (M5) **Given** เครื่องเป็นโหมด Dark **When** เลือก `Light` ในส่วน `Appearance` ของ Settings **Then** แคปซูล หน้าต่าง Settings และหน้าต่าง Statistics เป็นแบบสว่างทันที แม้เครื่องยังเป็น Dark; สลับโหมดเครื่องไปมาแล้วแอพก็ยังสว่างอยู่ จากนั้นเลือก `Dark` ตอนเครื่องเป็น Light → แอพเป็นแบบมืดทันทีและไม่สนโหมดเครื่องเช่นกัน
+- [x] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ **Then** แคปซูลเป็นแบบมืดตั้งแต่เปิดขึ้นมา และ Settings ยังเลือก `Dark` อยู่
+- [x] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` และเครื่องเป็นโหมด Light **When** กด `Restore Defaults` **Then** Appearance กลับเป็น `System` และแคปซูลกับทุกหน้าต่างเปลี่ยนเป็นแบบสว่างตามเครื่องทันที
 
 ## ติดตั้งบนเครื่องเพื่อน
+
+- [x] (M5) **Given** ติดตั้ง Pomodot ไว้ใน Applications แล้ว มี Pomodoro ใน History อย่างน้อย 1 อัน และเปลี่ยน Focus ใน Settings เป็น `30` **When** กด `Quit Pomodot` แล้วลาก Pomodot เวอร์ชันใหม่ไปทับตัวเดิมใน Applications (กด Replace) แล้วดับเบิลคลิกจากโฟลเดอร์ Applications เมื่อ macOS บล็อกให้ทำขั้น Open Anyway ตามหัวข้ออัปเดตใน README **Then** เปิดได้ Statistics ยังมี Pomodoro เท่าเดิม และ Settings ยังเป็น `30` (ทดสอบเสร็จแล้วกด `Restore Defaults`)
+- [x] (M5) **Given** มี Pomodoro ใน History อย่างน้อย 1 อัน **When** กด `Quit Pomodot` ลาก Pomodot จาก Applications ลงถังขยะ แล้วลากตัวใหม่จากไฟล์ zip ไปใส่ Applications แล้วเปิด **Then** Statistics ยังมี Pomodoro เท่าเดิม
+- [x] (M5) **Given** กด `Quit Pomodot` แล้ว **When** ใน Finder เลือกเมนู Go › Go to Folder… พิมพ์ `~/Library/Application Support/com.teppasit.pomodot` กด Return แล้วลบโฟลเดอร์นั้นลงถังขยะ จากนั้นเปิด Pomodot **Then** เริ่มใหม่สะอาด: แคปซูลอยู่ตำแหน่งเริ่มต้นกลางด้านบน เป็น Focus `1/4` `25:00` `READY`, Statistics ว่าง และ Settings เป็นค่าเริ่มต้นทั้งหมด
+- [ ] (M5) **Given** เครื่องของเพื่อนที่ไม่เคยมี Pomodot **When** เพื่อนเปิด `https://github.com/inwpasit619/pomodot/releases/latest` ดาวน์โหลด `Pomodot-0.9.0.zip` ลาก Pomodot ไป Applications แล้วทำตามขั้น Open Anyway ใน README **Then** หน้าต่างเตือนและหน้า Privacy & Security เขียนชื่อว่า `Pomodot` เปิดได้ เห็นแคปซูลกับไอคอนบน menu bar และกด `Start` แล้ว timer เดิน

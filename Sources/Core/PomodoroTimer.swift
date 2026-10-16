@@ -19,11 +19,26 @@ public enum PhaseStatus: Sendable {
 }
 
 /// The values the timer reads from Settings. Defaults: 25 / 5 / 15 / 4, auto-start off.
-public struct TimerSettings: Sendable {
-    public var focusMinutes = 25
-    public var shortBreakMinutes = 5
-    public var longBreakMinutes = 15
-    public var pomodorosPerCycle = 4
+public struct TimerSettings: Sendable, Equatable {
+    /// How long a Focus, Short Break or Long Break can be, in whole minutes.
+    public static let minutesRange = 1...120
+    public static let pomodorosPerCycleRange = 1...10
+    /// The same lengths in seconds, as state.json keeps them.
+    static let lengthSecondsRange = minutesRange.lowerBound * 60...minutesRange.upperBound * 60
+
+    // Each is kept within what Settings allow: 200 minutes becomes 120, 0 becomes 1.
+    public var focusMinutes = 25 {
+        didSet { focusMinutes = focusMinutes.clamped(to: Self.minutesRange) }
+    }
+    public var shortBreakMinutes = 5 {
+        didSet { shortBreakMinutes = shortBreakMinutes.clamped(to: Self.minutesRange) }
+    }
+    public var longBreakMinutes = 15 {
+        didSet { longBreakMinutes = longBreakMinutes.clamped(to: Self.minutesRange) }
+    }
+    public var pomodorosPerCycle = 4 {
+        didSet { pomodorosPerCycle = pomodorosPerCycle.clamped(to: Self.pomodorosPerCycleRange) }
+    }
     public var autoStartBreaks = false
     /// Only from a Short Break: a new Cycle always waits for Start.
     public var autoStartFocus = false
@@ -36,6 +51,12 @@ public struct TimerSettings: Sendable {
         case .shortBreak: shortBreakMinutes * 60
         case .longBreak: longBreakMinutes * 60
         }
+    }
+}
+
+private extension Int {
+    func clamped(to range: ClosedRange<Int>) -> Int {
+        Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
 

@@ -5,10 +5,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     private var floatingWindowController: FloatingWindowController?
     private lazy var statisticsWindowController = StatisticsWindowController(model: model)
+    private lazy var settingsWindowController = SettingsWindowController(model: model)
 
     /// Every SF Symbol the app draws. Each must exist on the running macOS;
     /// a missing one is reported, never swapped for another.
-    static let requiredSymbols = ["timer", "cup.and.saucer.fill", "pause.circle"]
+    static let requiredSymbols = ["timer", "cup.and.saucer.fill", "pause.circle", "exclamationmark.triangle.fill"]
+
+    /// Where every version of Pomodot is published. Pomodot never goes online itself.
+    private static let releasesURL = URL(string: "https://github.com/inwpasit619/pomodot/releases")!
+
+    /// macOS's About window, found the first time it opens and brought forward after that.
+    private var aboutWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let missing = Self.requiredSymbols.filter {
@@ -48,5 +55,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// The menu's Statistics….
     func showStatistics() {
         statisticsWindowController.show()
+    }
+
+    /// The menu's Settings….
+    func showSettings() {
+        settingsWindowController.show()
+    }
+
+    /// The menu's About Pomodot: macOS's own About window, with the icon, the name and
+    /// "Version 0.9.0 (build N)" from what scripts/build-app.sh writes into Info.plist.
+    func showAbout() {
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+        let windowsBefore = Set(NSApp.windows.map(ObjectIdentifier.init))
+        // No Dock icon: without this the window can open behind the active app.
+        NSApp.activate()
+        NSApp.orderFrontStandardAboutPanel(options: [.version: "build \(build)"])
+        aboutWindow = aboutWindow ?? NSApp.windows.first { !windowsBefore.contains(ObjectIdentifier($0)) }
+        // macOS may still turn the activation down; the window comes to the front anyway.
+        aboutWindow?.orderFrontRegardless()
+    }
+
+    /// The menu's Check for Updates…: the Releases page, in the browser.
+    func checkForUpdates() {
+        NSWorkspace.shared.open(Self.releasesURL)
     }
 }
