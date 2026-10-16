@@ -4,7 +4,7 @@ import Core
 
 // The sound and the banner when a Phase runs out by itself.
 
-@Test("Given Focus 2/4 is Running and Start Breaks automatically is off, when it runs out, then the banner reads \"Focus complete 🍅 2/4\" / \"Time for a 5-minute Short Break.\" and the Focus sound plays")
+@Test("Given Focus 2/4 is Running and Start breaks automatically is off, when it runs out, then the banner reads \"Focus complete 🍅 2/4\" / \"Time for a 5-minute Short Break.\" and the Focus sound plays")
 func aFocusRunningOutBeforeAShortBreakThatWaits() throws {
     // Given
     var timer = PomodoroTimer()
@@ -21,7 +21,7 @@ func aFocusRunningOutBeforeAShortBreakThatWaits() throws {
     #expect(ranOut.banner(showNotifications: true) == Banner(title: "Focus complete 🍅 2/4", body: "Time for a 5-minute Short Break."))
 }
 
-@Test("Given Focus 2/4 is Running and Start Breaks automatically is on, when it runs out, then the banner reads \"Focus complete 🍅 2/4\" / \"5-minute Short Break started.\"")
+@Test("Given Focus 2/4 is Running and Start breaks automatically is on, when it runs out, then the banner reads \"Focus complete 🍅 2/4\" / \"5-minute Short Break started.\"")
 func aFocusRunningOutIntoAShortBreakThatStartsByItself() throws {
     // Given
     var settings = TimerSettings()
@@ -54,7 +54,7 @@ private func runningLastFocus(settings: TimerSettings = TimerSettings()) -> Pomo
     return timer
 }
 
-@Test("Given Focus 4/4 is Running and Start Breaks automatically is off, when it runs out, then the banner reads \"Cycle complete 🍅 4/4\" / \"Time for a 15-minute Long Break.\"")
+@Test("Given Focus 4/4 is Running and Start breaks automatically is off, when it runs out, then the banner reads \"Cycle complete 🍅 4/4\" / \"Time for a 15-minute Long Break.\"")
 func theLastFocusRunningOutBeforeALongBreakThatWaits() throws {
     // Given
     var timer = runningLastFocus()
@@ -67,7 +67,7 @@ func theLastFocusRunningOutBeforeALongBreakThatWaits() throws {
     #expect(ranOut.banner(showNotifications: true) == Banner(title: "Cycle complete 🍅 4/4", body: "Time for a 15-minute Long Break."))
 }
 
-@Test("Given Focus 4/4 is Running and Start Breaks automatically is on, when it runs out, then the banner reads \"Cycle complete 🍅 4/4\" / \"15-minute Long Break started.\"")
+@Test("Given Focus 4/4 is Running and Start breaks automatically is on, when it runs out, then the banner reads \"Cycle complete 🍅 4/4\" / \"15-minute Long Break started.\"")
 func theLastFocusRunningOutIntoALongBreakThatStartsByItself() throws {
     // Given
     var settings = TimerSettings()
@@ -290,9 +290,46 @@ func aTickBeforeTheEndIsNotAnnounced() {
     #expect(outcome.ranOut == nil)
 }
 
-@Test("Given the default Settings, when a sound plays, then the end of a Focus plays Glass and the end of a Break plays Hero")
-func theDefaultSoundsAreGlassAndHero() {
-    // Given, When, Then
-    #expect(Sound.focus.defaultSystemSoundName == "Glass")
-    #expect(Sound.break.defaultSystemSoundName == "Hero")
+@Test("Given the default Settings, when a Focus and then a Short Break run out, then the first plays Glass and the second plays Hero")
+func theDefaultSoundsAreGlassAndHero() throws {
+    // Given
+    var timer = PomodoroTimer()
+    timer.start(at: at("09:00"))
+
+    // When
+    let focusRanOut = try #require(timer.tick(at: at("09:25")).ranOut)
+    timer.start(at: at("09:25"))
+    let shortBreakRanOut = try #require(timer.tick(at: at("09:30")).ranOut)
+
+    // Then
+    #expect(focusRanOut.sound.defaultSystemSoundName == "Glass")
+    #expect(shortBreakRanOut.sound.defaultSystemSoundName == "Hero")
+}
+
+@Test("Given Focus 1/4 ran out at 09:25 and no tick has come yet, when it is skipped at 09:25:01, then its Pomodoro still counts but nothing is announced")
+func aSkipJustAfterTheEndCountsThePomodoroWithoutAnnouncingIt() {
+    // Given
+    var timer = PomodoroTimer()
+    timer.start(at: at("09:00"))
+
+    // When
+    let outcome = timer.skip(at: at("09:25:01"))
+
+    // Then
+    #expect(outcome.pomodoros == [Pomodoro(end: at("09:25"), durationSeconds: 1500)])
+    #expect(outcome.ranOut == nil)
+}
+
+@Test("Given Focus 1/4 ran out at 09:25 and no tick has come yet, when the Mac sleeps at 09:25:01, then its Pomodoro still counts but nothing is announced")
+func sleepJustAfterTheEndCountsThePomodoroWithoutAnnouncingIt() {
+    // Given
+    var timer = PomodoroTimer()
+    timer.start(at: at("09:00"))
+
+    // When
+    let outcome = timer.sleep(at: at("09:25:01"))
+
+    // Then
+    #expect(outcome.pomodoros == [Pomodoro(end: at("09:25"), durationSeconds: 1500)])
+    #expect(outcome.ranOut == nil)
 }
