@@ -54,7 +54,14 @@
 
 - [ ] (M3) **Given** เปิดเสียงเครื่องไว้ และ Focus กำลังเดินอยู่ **When** ปล่อยให้ Focus เดินจนหมดเวลา (25 นาที) **Then** ได้ยินเสียง Glass (เสียงกริ๊งแก้ว) ดังครั้งเดียว ไม่ดังซ้ำ และระหว่างที่ Focus เดินไม่มีเสียงติ๊ก
 - [ ] (M3) **Given** Short Break กำลังเดินอยู่ (กด `Skip` ตอน Focus เพื่อข้ามมาเร็วๆ ได้ แล้วกด `Start`) **When** ปล่อยให้ Short Break เดินจนหมดเวลา (5 นาที) **Then** ได้ยินเสียง Hero (เสียงแตรสั้นๆ) ดังครั้งเดียว ซึ่งต่างจากเสียงตอนจบ Focus
-- [ ] (M3) **Given** Focus หรือ Break กำลังเดินอยู่ **When** กด `Skip` ในเมนู แล้วกด `Start` ให้เดิน จากนั้นกด `Reset…` แล้วกด `Reset` **Then** ไม่มีเสียงทั้งตอน Skip และตอน Reset
+- [ ] (M3) **Given** Focus หรือ Break กำลังเดินอยู่ **When** กด `Skip` ในเมนู แล้วกด `Start` ให้เดิน จากนั้นกด `Reset…` แล้วกด `Reset` **Then** ไม่มีเสียงและไม่มี banner ทั้งตอน Skip และตอน Reset
+- [ ] (M3) **Given** เปิด Pomodot เป็นครั้งแรกบนเครื่องนี้ (ยังไม่เคยมีกล่องขอสิทธิ์ของ Pomodot ขึ้นมาก่อน) **When** เปิด Pomodot รอสักครู่ แล้วกด `Start` **Then** ตอนเปิดแอพยังไม่มีกล่องอะไรขึ้น กล่อง `"Pomodot" Notifications` พร้อมไอคอนมะเขือเทศขึ้นตอนกด `Start` และตัวเลขเริ่มเดินทันทีโดยไม่ต้องตอบกล่องก่อน
+- [ ] (M3) **Given** ให้สิทธิ์ notification แล้ว และ Focus กำลังเดินอยู่ **When** ปล่อยให้ Focus เดินจนหมดเวลา **Then** banner ขึ้นที่มุมขวาบน มีไอคอนมะเขือเทศ ชื่อ `Pomodot` หัวข้อ `Focus complete 🍅 1/4` เนื้อความ `Time for a 5-minute Short Break.` ไม่มีปุ่มบน banner และเสียงที่ได้ยินมีแค่ Glass ครั้งเดียว (ไม่มีเสียงแจ้งเตือนอีกเสียงซ้อน)
+- [ ] (M3) **Given** ให้สิทธิ์แล้ว และ Short Break กำลังเดินอยู่ **When** เปิดเมนูของ Pomodot ค้างไว้จนหมดเวลา **Then** banner `Break over` / `Time for Focus 2/4.` ยังขึ้นแม้ Pomodot เป็นแอพที่ใช้อยู่ และเปิด Notification Center (คลิกนาฬิกาที่มุมขวาบน) แล้วเห็น Pomodot แค่อันล่าสุดอันเดียว ไม่ใช่ทุกอันที่เคยขึ้น
+- [ ] (M3) **Given** ให้สิทธิ์แล้ว **When** เปิด System Settings › Notifications **Then** มีรายการ `Pomodot` พร้อมไอคอนมะเขือเทศ
+- [ ] (M3) **Given** กด `Hide Floating Window` ไว้ และ Phase กำลังเดินอยู่ **When** Phase หมดเวลาแล้วคลิกที่ banner (หรือที่รายการใน Notification Center) **Then** แคปซูลโผล่กลับมาที่เดิม
+- [ ] (M3) **Given** เปิด Do Not Disturb (Control Center › Focus › Do Not Disturb) และ Phase กำลังเดินอยู่ **When** Phase หมดเวลา **Then** ไม่มี banner ขึ้น แต่ยังได้ยินเสียง (ทดสอบเสร็จแล้วอย่าลืมปิด Do Not Disturb)
+- [ ] (M3) **Given** ไปที่ System Settings › Notifications › Pomodot แล้วปิดสวิตช์ `Allow notifications` (เหมือนกด `Don't Allow`) **When** กลับมาที่ Pomodot กด `Start` แล้วปล่อยให้ Phase หมดเวลา จากนั้นกด `Start` อีกหลายครั้ง และลอง `Quit Pomodot` แล้วเปิดใหม่กด `Start` **Then** ไม่มี banner แต่ยังได้ยินเสียง timer ใช้ได้ปกติ และกล่องขอสิทธิ์ไม่ขึ้นมาถามซ้ำอีก (ทดสอบเสร็จแล้วเปิดสวิตช์กลับ)
 
 ## Statistics
 
