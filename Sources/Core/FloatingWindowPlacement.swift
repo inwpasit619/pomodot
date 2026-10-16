@@ -24,6 +24,21 @@ public enum FloatingWindowPlacement {
         return CGRect(origin: origin, size: capsuleSize)
     }
 
+    /// Where the capsule goes when the app opens: centred on the remembered point while that
+    /// is on some display's usable area, otherwise (a display unplugged, a resolution changed,
+    /// never moved) the starting position on the main display.
+    /// - Parameters:
+    ///   - center: the collapsed capsule's centre from state.json, or nil.
+    ///   - screens: every display's usable area (`NSScreen.visibleFrame`).
+    ///   - mainScreen: the main display's usable area.
+    public static func capsuleFrame(remembering center: CGPoint?, screens: [CGRect], mainScreen: CGRect) -> CGRect {
+        guard let center, screens.contains(where: { $0.contains(center) }) else {
+            return startingCapsuleFrame(in: mainScreen)
+        }
+        let origin = CGPoint(x: center.x - capsuleSize.width / 2, y: center.y - capsuleSize.height / 2)
+        return CGRect(origin: origin, size: capsuleSize)
+    }
+
     /// Where the card goes when the capsule expands: the capsule never moves and
     /// the card grows toward the side of its screen with room.
     /// - Parameter visibleFrame: the usable area of the screen the capsule is on.

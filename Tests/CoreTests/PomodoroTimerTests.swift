@@ -237,3 +237,35 @@ func timeLeftBarIsTheShareOfThePhaseLeft() {
     // Then
     #expect(fraction == 0.4)
 }
+
+@Test("Given Focus 1/4 started at 09:00 and still Running when the state was saved at 09:10, when the app opens again at 13:00, then it is Paused with 15:00 left and a tick at 13:30 doesn't move it")
+func reopeningFromARunningStateIsPaused() {
+    // Given
+    var timer = PomodoroTimer()
+    timer.start(at: at("09:00"))
+    let saved = timer.snapshot(at: at("09:10"))
+
+    // When
+    var reopened = PomodoroTimer(restoring: saved, settings: TimerSettings())
+
+    // Then
+    #expect(reopened.status == .paused)
+    #expect(reopened.remainingSeconds(at: at("13:00")) == 15 * 60)
+    #expect(reopened.tick(at: at("13:30")).pomodoros.isEmpty)
+    #expect(reopened.remainingSeconds(at: at("13:30")) == 15 * 60)
+}
+
+@Test("Given Focus 1/4 Ready at 25:00 was saved and Settings now say Focus 30 minutes, when the app opens again, then the Focus is 30:00, since it never started")
+func reopeningAPhaseThatNeverStartedTakesTheLatestSettings() {
+    // Given
+    let saved = PomodoroTimer().snapshot(at: at("09:00"))
+    var settings = TimerSettings()
+    settings.focusMinutes = 30
+
+    // When
+    let reopened = PomodoroTimer(restoring: saved, settings: settings)
+
+    // Then
+    #expect(reopened.status == .ready)
+    #expect(reopened.remainingSeconds(at: at("13:00")) == 30 * 60)
+}

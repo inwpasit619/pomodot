@@ -68,3 +68,28 @@ func cardLinesUpWithTheCapsuleNearTheLeftEdge() {
     // Then
     #expect(card == CGRect(x: 6, y: 669, width: 284, height: 200))
 }
+
+@Test("Given the remembered capsule centre (2000, 500) is on no display's usable area, when the app opens, then the capsule goes back to the starting position, centred at x = 720 with its top edge at y = 863")
+func aRememberedPositionOffEveryDisplayGoesBackToTheStart() {
+    // Given
+    let remembered = CGPoint(x: 2000, y: 500)
+
+    // When
+    let capsule = FloatingWindowPlacement.capsuleFrame(remembering: remembered, screens: [screen], mainScreen: screen)
+
+    // Then
+    #expect(capsule.midX == 720)
+    #expect(capsule.maxY == 863)
+}
+
+@Test("Given the remembered capsule centre (300, 400) is on a display, when the app opens, then the capsule is centred there")
+func aRememberedPositionOnADisplayIsUsed() {
+    // Given
+    let remembered = CGPoint(x: 300, y: 400)
+
+    // When
+    let capsule = FloatingWindowPlacement.capsuleFrame(remembering: remembered, screens: [screen], mainScreen: screen)
+
+    // Then
+    #expect(capsule == CGRect(x: 236, y: 381, width: 128, height: 38))
+}

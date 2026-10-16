@@ -96,6 +96,37 @@ public struct PomodoroTimer: Sendable {
         remainingAtStart = TimeInterval(phaseLengthSeconds)
     }
 
+    /// The app opening again: Paused where the snapshot was if it had started, else Ready.
+    /// The time it was closed doesn't count. A Cycle with progress keeps its own N, whatever
+    /// Settings say now.
+    public init(restoring snapshot: TimerSnapshot, settings: TimerSettings) {
+        self.settings = settings
+        phase = snapshot.phase
+        status = snapshot.hasStarted ? .paused : .ready
+        displayNumber = snapshot.displayNumber
+        pomodorosDone = snapshot.pomodorosDone
+        pomodorosPerCycle = snapshot.pomodorosPerCycle
+        phaseLengthSeconds = snapshot.phaseLengthSeconds
+        remainingAtStart = TimeInterval(snapshot.remainingSeconds)
+        // Settings may have changed while the app was closed: as with any change, a Phase
+        // that never started takes them now.
+        apply(settings)
+    }
+
+    /// The timer as if paused at `now`, for state.json.
+    public func snapshot(at now: Date) -> TimerSnapshot {
+        TimerSnapshot(
+            phase: phase,
+            displayNumber: displayNumber,
+            pomodorosDone: pomodorosDone,
+            pomodorosPerCycle: pomodorosPerCycle,
+            phaseLengthSeconds: phaseLengthSeconds,
+            // Never below 0: a Phase that ran out before a tick came back with nothing left.
+            remainingSeconds: max(remainingSeconds(at: now), 0),
+            hasStarted: status != .ready
+        )
+    }
+
     /// Start when Ready, Resume when Paused. Does nothing while Running.
     public mutating func start(at now: Date) {
         guard status != .running else { return }

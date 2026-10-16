@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "timer": {
+    "phase": "focus",
+    "displayNumber": 2,
+    "pomodorosDone": 1,
+    "pomodorosPerCycle": 4,
+    "phaseLengthSeconds": 1500,
+    "remainingSeconds": 842,
+    "hasStarted": true
+  },
+  "floatingWindow": {
+    "visible": true,
+    "alwaysOnTop": true,
+    "center": { "x": 720, "y": 844 }
+  }
+}
