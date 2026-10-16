@@ -4,6 +4,8 @@
 
 ## Destination
 
+**✅ ถึงแล้ว 2026-10-17** — ดู [เขียน M6 ใน spec และหั่นตั๋ว](issues/05-task-write-m6-spec-and-tickets.md)
+
 หัวข้อ **M6** ใน [spec](../pomodoro-v1/spec.md) (เขียนแบบ M1–M5: ขอบเขต หน้าตา test checklist ทดสอบด้วยมือ) พร้อมตั๋วให้ `/implement` ทำบน `feature/m6-…` จนออก **0.10.0**: ทุกคำสั่งที่ตอนนี้มีแค่ในเมนูบน menu bar เรียกจากแคปซูล/การ์ดได้ครบ ไอคอน menu bar ยังอยู่เป็นทางเลือก
 
 ## Notes
@@ -27,6 +29,7 @@
 - [Quit จากเมนูของการ์ดต้องถามยืนยันไหม](issues/06-grilling-quit-from-card.md) — ไม่ถาม ออกทันทีเหมือนทุกทาง Quit อื่น
 - [สวิตช์ "เปิดตอน login" อยู่ตรงไหน ค่าเริ่มต้นอะไร](issues/08-grilling-launch-at-login-setting.md) — หัวข้อใหม่ General บนสุด สวิตช์ Open at login ค่าเริ่มต้นปิด แสดงตามสถานะจริงของระบบ ไม่เก็บใน settings.json, Restore Defaults ไม่แตะ, ต้องอนุมัติ → บรรทัดส้ม + ปุ่ม Open Login Items…
 - [ไอคอนบน Dock: ค่าเริ่มต้น สวิตช์ และสิ่งที่ได้มาด้วย](issues/10-grilling-dock-icon-setting.md) — `Show in Dock` ใน General ค่าเริ่มต้นเปิด เก็บใน settings.json, Restore Defaults คืนเป็นเปิด; คลิก Dock = แคปซูลโผล่+ขึ้นหน้า; คลิกขวา Dock = เมนูเดียวกับการ์ด; เมนูแอพมาตรฐาน + Settings… ⌘,
+- [เขียน M6 ใน spec และหั่นตั๋ว](issues/05-task-write-m6-spec-and-tickets.md) — spec มีหัวข้อ M6 (ข้อเก่าที่ทับแก้แล้ว) และตั๋ว implement 23–28 ใน `.scratch/pomodot-build/issues/` — **ถึงปลายทางแล้ว** ต่อด้วย `/implement ticket 23`
 - [สลับไอคอนบน Dock ตอนแอพทำงานอยู่ได้ไหม และมีผลอะไรบ้าง](issues/09-research-dock-icon-toggle.md) — ได้ เสี่ยงต่ำ: สลับทันทีโดยคง `LSUIElement`; คลิก Dock เอาแคปซูลกลับด้วยโค้ดเดิม; ต้องกัน ⌘H ซ่อนแคปซูล; สลับตอนแอพ active ยังต้องตรวจด้วยมือ
 
 ## Not yet specified
