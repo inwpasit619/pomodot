@@ -12,6 +12,9 @@ final class AppModel {
     var isFloatingWindowVisible = true
     /// On by default. Not remembered across launches yet.
     var isAlwaysOnTop = true
+    /// On by default; Settings (M5) can turn it off. Off: no permission asked, no banners,
+    /// but the sounds still play.
+    var showNotifications = true
 
     private(set) var timer = PomodoroTimer()
     /// Every Pomodoro, loaded from history.json at launch.
@@ -27,6 +30,7 @@ final class AppModel {
     @ObservationIgnored private var clock: Timer?
     @ObservationIgnored private let historyFile = StoredFile(name: "history")
     @ObservationIgnored private let soundPlayer = SoundPlayer()
+    @ObservationIgnored private let bannerNotifier = BannerNotifier()
 
     init() {
         history = historyFile.load(HistoryFile.decode)
@@ -52,6 +56,8 @@ final class AppModel {
         }
         // Ready from launch: Expected finish already moves with the clock.
         scheduleClock()
+        // Clicking a banner brings the Floating Window back if it was hidden.
+        bannerNotifier.onClick = { [weak self] in self?.isFloatingWindowVisible = true }
     }
 
     var remainingSeconds: Int { timer.remainingSeconds(at: now) }
@@ -67,6 +73,10 @@ final class AppModel {
     /// The one Start / Pause / Resume button.
     func startPauseResume() {
         send { $0.startPauseResume(at: $1) }
+        // Asked on the first Start, after the timer is already running.
+        if timer.status == .running, showNotifications {
+            bannerNotifier.askPermission()
+        }
     }
 
     func skip() {
@@ -106,9 +116,13 @@ final class AppModel {
         }
     }
 
-    /// A Phase ran out by itself (the last one, after a late tick): play its sound once.
+    /// A Phase ran out by itself (the last one, after a late tick): play its sound once
+    /// and post its banner.
     private func announce(_ ranOut: PhaseRanOut) {
         soundPlayer.play(ranOut.sound)
+        if let banner = ranOut.banner(showNotifications: showNotifications) {
+            bannerNotifier.post(banner)
+        }
     }
 
     private func update(_ now: Date) {
