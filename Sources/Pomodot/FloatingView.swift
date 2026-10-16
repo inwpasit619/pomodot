@@ -160,6 +160,7 @@ private struct FloatingCard: View {
                     Image(systemName: "arrow.counterclockwise")
                 }
                 .buttonStyle(SquareButtonStyle())
+                .disabled(!timer.canReset)
                 .help("Reset")
                 .accessibilityLabel("Reset")
 
@@ -272,9 +273,13 @@ private struct PrimaryButtonStyle: ButtonStyle {
 }
 
 private struct SquareButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 13, weight: .semibold))
+            // Greyed out like the menu item while pressing would change nothing.
+            .opacity(isEnabled ? 1 : 0.35)
             .frame(width: 34, height: 34)
             .background(.primary.opacity(configuration.isPressed ? 0.16 : 0.08),
                         in: RoundedRectangle(cornerRadius: 10, style: .continuous))

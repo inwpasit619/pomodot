@@ -24,6 +24,16 @@ extension PomodoroTimer {
         return Confirmation(title: "Reset this \(phase.name)?", message: message, confirmButtonTitle: "Reset")
     }
 
+    /// False while Reset would change nothing: the current Phase hasn't started, so it is
+    /// already at its full length from the latest Settings. Reset… is greyed out then.
+    public var canReset: Bool { status != .ready }
+
+    /// False while New Cycle would change nothing: Focus 1/N, Ready, with no Pomodoro yet.
+    /// New Cycle… is greyed out then.
+    public var canStartNewCycle: Bool {
+        !(phase == .focus && displayNumber == 1 && pomodorosDone == 0 && status == .ready)
+    }
+
     /// Asked only when New Cycle would lose progress: a Pomodoro in this Cycle,
     /// or a current Phase that has started.
     public var newCycleConfirmation: Confirmation? {

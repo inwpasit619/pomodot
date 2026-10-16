@@ -123,3 +123,65 @@ func newCycleWhileTheFirstFocusRunsAsks() {
     // Then
     #expect(confirmation != nil)
 }
+
+// Reset… and New Cycle… are greyed out when pressing them would change nothing.
+
+@Test("Given Focus 1/4 Ready with done 0, when the menu opens, then Reset… and New Cycle… are greyed out, since pressing them would change nothing")
+func nothingToResetOrClearAtTheStartOfACycle() {
+    // Given
+    let timer = PomodoroTimer()
+
+    // When
+    let canReset = timer.canReset
+    let canStartNewCycle = timer.canStartNewCycle
+
+    // Then
+    #expect(canReset == false)
+    #expect(canStartNewCycle == false)
+}
+
+@Test("Given Short Break 1/4 Ready with done 0 after Focus 1/4 was skipped, when the menu opens, then Reset… is greyed out but New Cycle… can be pressed, since it goes back to Focus 1/4")
+func newCycleCanBePressedFromABreakThatHasNotStarted() {
+    // Given
+    var timer = PomodoroTimer()
+    _ = timer.skip(at: at("09:00"))
+
+    // When
+    let canReset = timer.canReset
+    let canStartNewCycle = timer.canStartNewCycle
+
+    // Then
+    #expect(canReset == false)
+    #expect(canStartNewCycle == true)
+}
+
+@Test("Given Focus 2/4 Ready with done 1, when the menu opens, then Reset… is greyed out but New Cycle… can be pressed")
+func newCycleCanBePressedOnceAPomodoroIsDone() {
+    // Given
+    var timer = PomodoroTimer()
+    _ = runPhase(&timer, from: at("09:00"), minutes: 25)
+    _ = runPhase(&timer, from: at("09:25"), minutes: 5)
+
+    // When
+    let canReset = timer.canReset
+    let canStartNewCycle = timer.canStartNewCycle
+
+    // Then
+    #expect(canReset == false)
+    #expect(canStartNewCycle == true)
+}
+
+@Test("Given Focus 1/4 that is Running or Paused, when the menu opens, then Reset… and New Cycle… can both be pressed")
+func bothCanBePressedOnceThePhaseHasStarted() {
+    // Given
+    var running = PomodoroTimer()
+    running.start(at: at("09:00"))
+    var paused = running
+    _ = paused.pause(at: at("09:05"))
+
+    // When
+    let timers = [running, paused]
+
+    // Then
+    #expect(timers.allSatisfy { $0.canReset && $0.canStartNewCycle })
+}

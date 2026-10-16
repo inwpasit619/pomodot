@@ -428,6 +428,7 @@ Core seam 1 (Timer) + seam 4 (Floating Window) + seam 5 ส่วน `state.json
 - **Reset:** Phase ปัจจุบันเคย Start แล้ว (Running หรือ Paused)
 - **New Cycle:** `done` ≥ 1 หรือ Phase ปัจจุบันเคย Start แล้ว
 - นอกจากนั้นทำเลยโดยไม่ถาม ไม่มีช่อง "ไม่ต้องถามอีก"
+- **กดไม่ได้ (สีจาง) ตอนกดแล้วไม่มีอะไรเปลี่ยน** ทั้งในเมนูและปุ่ม Reset บนการ์ด: Reset ตอน Phase ปัจจุบันยังไม่เคย Start (เต็มเวลาตาม Settings ล่าสุดอยู่แล้ว), New Cycle ตอน Focus 1/N Ready ที่ `done` = 0
 - กล่องยืนยันต้อง**ขึ้นมาอยู่ด้านหน้าเสมอ** (แอพที่ไม่มี Dock icon มักทำให้กล่องไปอยู่ข้างหลัง → `NSApp.activate()` ก่อนแสดง)
 - ข้อความ (agent ร่าง):
   - Reset: หัวข้อ `Reset this Focus?` (หรือ `Reset this Short Break?` / `Reset this Long Break?`) เนื้อความ `It will go back to 25:00.` (ใช้เวลาจริง) และถ้าเป็น Focus ต่อด้วย ` It won't count as a Pomodoro.` ปุ่ม `Reset` / `Cancel`
@@ -521,7 +522,7 @@ Quit Pomodot
 ```
 
 - บรรทัดที่ 2 ใช้ชื่อ Phase จริง เช่น `Short Break 2/4 · ends 14:40`, `Long Break 4/4 · ends 15:00` เวลาตามรูปแบบเครื่อง
-- `…` ท้าย Reset / New Cycle = อาจมีกล่องถาม (ตามธรรมเนียม Mac)
+- `…` ท้าย Reset / New Cycle = อาจมีกล่องถาม (ตามธรรมเนียม Mac) และเป็นสีจางกดไม่ได้ตอนกดแล้วไม่มีอะไรเปลี่ยน (ดู "ถามยืนยัน")
 - **ออกจากแอพได้ทางเดียวคือ `Quit Pomodot`**
 - ไอคอนบน menu bar อาจถูกซ่อนหลังรอยบาก → **เปิดแอพซ้ำตอนรันอยู่แล้ว** (Finder / Spotlight) = แสดง Floating Window ไม่เปิดตัวที่สอง (`applicationShouldHandleReopen` ถ้าใช้ไม่ได้กับแอพแบบ `LSUIElement` ให้หาทางอื่นแล้วบอกในรายงาน)
 - จำว่า Floating Window ซ่อนหรือแสดงอยู่ข้ามการเปิดแอพใหม่
@@ -562,6 +563,7 @@ Quit Pomodot
 - เปลี่ยน N เป็น 6 ตอน Focus 2/4 → ยังเป็น x/4 จนจบ Cycle, Cycle ถัดไปเป็น 1/6
 - เปลี่ยน N เป็น 6 ตอน Focus 1/4 Ready done 0 → เป็น 1/6 ทันที
 - ถามยืนยัน: Reset ตอน Ready → ไม่ถาม; ตอน Running/Paused → ถาม; New Cycle ตอน Focus 1/4 Ready done 0 → ไม่ถาม; Focus 2/4 Ready (done 1) → ถาม; Short Break 1/4 Ready ที่ done 0 (หลัง Skip Focus 1/4) → ไม่ถาม
+- กดไม่ได้: Focus 1/4 Ready done 0 → Reset และ New Cycle สีจาง; Short Break 1/4 Ready done 0 (หลัง Skip Focus 1/4) → Reset สีจาง New Cycle กดได้; Focus 2/4 Ready done 1 → Reset สีจาง New Cycle กดได้; Running/Paused → กดได้ทั้งคู่
 - **Expected finish** (ตัวอย่าง ค่าเริ่มต้น 25/5/15/4):
 
   | สถานการณ์ | now | Phase ends | Cycle ends |

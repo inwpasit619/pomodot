@@ -92,9 +92,11 @@ private struct MenuContent: View {
         Button("Reset…") {
             ConfirmationAlert.ask(model.timer.resetConfirmation, then: model.reset)
         }
+        .disabled(!timer.canReset)
         Button("New Cycle…") {
             ConfirmationAlert.ask(model.timer.newCycleConfirmation, then: model.newCycle)
         }
+        .disabled(!timer.canStartNewCycle)
 
         Divider()
 
