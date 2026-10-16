@@ -1,1 +1,5 @@
 .claude/worktrees/
+.build/
+dist/
+.serena/
+.DS_Store

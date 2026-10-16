@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "focusMinutes": 25,
+  "shortBreakMinutes": 5,
+  "longBreakMinutes": 15,
+  "pomodorosPerCycle": 4,
+  "autoStartBreaks": false,
+  "autoStartFocus": false,
+  "showNotifications": true,
+  "focusEndSound": "Glass",
+  "breakEndSound": "Hero",
+  "appearance": "system"
+}
