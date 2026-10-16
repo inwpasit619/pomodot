@@ -1,8 +1,17 @@
 import Foundation
 
 /// How every window, the capsule included, is drawn: following the Mac, or always Light or Dark.
-public enum Appearance: String, Sendable, Equatable {
+public enum Appearance: String, Sendable, Equatable, CaseIterable {
     case system, light, dark
+
+    /// As the Settings window writes it: "System", "Light", "Dark".
+    public var name: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
 }
 
 /// Every value in the Settings window, as settings.json keeps it. Defaults: 25 / 5 / 15 / 4,

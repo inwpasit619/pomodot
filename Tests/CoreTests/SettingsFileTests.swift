@@ -219,3 +219,15 @@ func restoreDefaultsGoesBackToTheDefaults() throws {
     let saved = try #require(try JSONSerialization.jsonObject(with: SettingsFile.encode(settings)) as? [String: Any])
     #expect(saved["floatingWindow"] == nil && saved["visible"] == nil && saved["alwaysOnTop"] == nil && saved["center"] == nil)
 }
+
+@Test("Given the Appearance choices in Settings, when they are listed, then they read System, Light, Dark in that order")
+func theAppearanceChoicesReadSystemLightDark() {
+    // Given
+    let choices = Appearance.allCases
+
+    // When
+    let names = choices.map(\.name)
+
+    // Then
+    #expect(names == ["System", "Light", "Dark"])
+}

@@ -56,6 +56,18 @@ struct SettingsView: View {
                 } header: {
                     SectionTitle("Notifications & Sound")
                 }
+
+                Section {
+                    Picker("Appearance", selection: $model.settings.appearance) {
+                        ForEach(Appearance.allCases, id: \.self) { appearance in
+                            Text(appearance.name).tag(appearance)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                } header: {
+                    SectionTitle("Appearance")
+                }
             }
             .formStyle(.grouped)
             .scrollDisabled(true)

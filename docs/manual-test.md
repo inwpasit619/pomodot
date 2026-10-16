@@ -52,6 +52,9 @@
 - [x] (M2) **Given** Focus กำลังเดินอยู่ **When** เปิดเมนูของ Pomodot ดู 2 บรรทัดบนสุด แล้วคลิกแคปซูลให้การ์ดขยาย **Then** เมนูขึ้น `Focus 1/4 · ends …` กับ `Cycle ends …` เป็นสีจางกดไม่ได้ เวลาเป็นแบบเดียวกับนาฬิกาของเครื่อง (12/24 ชม.) ไม่มีวินาที และบนการ์ด `Phase ends` / `Cycle ends` เป็นเวลาเดียวกันเป๊ะ
 - [x] (M2) **Given** จดเวลา `ends` ในเมนูไว้ **When** ปล่อยให้เดินต่อ 2 นาทีแล้วเปิดเมนูอีกครั้ง จากนั้นกด `Pause` รอ 2 นาทีแล้วเปิดเมนูอีกครั้ง **Then** ตอนเดิน เวลา `ends` เท่าเดิมไม่ขยับ ส่วนตอน Pause เวลา `ends` เลื่อนออกไปประมาณ 2 นาที
 - [x] (M2) **Given** Pomodot เปิดอยู่ และกด `Hide Floating Window` ไว้ **When** เปิด Pomodot ซ้ำอีกครั้งจาก Finder (ดับเบิลคลิก `Pomodot` ในโฟลเดอร์ `dist`) หรือจาก Spotlight (Command-Space พิมพ์ `Pomodot` แล้วกด Return) **Then** แคปซูลโผล่กลับมาที่เดิม ในเมนูเป็น `Hide Floating Window` และบน menu bar ยังมีไอคอน Pomodot แค่อันเดียว (ไม่มีแอพตัวที่สอง)
+- [ ] (M5) **Given** เปิดเมนูของ Pomodot **When** ไล่ดูทุกบรรทัดจากบนลงล่าง **Then** เรียงเป็น `Today: 🍅 …` / บรรทัด Phase กับเวลาจบ / `Cycle ends …` / เส้นคั่น / `Start` (หรือ `Pause` / `Resume`) / `Skip` / `Reset…` / `New Cycle…` / เส้นคั่น / `Hide Floating Window` / `Always on Top` / เส้นคั่น / `Statistics…` / `Settings…` / เส้นคั่น / `About Pomodot` / `Check for Updates…` / เส้นคั่น / `Quit Pomodot`
+- [ ] (M5) **Given** เปิดเมนูของ Pomodot **When** กด `About Pomodot` **Then** หน้าต่าง About ของ macOS ขึ้นมาอยู่ด้านหน้า มีไอคอนแคปซูลบนพื้นแดงมะเขือเทศ ชื่อ `Pomodot` และ `Version 0.9.0 (build …)` ตามด้วยเลข build
+- [ ] (M5) **Given** เปิดเมนูของ Pomodot **When** กด `Check for Updates…` **Then** browser เปิดหน้า Releases ของ `inwpasit619/pomodot` บน GitHub (Pomodot ไม่ได้ต่อเน็ตเอง ไม่มีกล่องถามอะไร)
 
 ## Notification & Sound
 
@@ -108,5 +111,9 @@
 
 - [x] (M1) **Given** เห็นแคปซูลอยู่ **When** เปลี่ยน System Settings › Appearance ระหว่าง Light กับ Dark **Then** Light เป็นกระจกขาวตัวอักษรเข้ม Dark เป็นกระจกเทาเข้มตัวอักษรขาว
 - [x] (M1) **Given** เปิด Finder ไปที่โฟลเดอร์ `dist` ในโปรเจกต์ **When** ดูไฟล์ `Pomodot` **Then** ชื่อแสดงเป็น `Pomodot` และไอคอนเป็นแคปซูลสีขาวบนพื้นสีแดงมะเขือเทศ (เงาเป็นรูปทรงธรรมดา ไม่เบลอ) **บอกว่าหน้าตาไอคอนผ่านหรือไม่**
+- [ ] (M5) **Given** เปิด `Settings…` แล้วเลือก `System` ในส่วน `Appearance` (ค่าเริ่มต้น) และเปิดหน้าต่าง Statistics ไว้ด้วย **When** เปลี่ยน System Settings › Appearance ระหว่าง Light กับ Dark **Then** แคปซูล หน้าต่าง Settings และหน้าต่าง Statistics เปลี่ยนตามเครื่องทันทีทุกครั้ง
+- [ ] (M5) **Given** เครื่องเป็นโหมด Dark **When** เลือก `Light` ในส่วน `Appearance` ของ Settings **Then** แคปซูล หน้าต่าง Settings และหน้าต่าง Statistics เป็นแบบสว่างทันที แม้เครื่องยังเป็น Dark; สลับโหมดเครื่องไปมาแล้วแอพก็ยังสว่างอยู่ จากนั้นเลือก `Dark` ตอนเครื่องเป็น Light → แอพเป็นแบบมืดทันทีและไม่สนโหมดเครื่องเช่นกัน
+- [ ] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ **Then** แคปซูลเป็นแบบมืดตั้งแต่เปิดขึ้นมา และ Settings ยังเลือก `Dark` อยู่
+- [ ] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` และเครื่องเป็นโหมด Light **When** กด `Restore Defaults` **Then** Appearance กลับเป็น `System` และแคปซูลกับทุกหน้าต่างเปลี่ยนเป็นแบบสว่างตามเครื่องทันที
 
 ## ติดตั้งบนเครื่องเพื่อน

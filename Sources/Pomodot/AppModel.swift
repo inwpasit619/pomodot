@@ -27,6 +27,9 @@ final class AppModel {
         didSet {
             guard settings != oldValue else { return }
             settingsFile.save(SettingsFile.encode(settings))
+            if settings.appearance != oldValue.appearance {
+                applyAppearance()
+            }
             let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
             send { timer, _ in
                 timer.apply(timerSettings)
@@ -114,6 +117,8 @@ final class AppModel {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.checkWhetherNotificationsAreTurnedOff() }
         }
+        // Before any window shows, so none of them flashes in the other look.
+        applyAppearance()
         // Clicking a banner brings the Floating Window back if it was hidden.
         bannerNotifier.onClick = { [weak self] in self?.isFloatingWindowVisible = true }
     }
@@ -151,6 +156,17 @@ final class AppModel {
         // Asked on the first Start, after the timer is already running.
         if timer.status == .running, showNotifications {
             bannerNotifier.askPermission()
+        }
+    }
+
+    /// Every window, the capsule included, follows Appearance straight away. System follows
+    /// the Mac, switching as it does; Light and Dark ignore it.
+    private func applyAppearance() {
+        // NSApplication.shared rather than NSApp: the model is made while the app is starting up.
+        NSApplication.shared.appearance = switch settings.appearance {
+        case .system: nil
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
         }
     }
 
