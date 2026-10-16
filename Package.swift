@@ -13,6 +13,7 @@ let package = Package(
         .target(name: "Core"),
         // The app: menu bar, Floating Window, windows, sound, notifications, disk.
         .executableTarget(name: "Pomodot", dependencies: ["Core"]),
-        .testTarget(name: "CoreTests", dependencies: ["Core"]),
+        // Fixtures are read from the source folder by path, not bundled as resources.
+        .testTarget(name: "CoreTests", dependencies: ["Core"], exclude: ["Fixtures"]),
     ]
 )

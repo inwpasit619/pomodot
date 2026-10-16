@@ -35,3 +35,13 @@ extension PomodoroTimer {
         )
     }
 }
+
+extension History {
+    /// Asked before Clear History, with how many will go. Nil while History is empty:
+    /// there is nothing to clear, so the button can't be pressed.
+    public var clearConfirmation: Confirmation? {
+        guard !pomodoros.isEmpty else { return nil }
+        let title = pomodoros.count == 1 ? "Delete 1 Pomodoro?" : "Delete all \(pomodoros.count) Pomodoros?"
+        return Confirmation(title: title, message: "This can't be undone.", confirmButtonTitle: "Delete")
+    }
+}
