@@ -42,7 +42,7 @@ func focusThatRunsOutBecomesAPomodoroAndMovesToShortBreak() {
     timer.start(at: at("09:00"))
 
     // When
-    let pomodoros = timer.tick(at: at("09:25"))
+    let pomodoros = timer.tick(at: at("09:25")).pomodoros
 
     // Then
     #expect(pomodoros.count == 1)
@@ -60,7 +60,7 @@ func pomodoroEndsAtItsScheduledTimeNotAtTheTick() {
     timer.start(at: at("09:00"))
 
     // When
-    let pomodoros = timer.tick(at: at("09:25:03"))
+    let pomodoros = timer.tick(at: at("09:25:03")).pomodoros
 
     // Then
     #expect(pomodoros == [Pomodoro(end: at("09:25:00"), durationSeconds: 1500)])
@@ -75,7 +75,7 @@ func pausedFocusThatRunsOutIsStillAPomodoro() {
     timer.start(at: at("09:20"))
 
     // When
-    let pomodoros = timer.tick(at: at("09:35"))
+    let pomodoros = timer.tick(at: at("09:35")).pomodoros
 
     // Then
     #expect(pomodoros == [Pomodoro(end: at("09:35"), durationSeconds: 1500)])
@@ -182,7 +182,7 @@ func lateTickCatchesUpEveryPhaseThatEnded() {
     timer.start(at: at("09:00"))
 
     // When
-    let pomodoros = timer.tick(at: at("09:31"))
+    let pomodoros = timer.tick(at: at("09:31")).pomodoros
 
     // Then
     #expect(pomodoros == [Pomodoro(end: at("09:25"), durationSeconds: 1500)])
@@ -199,13 +199,13 @@ func sleepPausesTheRunningPhase() {
     timer.start(at: at("09:00"))
 
     // When
-    let pomodoros = timer.sleep(at: at("09:10"))
+    let pomodoros = timer.sleep(at: at("09:10")).pomodoros
 
     // Then
     #expect(pomodoros.isEmpty)
     #expect(timer.status == .paused)
     #expect(timer.remainingSeconds(at: at("10:10")) == 15 * 60)
-    #expect(timer.tick(at: at("10:10")).isEmpty)
+    #expect(timer.tick(at: at("10:10")).pomodoros.isEmpty)
 }
 
 @Test("Given a Focus started at 09:00 and no tick since, when the Mac goes to sleep at 09:25:01, then the Focus still counts as a Pomodoro ending 09:25:00 and the Short Break 1/4 is Ready")
@@ -215,7 +215,7 @@ func sleepAfterTheEndStillRecordsThePomodoro() {
     timer.start(at: at("09:00"))
 
     // When
-    let pomodoros = timer.sleep(at: at("09:25:01"))
+    let pomodoros = timer.sleep(at: at("09:25:01")).pomodoros
 
     // Then
     #expect(pomodoros == [Pomodoro(end: at("09:25"), durationSeconds: 1500)])

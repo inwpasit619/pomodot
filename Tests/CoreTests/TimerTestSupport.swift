@@ -16,7 +16,7 @@ func at(_ time: String) -> Date {
 /// Starts the current Phase at `start` and ticks once `minutes` later.
 func runPhase(_ timer: inout PomodoroTimer, from start: Date, minutes: Int) -> [Pomodoro] {
     timer.start(at: start)
-    return timer.tick(at: start.addingTimeInterval(TimeInterval(minutes * 60)))
+    return timer.tick(at: start.addingTimeInterval(TimeInterval(minutes * 60))).pomodoros
 }
 
 /// `t` seconds into a pointer scenario, e.g. `second(0.3)`.

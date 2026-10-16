@@ -26,6 +26,7 @@ final class AppModel {
     /// While not Running, moves `now` on when the Expected finish minute next changes.
     @ObservationIgnored private var clock: Timer?
     @ObservationIgnored private let historyFile = StoredFile(name: "history")
+    @ObservationIgnored private let soundPlayer = SoundPlayer()
 
     init() {
         history = historyFile.load(HistoryFile.decode)
@@ -95,10 +96,19 @@ final class AppModel {
     }
 
     /// Hands one event to Core with the current time, then redraws.
-    private func send(_ event: (inout PomodoroTimer, Date) -> [Pomodoro]) {
+    private func send(_ event: (inout PomodoroTimer, Date) -> TimerOutcome) {
         let now = Date()
-        record(event(&timer, now))
+        let outcome = event(&timer, now)
+        record(outcome.pomodoros)
         update(now)
+        if let ranOut = outcome.ranOut {
+            announce(ranOut)
+        }
+    }
+
+    /// A Phase ran out by itself (the last one, after a late tick): play its sound once.
+    private func announce(_ ranOut: PhaseRanOut) {
+        soundPlayer.play(ranOut.sound)
     }
 
     private func update(_ now: Date) {

@@ -21,7 +21,7 @@ func skippingAFocusIsNotAPomodoro() {
     timer.start(at: at("09:30"))
 
     // When
-    let pomodoros = timer.skip(at: at("09:40"))
+    let pomodoros = timer.skip(at: at("09:40")).pomodoros
 
     // Then
     #expect(pomodoros.isEmpty)
@@ -106,7 +106,7 @@ func resetPutsThePhaseBackToFullLength() {
     timer.start(at: at("09:30"))
 
     // When
-    let pomodoros = timer.reset(at: at("09:45"))
+    let pomodoros = timer.reset(at: at("09:45")).pomodoros
 
     // Then
     #expect(pomodoros.isEmpty)
@@ -141,7 +141,7 @@ func newCycleGoesBackToTheFirstFocus() {
     timer.start(at: at("10:25"))
 
     // When
-    let pomodoros = timer.newCycle(at: at("10:27"))
+    let pomodoros = timer.newCycle(at: at("10:27")).pomodoros
 
     // Then
     #expect(pomodoros.isEmpty)

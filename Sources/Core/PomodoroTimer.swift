@@ -51,6 +51,19 @@ public struct Pomodoro: Sendable, Equatable {
     }
 }
 
+/// What an event did besides moving the timer.
+public struct TimerOutcome: Sendable, Equatable {
+    /// Every Pomodoro the event produced, oldest first.
+    public var pomodoros: [Pomodoro] = []
+    /// The last Phase that ran out by itself, the only one to announce. Nil when none did.
+    public var ranOut: PhaseRanOut?
+
+    public init(pomodoros: [Pomodoro] = [], ranOut: PhaseRanOut? = nil) {
+        self.pomodoros = pomodoros
+        self.ranOut = ranOut
+    }
+}
+
 /// The clock times the current Phase and the Cycle end if the timer runs on from now
 /// with no more pauses. The Cycle ends at the end of its Long Break.
 public struct ExpectedFinish: Sendable, Equatable {
@@ -92,7 +105,7 @@ public struct PomodoroTimer: Sendable {
 
     /// Holds the time left. First ends any Phase that already ran out (as `tick` does).
     /// - Returns: the Pomodoros that catching up produced.
-    public mutating func pause(at now: Date) -> [Pomodoro] {
+    public mutating func pause(at now: Date) -> TimerOutcome {
         catchingUp(at: now) { timer in
             guard timer.status == .running else { return }
             timer.remainingAtStart = timer.remaining(at: now)
@@ -102,18 +115,18 @@ public struct PomodoroTimer: Sendable {
     }
 
     /// The one Start / Pause / Resume button: Pause while Running, otherwise Start or Resume.
-    public mutating func startPauseResume(at now: Date) -> [Pomodoro] {
+    public mutating func startPauseResume(at now: Date) -> TimerOutcome {
         if status == .running {
             return pause(at: now)
         }
         start(at: now)
-        return []
+        return TimerOutcome()
     }
 
     /// Ends the current Phase early and moves to the next, as if it had run out now,
     /// except that a skipped Focus is not a Pomodoro and always leads to a Short Break.
     /// - Returns: the Pomodoros that catching up produced, never the skipped Focus.
-    public mutating func skip(at now: Date) -> [Pomodoro] {
+    public mutating func skip(at now: Date) -> TimerOutcome {
         catchingUp(at: now) { timer in
             if timer.phase == .focus {
                 timer.startBreak(.shortBreak, at: now)
@@ -126,14 +139,14 @@ public struct PomodoroTimer: Sendable {
     /// Puts the current Phase back to its full length from the latest Settings, Ready.
     /// The Cycle is untouched, and a reset Focus is not a Pomodoro.
     /// - Returns: the Pomodoros that catching up produced.
-    public mutating func reset(at now: Date) -> [Pomodoro] {
+    public mutating func reset(at now: Date) -> TimerOutcome {
         catchingUp(at: now) { $0.enter($0.phase) }
     }
 
     /// Discards progress in the current Cycle and goes back to Focus 1/N, Ready.
     /// History is not touched.
     /// - Returns: the Pomodoros that catching up produced.
-    public mutating func newCycle(at now: Date) -> [Pomodoro] {
+    public mutating func newCycle(at now: Date) -> TimerOutcome {
         catchingUp(at: now) { $0.beginCycle() }
     }
 
@@ -151,29 +164,37 @@ public struct PomodoroTimer: Sendable {
     }
 
     /// The Mac is about to sleep: Pause, so it wakes up Paused. Locking the screen is not sleep.
-    public mutating func sleep(at now: Date) -> [Pomodoro] {
+    public mutating func sleep(at now: Date) -> TimerOutcome {
         pause(at: now)
     }
 
     /// Ends every Phase whose time is up by `now`, in order, each at its scheduled
     /// end rather than at `now`, so a late tick loses no time.
-    /// - Returns: every Pomodoro this produced, oldest first.
-    public mutating func tick(at now: Date) -> [Pomodoro] {
-        var pomodoros: [Pomodoro] = []
+    /// - Returns: every Pomodoro this produced, oldest first, and the last Phase that ran out:
+    ///   after a late tick only that one is announced.
+    public mutating func tick(at now: Date) -> TimerOutcome {
+        var outcome = TimerOutcome()
         while let end = scheduledEnd, end <= now {
+            let ended = (phase: phase, number: displayNumber, of: pomodorosPerCycle)
             if let pomodoro = endPhase(at: end) {
-                pomodoros.append(pomodoro)
+                outcome.pomodoros.append(pomodoro)
             }
+            outcome.ranOut = PhaseRanOut(
+                phase: ended.phase, number: ended.number, pomodorosPerCycle: ended.of,
+                next: phase, nextNumber: displayNumber, nextMinutes: phaseLengthSeconds / 60,
+                nextStarted: status == .running
+            )
         }
-        return pomodoros
+        return outcome
     }
 
     /// Every event first ends any Phase that already ran out by `now`, as `tick` does,
-    /// so a press that lands just before the next tick still counts that Pomodoro.
-    private mutating func catchingUp(at now: Date, then event: (inout PomodoroTimer) -> Void) -> [Pomodoro] {
-        let pomodoros = tick(at: now)
+    /// so a press that lands just before the next tick still counts that Pomodoro, and that
+    /// Phase is still announced. The event's own move (Skip, Reset, …) never is.
+    private mutating func catchingUp(at now: Date, then event: (inout PomodoroTimer) -> Void) -> TimerOutcome {
+        let outcome = tick(at: now)
         event(&self)
-        return pomodoros
+        return outcome
     }
 
     /// When the running Phase will run out; nil unless Running.

@@ -21,7 +21,7 @@ func aStartedPhaseKeepsItsLength() {
     timer.apply(settings(focusMinutes: 30))
 
     // Then
-    #expect(timer.tick(at: at("09:55")) == [Pomodoro(end: at("09:55"), durationSeconds: 1500)])
+    #expect(timer.tick(at: at("09:55")).pomodoros == [Pomodoro(end: at("09:55"), durationSeconds: 1500)])
     _ = runPhase(&timer, from: at("09:55"), minutes: 5)
     #expect(timer.displayNumber == 3)
     #expect(timer.remainingSeconds(at: at("10:00")) == 30 * 60)

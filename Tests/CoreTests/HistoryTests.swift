@@ -12,7 +12,7 @@ func aFinishedFocusIsRecorded() {
     timer.start(at: iso("2026-10-15T09:00:00+07:00"))
 
     // When
-    history.record(timer.tick(at: iso("2026-10-15T09:25:03+07:00")))
+    history.record(timer.tick(at: iso("2026-10-15T09:25:03+07:00")).pomodoros)
 
     // Then
     #expect(history.pomodoros == [Pomodoro(end: iso("2026-10-15T09:25:00+07:00"), durationSeconds: 1500)])
@@ -28,7 +28,7 @@ func aSkippedFocusIsNotRecorded() {
     timer.start(at: iso("2026-10-15T09:00:00+07:00"))
 
     // When
-    history.record(timer.skip(at: iso("2026-10-15T09:10:00+07:00")))
+    history.record(timer.skip(at: iso("2026-10-15T09:10:00+07:00")).pomodoros)
 
     // Then
     #expect(history.pomodoros.isEmpty)
@@ -42,7 +42,7 @@ func aResetFocusIsNotRecorded() {
     timer.start(at: iso("2026-10-15T09:00:00+07:00"))
 
     // When
-    history.record(timer.reset(at: iso("2026-10-15T09:10:00+07:00")))
+    history.record(timer.reset(at: iso("2026-10-15T09:10:00+07:00")).pomodoros)
 
     // Then
     #expect(history.pomodoros.isEmpty)
@@ -58,7 +58,7 @@ func aNewCycleKeepsHistory() {
     history.record(runPhase(&timer, from: at("09:30"), minutes: 25))
 
     // When
-    history.record(timer.newCycle(at: at("09:56")))
+    history.record(timer.newCycle(at: at("09:56")).pomodoros)
 
     // Then
     #expect(history.pomodoros == [
