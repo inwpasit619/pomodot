@@ -7,7 +7,7 @@ struct PomodotApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(model: appDelegate.model)
+            MenuContent(model: appDelegate.model, showStatistics: appDelegate.showStatistics)
         } label: {
             MenuBarLabel(model: appDelegate.model)
         }
@@ -70,11 +70,14 @@ private struct MenuBarImage: View {
 
 private struct MenuContent: View {
     @Bindable var model: AppModel
+    let showStatistics: () -> Void
 
     var body: some View {
         let timer = model.timer
         let finish = model.expectedFinish
-        // Two lines that can't be clicked: the Phase now and when it and the Cycle end.
+        // Three lines that can't be clicked: today's Pomodoros, the Phase now,
+        // and when it and the Cycle end.
+        Text("Today: 🍅 \(model.statistics.today.pomodoros)")
         Text("\(timer.phase.name) \(timer.progressText) · ends \(finish.phaseEnds.clockText)")
         Text("Cycle ends \(finish.cycleEnds.clockText)")
 
@@ -99,6 +102,10 @@ private struct MenuContent: View {
             model.isFloatingWindowVisible.toggle()
         }
         Toggle("Always on Top", isOn: $model.isAlwaysOnTop)
+
+        Divider()
+
+        Button("Statistics…", action: showStatistics)
 
         Divider()
 

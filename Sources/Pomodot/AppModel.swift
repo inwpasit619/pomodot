@@ -14,6 +14,8 @@ final class AppModel {
     var isAlwaysOnTop = true
 
     private(set) var timer = PomodoroTimer()
+    /// Every Pomodoro, loaded from history.json at launch.
+    private(set) var history: History
     /// The clock time the views draw from. Each tick moves it on.
     private(set) var now = Date()
 
@@ -23,8 +25,10 @@ final class AppModel {
     @ObservationIgnored private var activity: NSObjectProtocol?
     /// While not Running, moves `now` on when the Expected finish minute next changes.
     @ObservationIgnored private var clock: Timer?
+    @ObservationIgnored private let historyFile = StoredFile(name: "history")
 
     init() {
+        history = historyFile.load(HistoryFile.decode)
         // Only real sleep (lid closed, Sleep chosen). Locking the screen, the display
         // going off and the screensaver send nothing: the timer keeps running.
         NSWorkspace.shared.notificationCenter.addObserver(
@@ -33,15 +37,17 @@ final class AppModel {
             MainActor.assumeIsolated { self?.sleep() }
         }
         // Expected finish is "from now": after waking or a clock change, now is somewhere else.
-        NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.update(Date()) }
-        }
-        NotificationCenter.default.addObserver(
-            forName: .NSSystemClockDidChange, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.update(Date()) }
+        // Today starts at midnight, and days are cut in the Mac's time zone as it is now.
+        let redrawNow: [(NotificationCenter, Notification.Name)] = [
+            (NSWorkspace.shared.notificationCenter, NSWorkspace.didWakeNotification),
+            (.default, .NSSystemClockDidChange),
+            (.default, .NSCalendarDayChanged),
+            (.default, .NSSystemTimeZoneDidChange),
+        ]
+        for (center, name) in redrawNow {
+            center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.update(Date()) }
+            }
         }
         // Ready from launch: Expected finish already moves with the clock.
         scheduleClock()
@@ -50,6 +56,12 @@ final class AppModel {
     var remainingSeconds: Int { timer.remainingSeconds(at: now) }
 
     var expectedFinish: ExpectedFinish { timer.expectedFinish(at: now) }
+
+    /// History by day and week in the Mac's current time zone and first weekday.
+    var statistics: Statistics { history.statistics(at: now, calendar: .autoupdatingCurrent) }
+
+    /// Nil while History is empty, so Clear History… can't be pressed.
+    var clearHistoryConfirmation: Confirmation? { history.clearConfirmation }
 
     /// The one Start / Pause / Resume button.
     func startPauseResume() {
@@ -66,6 +78,12 @@ final class AppModel {
 
     func newCycle() {
         send { $0.newCycle(at: $1) }
+    }
+
+    /// Empties History. The timer stays where it is.
+    func clearHistory() {
+        history.clear()
+        saveHistory()
     }
 
     private func sleep() {
@@ -138,11 +156,15 @@ final class AppModel {
         }
     }
 
-    /// History arrives in M4; until then each Pomodoro only goes to the system log.
+    /// Saves each new Pomodoro to History straight away, before anything else is saved.
     private func record(_ pomodoros: [Pomodoro]) {
-        for pomodoro in pomodoros {
-            NSLog("Pomodot: Pomodoro ended %@ (%d s)",
-                  pomodoro.end.ISO8601Format(), pomodoro.durationSeconds)
-        }
+        guard !pomodoros.isEmpty else { return }
+        history.record(pomodoros)
+        saveHistory()
+    }
+
+    /// Rewrites history.json whole.
+    private func saveHistory() {
+        historyFile.save(HistoryFile.encode(history))
     }
 }

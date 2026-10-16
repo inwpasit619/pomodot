@@ -4,6 +4,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
     private var floatingWindowController: FloatingWindowController?
+    private lazy var statisticsWindowController = StatisticsWindowController(model: model)
 
     /// Every SF Symbol the app draws. Each must exist on the running macOS;
     /// a missing one is reported, never swapped for another.
@@ -27,5 +28,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSLog("Pomodot: SF Symbols OK: %@", Self.requiredSymbols.joined(separator: ", "))
 
         floatingWindowController = FloatingWindowController(model: model)
+    }
+
+    /// The menu's Statistics….
+    func showStatistics() {
+        statisticsWindowController.show()
     }
 }
