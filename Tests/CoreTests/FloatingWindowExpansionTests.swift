@@ -93,8 +93,8 @@ func draggingTheCapsuleDoesNotExpand() {
     #expect(window.isExpanded)
 }
 
-@Test("Given the card opened downward from (720, 850), when it is dragged so the capsule sits away from every edge at (720, 350), then the card keeps growing down until it closes, and grows out from its middle when clicked open again")
-func cardKeepsItsDirectionUntilItCloses() {
+@Test("Given the card opened downward from (720, 850), when it is dragged to x 578–862, y 169–369, away from every edge, and let go, then the card stays put with the capsule in its middle, and opens there again once closed")
+func cardDraggedAwayFromTheEdgesTucksIntoItsMiddle() {
     // Given
     var window = expandedWindow()
 
@@ -111,7 +111,8 @@ func cardKeepsItsDirectionUntilItCloses() {
 
     // Then
     #expect(frameWhileOpen == CGRect(x: 578, y: 169, width: 284, height: 200))
-    #expect(window.frame == CGRect(x: 578, y: 250, width: 284, height: 200))
+    #expect(window.capsuleFrame == CGRect(x: 656, y: 250, width: 128, height: 38))
+    #expect(window.frame == CGRect(x: 578, y: 169, width: 284, height: 200))
 }
 
 @Test("Given the pointer enters the capsule at t = 0, when the app asks when to check next, then there is nothing to check; after a click opens the card and the pointer leaves at t = 1, it is t = 1.5")
@@ -211,7 +212,7 @@ func movingMoreThanThreePointsIsADrag() {
     #expect(!window.isExpanded)
 }
 
-@Test("Given the card is open below the capsule at (720, 850), when it is pressed at (700, 800) and dragged to (1500, 800), then the card stops with its right edge at x = 1440, keeps growing down, and stays open after release")
+@Test("Given the card is open below the capsule at (720, 850), when it is pressed at (700, 800) and dragged to (1500, 800), then the card stops with its right edge at x = 1440, keeps growing down, and stays open after release with the capsule tucked into its top-right corner")
 func draggingTheCardKeepsTheWholeCardOnScreen() {
     // Given
     var window = expandedWindow()
@@ -223,7 +224,7 @@ func draggingTheCardKeepsTheWholeCardOnScreen() {
 
     // Then
     #expect(window.frame == CGRect(x: 1156, y: 669, width: 284, height: 200))
-    #expect(window.capsuleFrame == CGRect(x: 1234, y: 831, width: 128, height: 38))
+    #expect(window.capsuleFrame == CGRect(x: 1312, y: 831, width: 128, height: 38))
     #expect(window.isExpanded)
 }
 
@@ -349,4 +350,211 @@ func hidingEndsTheMenuHold() {
 
     // Then
     #expect(!window.isExpanded)
+}
+
+// MARK: Tucking into the edge the card is near
+
+private let capsuleSize = FloatingWindowPlacement.capsuleSize
+private let cardSize = FloatingWindowPlacement.cardSize
+
+/// How near an edge the capsule must be for the card to grow from it, across and up:
+/// half of how much bigger the card is than the capsule (78 and 81 pt today).
+private let nearAcross = (cardSize.width - capsuleSize.width) / 2
+private let nearUp = (cardSize.height - capsuleSize.height) / 2
+/// The furthest right and up the card's bottom-left corner can go.
+private let rightmost = screen.maxX - cardSize.width
+private let topmost = screen.maxY - cardSize.height
+
+/// The card opened by a click on a capsule in the middle of the screen.
+private func cardOpenInTheMiddle() -> FloatingWindowExpansion {
+    let middle = CGPoint(x: 720, y: 450)
+    var window = FloatingWindowExpansion(
+        capsuleFrame: CGRect(
+            x: middle.x - capsuleSize.width / 2, y: middle.y - capsuleSize.height / 2,
+            width: capsuleSize.width, height: capsuleSize.height
+        )
+    )
+    window.pressed(at: middle)
+    window.released(at: middle, visibleFrame: screen)
+    return window
+}
+
+/// Drags the open card so its bottom-left corner is at `corner`, then lets go.
+/// - Returns: where the card was just before the button came up.
+private func dragCard(_ window: inout FloatingWindowExpansion, to corner: CGPoint) -> CGRect {
+    let start = window.frame.origin
+    let grip = CGPoint(x: start.x + 20, y: start.y + 100)
+    let end = CGPoint(x: grip.x + corner.x - start.x, y: grip.y + corner.y - start.y)
+    window.pressed(at: grip)
+    window.dragged(to: end, visibleFrame: screen)
+    let cardBeforeRelease = window.frame
+    window.released(at: end, visibleFrame: screen)
+    return cardBeforeRelease
+}
+
+/// A capsule-sized rect with its bottom-left corner at (`x`, `y`).
+private func capsule(x: CGFloat, y: CGFloat) -> CGRect {
+    CGRect(x: x, y: y, width: capsuleSize.width, height: capsuleSize.height)
+}
+
+@Test("Given the card is open, when it is dragged to x 40–324, y 40–240, 40 pt from the left and bottom edges, and let go, then the card stays put and the capsule sits in its bottom-left corner")
+func cardNearTheBottomLeftCornerTucksIntoIt() {
+    // Given
+    var window = cardOpenInTheMiddle()
+
+    // When
+    let before = dragCard(&window, to: CGPoint(x: 40, y: 40))
+
+    // Then
+    #expect(before == CGRect(origin: CGPoint(x: 40, y: 40), size: cardSize))
+    #expect(window.frame == before)
+    #expect(window.capsuleFrame == capsule(x: before.minX, y: before.minY))
+    #expect(window.isExpanded)
+}
+
+@Test("Given the card is open, when it is dragged to x 1116–1400, y 35–235, near the right and bottom edges, and let go, then the capsule sits in its bottom-right corner")
+func cardNearTheBottomRightCornerTucksIntoIt() {
+    // Given
+    var window = cardOpenInTheMiddle()
+
+    // When
+    let before = dragCard(&window, to: CGPoint(x: 1116, y: 35))
+
+    // Then
+    #expect(window.frame == before)
+    #expect(window.capsuleFrame == capsule(x: before.maxX - capsuleSize.width, y: before.minY))
+}
+
+@Test("Given the card is open, when it is dragged to x 500–784, y 300–500, near no edge, and let go, then the capsule sits in its middle")
+func cardNearNoEdgeTucksIntoItsMiddle() {
+    // Given
+    var window = cardOpenInTheMiddle()
+
+    // When
+    let before = dragCard(&window, to: CGPoint(x: 500, y: 300))
+
+    // Then
+    #expect(window.frame == before)
+    #expect(window.capsuleFrame == capsule(
+        x: before.midX - capsuleSize.width / 2, y: before.midY - capsuleSize.height / 2
+    ))
+}
+
+@Test("Given the card is open, when it is dragged to x 1150–1434, y 350–550, near the right edge only, and let go, then the capsule sits against its right edge, halfway up")
+func cardNearTheRightEdgeTucksIntoIt() {
+    // Given
+    var window = cardOpenInTheMiddle()
+
+    // When
+    let before = dragCard(&window, to: CGPoint(x: 1150, y: 350))
+
+    // Then
+    #expect(window.frame == before)
+    #expect(window.capsuleFrame == capsule(
+        x: before.maxX - capsuleSize.width, y: before.midY - capsuleSize.height / 2
+    ))
+}
+
+@Test("Given the card is open, when it is dragged against the left and top edges, x 0–284, y 675–875, and let go, then the capsule sits in its top-left corner")
+func cardAgainstTheTopLeftCornerTucksIntoIt() {
+    // Given
+    var window = cardOpenInTheMiddle()
+
+    // When
+    let before = dragCard(&window, to: CGPoint(x: 0, y: topmost))
+
+    // Then
+    #expect(window.frame == before)
+    #expect(window.capsuleFrame == capsule(x: before.minX, y: before.maxY - capsuleSize.height))
+}
+
+@Test("Given the card is open, when it is let go 1 pt nearer the left edge than a capsule grows from, and then exactly that far, then the card stays put and the capsule sits against its left edge the first time and in its middle the second")
+func nearTheLeftEdgeEndsWhereGrowingFromItEnds() {
+    // Given
+    var near = cardOpenInTheMiddle()
+    var far = cardOpenInTheMiddle()
+
+    // When
+    let nearBefore = dragCard(&near, to: CGPoint(x: nearAcross - 1, y: 400))
+    let farBefore = dragCard(&far, to: CGPoint(x: nearAcross, y: 400))
+
+    // Then
+    #expect(near.frame == nearBefore)
+    #expect(far.frame == farBefore)
+    #expect(near.capsuleFrame.minX == near.frame.minX)
+    #expect(far.capsuleFrame.midX == far.frame.midX)
+}
+
+@Test("Given the card is open, when it is let go 1 pt nearer the bottom edge than a capsule grows from, and then exactly that far, then the card stays put and the capsule sits against its bottom edge the first time and in its middle the second")
+func nearTheBottomEdgeEndsWhereGrowingFromItEnds() {
+    // Given
+    var near = cardOpenInTheMiddle()
+    var far = cardOpenInTheMiddle()
+
+    // When
+    let nearBefore = dragCard(&near, to: CGPoint(x: 500, y: nearUp - 1))
+    let farBefore = dragCard(&far, to: CGPoint(x: 500, y: nearUp))
+
+    // Then
+    #expect(near.frame == nearBefore)
+    #expect(far.frame == farBefore)
+    #expect(near.capsuleFrame.minY == near.frame.minY)
+    #expect(far.capsuleFrame.midY == far.frame.midY)
+}
+
+@Test("Given the card opened from the capsule in the top-right corner, x 1156–1440, y 675–875, when it is dragged to x 500–784, y 300–500 and let go, then the capsule sits in its middle, not its top-right corner")
+func cardOpenedInACornerAndDraggedOutTucksIntoItsMiddle() {
+    // Given
+    var window = FloatingWindowExpansion(capsuleFrame: capsule(x: screen.maxX - capsuleSize.width, y: screen.maxY - capsuleSize.height))
+    window.pressed(at: CGPoint(x: 1376, y: 856))
+    window.released(at: CGPoint(x: 1376, y: 856), visibleFrame: screen)
+    let opened = window.frame
+
+    // When
+    let before = dragCard(&window, to: CGPoint(x: 500, y: 300))
+
+    // Then
+    #expect(opened == CGRect(origin: CGPoint(x: rightmost, y: topmost), size: cardSize))
+    #expect(window.frame == before)
+    #expect(window.capsuleFrame == capsule(
+        x: before.midX - capsuleSize.width / 2, y: before.midY - capsuleSize.height / 2
+    ))
+}
+
+@Test(
+    "Given the card is dragged to a place and let go, when it closes and is clicked open again, then the card is back where it was let go",
+    arguments: [0, 40, nearAcross - 1, nearAcross, 300, 578, 1000, rightmost - nearAcross, rightmost - nearAcross + 1, rightmost],
+    [0, 40, nearUp - 1, nearUp, 300, topmost - nearUp, topmost - nearUp + 1, topmost]
+)
+func cardOpensAgainWhereItWasLetGo(x: CGFloat, y: CGFloat) {
+    // Given
+    var window = cardOpenInTheMiddle()
+    let before = dragCard(&window, to: CGPoint(x: x, y: y))
+
+    // When
+    window.pointerExited(at: second(0))
+    window.check(at: second(0.5))
+    let closed = !window.isExpanded
+    let middle = CGPoint(x: window.capsuleFrame.midX, y: window.capsuleFrame.midY)
+    window.pointerEntered()
+    window.pressed(at: middle)
+    window.released(at: middle, visibleFrame: screen)
+
+    // Then
+    #expect(closed)
+    #expect(window.frame == before)
+}
+
+@Test("Given the card is open, when it is clicked without moving, then the capsule stays where it was")
+func clickingTheCardDoesNotTuck() {
+    // Given
+    var window = expandedWindow()
+
+    // When
+    window.pressed(at: CGPoint(x: 700, y: 800))
+    window.released(at: CGPoint(x: 700, y: 800), visibleFrame: screen)
+
+    // Then
+    #expect(window.capsuleFrame == topCapsule)
+    #expect(window.frame == CGRect(x: 578, y: 669, width: 284, height: 200))
 }
