@@ -290,12 +290,14 @@ func awayCountStartsWhenTheMenuCloses() {
 
     // When
     window.menuClosed(at: second(10))
+    let nextCheck = window.nextCheck
+    window.check(at: second(10.4))
+    let openAt10_4 = window.isExpanded
+    window.check(at: second(10.5))
 
     // Then
-    #expect(window.nextCheck == second(10.5))
-    window.check(at: second(10.4))
-    #expect(window.isExpanded)
-    window.check(at: second(10.5))
+    #expect(nextCheck == second(10.5))
+    #expect(openAt10_4)
     #expect(!window.isExpanded)
 }
 
@@ -330,4 +332,21 @@ func rightClickingTheCapsuleKeepsItClosed() {
     // Then
     #expect(!window.isExpanded)
     #expect(window.capsuleFrame == topCapsule)
+}
+
+@Test("Given the card's menu is open, when the Floating Window is hidden and its close never arrives, then once shown and opened again the card still closes 0.5 s after the pointer leaves")
+func hidingEndsTheMenuHold() {
+    // Given
+    var window = expandedWindow()
+    window.menuOpened()
+
+    // When
+    window.hide()
+    window.pressed(at: CGPoint(x: 720, y: 850))
+    window.released(at: CGPoint(x: 720, y: 850), visibleFrame: screen)
+    window.pointerExited(at: second(0))
+    window.check(at: second(0.5))
+
+    // Then
+    #expect(!window.isExpanded)
 }

@@ -125,6 +125,8 @@ public struct FloatingWindowExpansion: Sendable {
         cardLayout = nil
         pointerExitedAt = nil
         press = nil
+        // Should its close go missing, the card could otherwise never close again.
+        isMenuOpen = false
     }
 
     /// How far to move `frame` so it sits inside `area`.
