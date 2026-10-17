@@ -107,6 +107,10 @@
 - [x] (M5) **Given** ตั้ง Focus เป็น `1` นาที แล้วเปิดสวิตช์ `Start breaks automatically` (สวิตช์เป็นสีแดงมะเขือเทศ) **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** Short Break เริ่มเดินทันทีโดยไม่ต้องกด Start; ทำซ้ำโดยเปิด `Start Focus automatically` ด้วย แล้วรอ Short Break หมดเวลา → Focus ถัดไปเดินเอง (ทดสอบเสร็จแล้วกด `Restore Defaults`)
 - [x] (M5) **Given** เปลี่ยน Focus เป็น `30`, Pomodoros per Cycle เป็น `6` และเปิดสวิตช์ทั้งสอง **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ แล้วเปิด `Settings…` **Then** ค่าทุกค่ายังเป็นแบบที่เปลี่ยนไว้
 - [x] (M5) **Given** ค่าใน Settings ไม่ใช่ค่าเริ่มต้น (เช่น ข้อบน) ลากแคปซูลไปไว้มุมล่างซ้ายของจอ และเอาเครื่องหมายถูกหน้า `Always on Top` ออก **When** กด `Restore Defaults` **Then** ช่องกลับเป็น `25` / `5` / `15` / `4` สวิตช์ทั้งสองปิด แต่แคปซูลยังอยู่มุมล่างซ้ายไม่ขยับ และ `Always on Top` ในเมนูยังไม่มีเครื่องหมายถูก (ทดสอบเสร็จแล้วติ๊กกลับ)
+- [ ] (M6) **Given** ไม่เคยตั้ง `Open at login` มาก่อน **When** เปิด `Settings…` **Then** หัวข้อ `General` อยู่บนสุด เหนือ `Timer` และสวิตช์ `Open at login` ปิดอยู่
+- [ ] (M6) **Given** หน้าต่าง Settings เปิดอยู่ **When** เปิดสวิตช์ `Open at login` แล้วไปดู System Settings › General › Login Items & Extensions **Then** macOS แจ้งเตือนว่า Pomodot จะเปิดเองตอน login และในรายการ `Open at Login` มี Pomodot; จากนั้นเลือก Log Out จากเมนู Apple แล้ว login กลับเข้ามา → Pomodot เปิดเองและแคปซูลโผล่
+- [ ] (M6) **Given** สวิตช์ `Open at login` เปิดอยู่ **When** ใน System Settings › General › Login Items & Extensions เลือก Pomodot แล้วกดปุ่ม − จากนั้นกลับมาเปิด `Settings…` ของ Pomodot **Then** สวิตช์ `Open at login` ปิดเองตามระบบ (จดไว้ว่าระหว่างนั้นเห็นบรรทัดสีส้ม `Pomodot needs your approval in System Settings to open at login.` กับปุ่ม `Open Login Items…` หรือไม่) และเปิดสวิตช์ใหม่ได้ตามปกติ
+- [ ] (M6) **Given** สวิตช์ `Open at login` เปิดอยู่ และเปลี่ยน Focus เป็น `30` **When** กด `Restore Defaults` **Then** Focus กลับเป็น `25` แต่ `Open at login` ยังเปิดอยู่ (ทดสอบเสร็จแล้วปิดสวิตช์ถ้าไม่อยากให้เปิดเองตอน login)
 
 ## ข้อมูลที่บันทึกไว้
 
