@@ -36,7 +36,7 @@ func theSampleStateFileAlwaysReads() {
     #expect(loaded.moveAside == false)
 }
 
-@Test("Given a Short Break 3/4 Ready with 2 Pomodoros done and a hidden Floating Window, not on top, at (300.5, 400), when it is saved and loaded back, then every value is the same")
+@Test("Given a Short Break 3/4 Ready with 2 Pomodoros done, the Floating Window not on top at (300.5, 400) and the hide notice already shown, when it is saved and loaded back, then every value is the same")
 func savedStateLoadsBack() {
     // Given
     let state = SavedState(
@@ -44,7 +44,9 @@ func savedStateLoadsBack() {
             phase: .shortBreak, displayNumber: 3, pomodorosDone: 2, pomodorosPerCycle: 4,
             phaseLengthSeconds: 300, remainingSeconds: 300, hasStarted: false
         ),
-        floatingWindow: FloatingWindowState(visible: false, alwaysOnTop: false, center: CGPoint(x: 300.5, y: 400))
+        floatingWindow: FloatingWindowState(
+            visible: true, alwaysOnTop: false, center: CGPoint(x: 300.5, y: 400), hideNoticeShown: true
+        )
     )
 
     // When
@@ -244,3 +246,66 @@ func valuesBeyondWhatSettingsAllowAreFixed() {
     #expect(loaded.value == sample)
     #expect(loaded.moveAside == false)
 }
+
+// MARK: M6: the capsule shows on every launch
+
+@Test("Given a state.json saved with the Floating Window hidden, off top and moved to (300, 400), when the state is loaded, then the Floating Window shows, still off top at (300, 400)")
+func hiddenFloatingWindowShowsOnLaunch() {
+    // Given
+    let data = Data(String(decoding: fixture("state.json"), as: UTF8.self)
+        .replacingOccurrences(of: "\"visible\": true", with: "\"visible\": false")
+        .replacingOccurrences(of: "\"alwaysOnTop\": true", with: "\"alwaysOnTop\": false")
+        .replacingOccurrences(of: "{ \"x\": 720, \"y\": 844 }", with: "{ \"x\": 300, \"y\": 400 }")
+        .utf8)
+
+    // When
+    let window = StateFile.decode(data, settings: TimerSettings()).value.floatingWindow
+
+    // Then
+    #expect(window == FloatingWindowState(visible: true, alwaysOnTop: false, center: CGPoint(x: 300, y: 400)))
+}
+
+@Test("Given the Floating Window is hidden, when the state is saved, then state.json still says visible is false")
+func hiddenIsStillWritten() throws {
+    // Given
+    var state = sample
+    state.floatingWindow.visible = false
+
+    // When
+    let data = StateFile.encode(state)
+
+    // Then
+    let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let window = try #require(json["floatingWindow"] as? [String: Any])
+    #expect(window["visible"] as? Bool == false)
+}
+
+@Test("Given a state.json from 0.9.0 with no hideNoticeShown, when the state is loaded, then the notice counts as never shown")
+func missingHideNoticeShownIsFalse() {
+    // Given
+    let data = Data(String(decoding: fixture("state.json"), as: UTF8.self)
+        .replacingOccurrences(of: ",\n    \"hideNoticeShown\": false", with: "")
+        .utf8)
+    #expect(!String(decoding: data, as: UTF8.self).contains("hideNoticeShown"))
+
+    // When
+    let window = StateFile.decode(data, settings: TimerSettings()).value.floatingWindow
+
+    // Then
+    #expect(window.hideNoticeShown == false)
+}
+
+@Test("Given the sample state.json with hideNoticeShown true, when the state is loaded, then the notice counts as shown")
+func hideNoticeShownLoads() {
+    // Given
+    let data = Data(String(decoding: fixture("state.json"), as: UTF8.self)
+        .replacingOccurrences(of: "\"hideNoticeShown\": false", with: "\"hideNoticeShown\": true")
+        .utf8)
+
+    // When
+    let window = StateFile.decode(data, settings: TimerSettings()).value.floatingWindow
+
+    // Then
+    #expect(window.hideNoticeShown == true)
+}
+

@@ -8,10 +8,21 @@ import Observation
 @MainActor
 @Observable
 final class AppModel {
-    /// Shown on first launch; remembered in state.json.
+    /// Shown whenever Pomodot opens. Hidden from any menu, the first time ever it says how to
+    /// bring it back.
     var isFloatingWindowVisible: Bool {
-        didSet { saveState() }
+        didSet {
+            if oldValue, !isFloatingWindowVisible,
+               let notice = HideNotice.onHiding(alreadyShown: &hideNoticeShown, showInDock: hasDockIcon) {
+                HideNoticeAlert.tell(notice)
+            }
+            saveState()
+        }
     }
+    /// The notice on the first Hide has been shown; remembered in state.json.
+    @ObservationIgnored private var hideNoticeShown: Bool
+    /// Pomodot shows in the Dock, so clicking its icon brings the Floating Window back.
+    private var hasDockIcon: Bool { NSApp.activationPolicy() == .regular }
     /// On by default; remembered in state.json.
     var isAlwaysOnTop: Bool {
         didSet { saveState() }
@@ -86,7 +97,9 @@ final class AppModel {
         // Where the app was at the last Quit, Paused (or Ready if it hadn't started).
         let saved = stateFile.load { StateFile.decode($0, settings: timerSettings) }
         timer = PomodoroTimer(restoring: saved.timer, settings: timerSettings)
+        // Always true: the capsule shows whenever Pomodot opens.
         isFloatingWindowVisible = saved.floatingWindow.visible
+        hideNoticeShown = saved.floatingWindow.hideNoticeShown
         isAlwaysOnTop = saved.floatingWindow.alwaysOnTop
         capsuleCenter = saved.floatingWindow.center
         // Only real sleep (lid closed, Sleep chosen). Locking the screen, the display
@@ -309,7 +322,8 @@ final class AppModel {
     /// Rewrites state.json whole: the timer as if paused at `now`, and the Floating Window.
     private func saveState(at now: Date = Date()) {
         let window = FloatingWindowState(
-            visible: isFloatingWindowVisible, alwaysOnTop: isAlwaysOnTop, center: capsuleCenter
+            visible: isFloatingWindowVisible, alwaysOnTop: isAlwaysOnTop, center: capsuleCenter,
+            hideNoticeShown: hideNoticeShown
         )
         stateFile.save(StateFile.encode(SavedState(timer: timer.snapshot(at: now), floatingWindow: window)))
         lastStateSave = now

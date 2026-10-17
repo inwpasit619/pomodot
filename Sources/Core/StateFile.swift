@@ -32,16 +32,21 @@ public struct TimerSnapshot: Sendable, Equatable {
 
 /// Whether the Floating Window shows, floats on top, and where its capsule is.
 public struct FloatingWindowState: Sendable, Equatable {
+    /// Written as it is, but always true once loaded: the capsule shows whenever Pomodot opens.
     public var visible: Bool
     public var alwaysOnTop: Bool
     /// The collapsed capsule's centre in AppKit's global coordinates; nil until it is moved
     /// from the starting position.
     public var center: CGPoint?
+    /// The notice on the first Hide has been shown. Kept here rather than in settings.json,
+    /// so Restore Defaults leaves it alone.
+    public var hideNoticeShown: Bool
 
-    public init(visible: Bool = true, alwaysOnTop: Bool = true, center: CGPoint? = nil) {
+    public init(visible: Bool = true, alwaysOnTop: Bool = true, center: CGPoint? = nil, hideNoticeShown: Bool = false) {
         self.visible = visible
         self.alwaysOnTop = alwaysOnTop
         self.center = center
+        self.hideNoticeShown = hideNoticeShown
     }
 }
 
@@ -104,7 +109,8 @@ public enum StateFile {
             floatingWindow: FloatingWindowContents(
                 visible: window.visible,
                 alwaysOnTop: window.alwaysOnTop,
-                center: window.center.map { Center(x: $0.x, y: $0.y) }
+                center: window.center.map { Center(x: $0.x, y: $0.y) },
+                hideNoticeShown: window.hideNoticeShown
             )
         )
         let encoder = JSONEncoder()
@@ -159,6 +165,7 @@ public enum StateFile {
         var visible: Bool
         var alwaysOnTop: Bool
         var center: Center?
+        var hideNoticeShown: Bool
 
         /// Writes `"center": null` for a capsule never moved, as the spec's format shows.
         func encode(to encoder: Encoder) throws {
@@ -166,10 +173,11 @@ public enum StateFile {
             try container.encode(visible, forKey: .visible)
             try container.encode(alwaysOnTop, forKey: .alwaysOnTop)
             try container.encode(center, forKey: .center)
+            try container.encode(hideNoticeShown, forKey: .hideNoticeShown)
         }
 
         private enum CodingKeys: String, CodingKey {
-            case visible, alwaysOnTop, center
+            case visible, alwaysOnTop, center, hideNoticeShown
         }
     }
 
@@ -246,14 +254,17 @@ public enum StateFile {
             // A null centre is a capsule never moved; a broken one is treated the same.
             let center = try? container.decode(Center.self, forKey: .center)
             state = FloatingWindowState(
-                visible: (try? container.decode(Bool.self, forKey: .visible)) ?? defaults.visible,
+                // `visible` isn't read: the capsule shows whenever Pomodot opens, even if it was hidden at Quit.
+                visible: true,
                 alwaysOnTop: (try? container.decode(Bool.self, forKey: .alwaysOnTop)) ?? defaults.alwaysOnTop,
-                center: center.map { CGPoint(x: $0.x, y: $0.y) }
+                center: center.map { CGPoint(x: $0.x, y: $0.y) },
+                // A file from 0.9.0 has none: the notice hasn't been shown.
+                hideNoticeShown: (try? container.decode(Bool.self, forKey: .hideNoticeShown)) ?? defaults.hideNoticeShown
             )
         }
 
         private enum CodingKeys: String, CodingKey {
-            case visible, alwaysOnTop, center
+            case alwaysOnTop, center, hideNoticeShown
         }
     }
 }
