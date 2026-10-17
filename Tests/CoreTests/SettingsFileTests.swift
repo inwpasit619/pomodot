@@ -20,7 +20,7 @@ private func expectTheSpecDefaults(_ settings: Settings, sourceLocation: SourceL
     #expect(settings.showInDock == true, sourceLocation: sourceLocation)
 }
 
-@Test("Given the version 1 sample settings.json from the spec, when it is loaded, then it is 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero and Appearance System")
+@Test("Given the version 1 sample settings.json from the spec, when it is loaded, then it is 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero, Appearance System and Show in Dock on")
 func theSampleSettingsFileAlwaysReads() {
     // Given
     let data = fixture("settings.json")
@@ -115,7 +115,7 @@ func aMissingSoundIsTheDefault() {
     #expect(loaded.moveAside == false)
 }
 
-@Test("Given there is no settings.json yet, when Settings are loaded, then they are 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero and Appearance System")
+@Test("Given there is no settings.json yet, when Settings are loaded, then they are 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero, Appearance System and Show in Dock on")
 func noSettingsFileMeansTheDefaults() {
     // Given
     let data: Data? = nil
@@ -207,7 +207,7 @@ func newerSettingsFileIsMovedAside() {
     #expect(loaded.moveAside == true)
 }
 
-@Test("Given Settings with every value changed, when Restore Defaults is pressed, then they are 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero and System, and settings.json still holds nothing of the Floating Window")
+@Test("Given Settings with every value changed, when Restore Defaults is pressed, then they are 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero, System and Show in Dock on, and settings.json still holds nothing of the Floating Window")
 func restoreDefaultsGoesBackToTheDefaults() throws {
     // Given
     var settings = everyValueChanged()
