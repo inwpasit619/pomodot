@@ -13,6 +13,7 @@ enum LoginItem {
         case .notRegistered: .notRegistered
         case .requiresApproval: .requiresApproval
         case .notFound: .notFound
+        // A status from a later macOS: shown as off, which the user can turn on again.
         @unknown default: .notFound
         }
     }

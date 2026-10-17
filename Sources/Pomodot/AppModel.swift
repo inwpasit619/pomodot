@@ -64,6 +64,9 @@ final class AppModel {
     /// Open at login, as macOS says it is. Read when Settings opens and whenever Pomodot
     /// comes back active, e.g. from System Settings; never saved, so Restore Defaults leaves it alone.
     private(set) var loginItemStatus = LoginItem.status
+    /// Counts the times macOS turned down a change to Open at login, so the switch redraws
+    /// back where it was: the status stays the same then, and observers aren't told.
+    private(set) var loginItemRefusals = 0
 
     /// Each sound dropdown: None, then every system sound.
     let soundChoices = Settings.soundChoices(onThisMac: SoundPlayer.systemSoundNames)
@@ -132,10 +135,7 @@ final class AppModel {
         NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.checkWhetherNotificationsAreTurnedOff()
-                self?.checkLoginItem()
-            }
+            MainActor.assumeIsolated { self?.checkSystemSettings() }
         }
         // Before any window shows, so none of them flashes in the other look.
         applyAppearance()
@@ -190,7 +190,15 @@ final class AppModel {
         }
     }
 
-    func checkLoginItem() {
+    /// What Settings shows from System Settings: notifications turned off, and Open at login.
+    /// Read when Settings opens and whenever Pomodot comes back active.
+    func checkSystemSettings() {
+        checkWhetherNotificationsAreTurnedOff()
+        checkLoginItem()
+    }
+
+    /// Asks macOS whether Pomodot opens at login, for the switch in Settings.
+    private func checkLoginItem() {
         loginItemStatus = LoginItem.status
     }
 
@@ -198,6 +206,9 @@ final class AppModel {
     func setOpensAtLogin(_ on: Bool) {
         LoginItem.turn(on: on)
         checkLoginItem()
+        if loginItemStatus.isOn != on {
+            loginItemRefusals += 1
+        }
     }
 
     /// A sound picked in Settings: saved, and played straight away so it can be heard.

@@ -26,8 +26,14 @@ struct SettingsView: View {
                         get: { model.loginItemStatus.isOn },
                         set: { model.setOpensAtLogin($0) }
                     ))
+                    // A switch macOS refused to change goes back to what macOS says.
+                    .id(model.loginItemRefusals)
                     if model.loginItemStatus.needsApproval {
-                        LoginItemApprovalWarning()
+                        SystemSettingsWarning(
+                            "Pomodot needs your approval in System Settings to open at login.",
+                            button: "Open Login Items…",
+                            action: LoginItem.openSystemSettings
+                        )
                     }
                 } header: {
                     SectionTitle("General")
@@ -61,7 +67,11 @@ struct SettingsView: View {
                 Section {
                     Toggle("Show notifications", isOn: $model.settings.showNotifications)
                     if model.warnsNotificationsAreOff {
-                        NotificationsOffWarning()
+                        SystemSettingsWarning(
+                            "Notifications are turned off for Pomodot in System Settings.",
+                            button: "Open System Settings…",
+                            action: { NSWorkspace.shared.open(notificationSettingsURL) }
+                        )
                     }
                     SoundPicker("End of Focus sound", sound: .focus, model: model)
                     SoundPicker("End of Break sound", sound: .break, model: model)
@@ -154,37 +164,31 @@ private struct NumberRow: View {
     }
 }
 
-/// Shown under Show notifications while macOS has Pomodot's notifications turned off.
-private struct NotificationsOffWarning: View {
-    /// Pomodot's own page under Notifications in System Settings.
-    private static let systemSettingsURL = URL(
-        string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=\(Bundle.main.bundleIdentifier ?? "")"
-    )!
+/// Pomodot's own page under Notifications in System Settings.
+private let notificationSettingsURL = URL(
+    string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=\(Bundle.main.bundleIdentifier ?? "")"
+)!
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Notifications are turned off for Pomodot in System Settings.", systemImage: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
-            Button("Open System Settings…") {
-                NSWorkspace.shared.open(Self.systemSettingsURL)
-            }
-            // Its own grey button: the tomato red is for the window's main button and switches.
-            .tint(nil)
-        }
+/// An orange line under a switch while System Settings stands in its way (notifications turned
+/// off, Open at login waiting for approval), with a button that goes there.
+private struct SystemSettingsWarning: View {
+    let message: String
+    let button: String
+    let action: () -> Void
+
+    init(_ message: String, button: String, action: @escaping () -> Void) {
+        self.message = message
+        self.button = button
+        self.action = action
     }
-}
 
-/// Shown under Open at login while macOS waits for the user to allow it.
-private struct LoginItemApprovalWarning: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Pomodot needs your approval in System Settings to open at login.", systemImage: "exclamationmark.triangle.fill")
+            Label(message, systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
-            Button("Open Login Items…") {
-                LoginItem.openSystemSettings()
-            }
-            // Its own grey button: the tomato red is for the window's main button and switches.
-            .tint(nil)
+            Button(button, action: action)
+                // Its own grey button: the tomato red is for the window's main button and switches.
+                .tint(nil)
         }
     }
 }
