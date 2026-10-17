@@ -111,6 +111,8 @@ final class FloatingWindowController {
         panel.hidesOnDeactivate = false
         // ⌘H, Hide Pomodot and the Dock's Hide hide Settings and Statistics, never the capsule.
         panel.canHide = false
+        // Pomodot is seldom active, and tooltips (More, Reset, Skip) only show for the active app otherwise.
+        panel.allowsToolTipsWhenApplicationIsInactive = true
         // A click on the capsule must not take the keyboard from the app the user is typing in.
         panel.becomesKeyOnlyIfNeeded = true
         panel.backgroundColor = .clear
