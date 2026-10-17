@@ -86,9 +86,20 @@ public struct CardLayout: Sendable, Equatable {
         }
         let topRight = growing(fromCapsuleIn: CardLayout(vertical: .down, horizontal: .rightEdges))
         let bottomLeft = growing(fromCapsuleIn: CardLayout(vertical: .up, horizontal: .leftEdges))
-        vertical = topRight.vertical == .down ? .down : bottomLeft.vertical == .up ? .up : .centered
-        horizontal = topRight.horizontal == .rightEdges ? .rightEdges
-            : bottomLeft.horizontal == .leftEdges ? .leftEdges : .centered
+        if topRight.vertical == .down {
+            vertical = .down
+        } else if bottomLeft.vertical == .up {
+            vertical = .up
+        } else {
+            vertical = .centered
+        }
+        if topRight.horizontal == .rightEdges {
+            horizontal = .rightEdges
+        } else if bottomLeft.horizontal == .leftEdges {
+            horizontal = .leftEdges
+        } else {
+            horizontal = .centered
+        }
     }
 
     public init(capsule: CGRect, visibleFrame: CGRect) {
