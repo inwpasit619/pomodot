@@ -12,24 +12,15 @@ final class FloatingPanel: NSPanel {
     override var canBecomeKey: Bool { true }
 
     // AppKit would push the panel's transparent edges out from under the menu bar, moving
-    // the glass away from where Core put it. Leave it be while the card's place is on a screen.
-    // Where the card itself is under the menu bar (it showed up after Core placed it, say), move
-    // only as far as the card needs, so it still sits flush against the menu bar. With no screen
-    // left under it (its display went away), let AppKit bring it back.
+    // the glass away from where Core put it. Leave it be while the card's place is on a screen;
+    // otherwise (its display went away, say) let AppKit bring it back.
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
         let margin = FloatingWindowController.margin
         let card = frameRect.insetBy(dx: margin, dy: margin)
         if NSScreen.screens.contains(where: { $0.usableFrame.contains(card) }) {
             return frameRect
         }
-        guard let area = NSScreen.screens.first(where: { $0.frame.intersects(card) })?.usableFrame,
-              card.width <= area.width, card.height <= area.height else {
-            return super.constrainFrameRect(frameRect, to: screen)
-        }
-        return frameRect.offsetBy(
-            dx: min(max(card.minX, area.minX), area.maxX - card.width) - card.minX,
-            dy: min(max(card.minY, area.minY), area.maxY - card.height) - card.minY
-        )
+        return super.constrainFrameRect(frameRect, to: screen)
     }
 
     override func sendEvent(_ event: NSEvent) {
@@ -251,9 +242,6 @@ final class FloatingWindowController {
     /// corner of it; the card and the panel stay where they were.
     private func release(at point: CGPoint) {
         expansion.released(at: point, visibleFrame: screenArea)
-        // macOS keeps a window's glass from going under a menu bar, even on a display whose
-        // usable area says it may; the move it held back during the drag reached no one.
-        followPanel()
         // A click that opens the card is shown by `update`, with its animation.
         if expansion.isExpanded == display.isExpanded {
             followCapsule()
@@ -305,17 +293,8 @@ final class FloatingWindowController {
         guard !expansion.isPressed else { return }
         // Not remembered: with the display plugged back in before the next launch,
         // the capsule goes back where it was dragged.
-        followPanel()
-    }
-
-    /// Where macOS put the panel somewhere other than Core said, the capsule goes along.
-    private func followPanel() {
-        let expected = panelFrame
-        let dx = panel.frame.minX - expected.minX
-        let dy = panel.frame.minY - expected.minY
-        // Half a point either way is AppKit rounding, not a move.
-        guard abs(dx) > 0.5 || abs(dy) > 0.5 else { return }
-        expansion.moveCapsule(to: expansion.capsuleFrame.offsetBy(dx: dx, dy: dy))
+        let card = panel.frame.insetBy(dx: Self.margin, dy: Self.margin)
+        expansion.moveCapsule(to: (display.cardLayout ?? layout).capsuleFrame(inside: card))
     }
 
     // MARK: The card's menu
