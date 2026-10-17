@@ -286,12 +286,12 @@ func missingHideNoticeShownIsFalse() {
     let data = Data(String(decoding: fixture("state.json"), as: UTF8.self)
         .replacingOccurrences(of: ",\n    \"hideNoticeShown\": false", with: "")
         .utf8)
-    #expect(!String(decoding: data, as: UTF8.self).contains("hideNoticeShown"))
 
     // When
     let window = StateFile.decode(data, settings: TimerSettings()).value.floatingWindow
 
     // Then
+    #expect(!String(decoding: data, as: UTF8.self).contains("hideNoticeShown"))
     #expect(window.hideNoticeShown == false)
 }
 

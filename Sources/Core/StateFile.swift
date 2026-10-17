@@ -30,7 +30,8 @@ public struct TimerSnapshot: Sendable, Equatable {
     }
 }
 
-/// Whether the Floating Window shows, floats on top, and where its capsule is.
+/// Whether the Floating Window shows, floats on top, and where its capsule is; and whether
+/// the notice on its first Hide has been shown.
 public struct FloatingWindowState: Sendable, Equatable {
     /// Written as it is, but always true once loaded: the capsule shows whenever Pomodot opens.
     public var visible: Bool
@@ -255,7 +256,7 @@ public enum StateFile {
             let center = try? container.decode(Center.self, forKey: .center)
             state = FloatingWindowState(
                 // `visible` isn't read: the capsule shows whenever Pomodot opens, even if it was hidden at Quit.
-                visible: true,
+                visible: defaults.visible,
                 alwaysOnTop: (try? container.decode(Bool.self, forKey: .alwaysOnTop)) ?? defaults.alwaysOnTop,
                 center: center.map { CGPoint(x: $0.x, y: $0.y) },
                 // A file from 0.9.0 has none: the notice hasn't been shown.
