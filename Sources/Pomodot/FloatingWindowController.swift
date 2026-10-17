@@ -15,8 +15,7 @@ final class FloatingPanel: NSPanel {
     // the glass away from where Core put it. Leave it be while the card's place is on a screen;
     // otherwise (its display went away, say) let AppKit bring it back.
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
-        let margin = FloatingWindowController.margin
-        let card = frameRect.insetBy(dx: margin, dy: margin)
+        let card = FloatingWindowController.cardFrame(inside: frameRect)
         if NSScreen.screens.contains(where: { $0.usableFrame.contains(card) }) {
             return frameRect
         }
@@ -64,7 +63,7 @@ final class FloatingWindowDisplay {
 @MainActor
 final class FloatingWindowController {
     /// Room around the card for the hover, the bounce and the shadow.
-    static let margin: CGFloat = 16
+    static let margin: CGFloat = 24
     /// The open and close animation: a spring with no bounce.
     private static let openClose = Animation.smooth(duration: 0.35)
     /// Widening on hover: quicker, with a little bounce, like the Dynamic Island.
@@ -90,15 +89,15 @@ final class FloatingWindowController {
 
         // The primary display (the one with the menu bar), not NSScreen.main:
         // .main follows the key window, and this app never activates.
-        let visibleFrame = NSScreen.screens.first?.usableFrame ?? .zero
+        let mainArea = NSScreen.screens.first?.usableFrame ?? .zero
         let capsule = FloatingWindowPlacement.capsuleFrame(
             remembering: model.capsuleCenter,
             screens: NSScreen.screens.map(\.usableFrame),
-            mainScreen: visibleFrame
+            mainScreen: mainArea
         )
         expansion = FloatingWindowExpansion(capsuleFrame: capsule)
         let capsuleScreen = NSScreen.screens.first { $0.frame.contains(CGPoint(x: capsule.midX, y: capsule.midY)) }
-        let layout = CardLayout(capsule: capsule, visibleFrame: capsuleScreen?.usableFrame ?? visibleFrame)
+        let layout = CardLayout(capsule: capsule, visibleFrame: capsuleScreen?.usableFrame ?? mainArea)
         panel = FloatingPanel(
             contentRect: Self.panelFrame(around: capsule, layout: layout),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -176,6 +175,11 @@ final class FloatingWindowController {
     /// The panel around a capsule: the card's place for `layout`, plus the margin.
     private static func panelFrame(around capsule: CGRect, layout: CardLayout) -> CGRect {
         layout.cardFrame(around: capsule).insetBy(dx: -margin, dy: -margin)
+    }
+
+    /// The card's place inside a panel frame.
+    static func cardFrame(inside panelFrame: CGRect) -> CGRect {
+        panelFrame.insetBy(dx: margin, dy: margin)
     }
 
     /// Where the capsule sits in the card: Core's while the card is open, else where
@@ -293,7 +297,7 @@ final class FloatingWindowController {
         guard !expansion.isPressed else { return }
         // Not remembered: with the display plugged back in before the next launch,
         // the capsule goes back where it was dragged.
-        let card = panel.frame.insetBy(dx: Self.margin, dy: Self.margin)
+        let card = Self.cardFrame(inside: panel.frame)
         expansion.moveCapsule(to: (display.cardLayout ?? layout).capsuleFrame(inside: card))
     }
 
@@ -307,11 +311,11 @@ final class FloatingWindowController {
     /// Opens the menu below the ellipsis button, or above it, where Core says.
     private func openMenuBelowMoreButton() {
         // Screen coordinates: SwiftUI measures from the panel's top-left.
-        let panelFrame = self.panelFrame
+        let panel = panelFrame
         let frame = display.moreButtonFrame
         let button = CGRect(
-            x: panelFrame.minX + frame.minX,
-            y: panelFrame.maxY - frame.maxY,
+            x: panel.minX + frame.minX,
+            y: panel.maxY - frame.maxY,
             width: frame.width,
             height: frame.height
         )
@@ -402,11 +406,22 @@ final class FloatingWindowController {
     /// now sits differently in the card: the glass is drawn at its place in the moved panel in the
     /// same screen update, or it would blink to one side for a frame.
     private func showGlass(animation: Animation?) {
-        let panelFrame = self.panelFrame
+        let target = panelFrame
         // Half a point either way is AppKit rounding, not a move.
-        let moves = abs(panel.frame.minX - panelFrame.minX) > 0.5 || abs(panel.frame.minY - panelFrame.minY) > 0.5
-        if moves {
+        if abs(panel.frame.minX - target.minX) > 0.5 || abs(panel.frame.minY - target.minY) > 0.5 {
+            // The glass stays where it is on screen while the panel moves under it,
+            // and any animation starts from there.
+            let box = display.boxFrame
+            let shown = CGRect(
+                x: panel.frame.minX + box.minX,
+                y: panel.frame.maxY - box.maxY,
+                width: box.width,
+                height: box.height
+            )
             panel.disableScreenUpdatesUntilFlush()
+            display.boxFrame = boxFrame(of: shown)
+            hosting.layoutSubtreeIfNeeded()
+            panel.setFrameOrigin(target.origin)
         }
         // Set before the animation, so the card grows from the right place.
         display.cardLayout = layout
@@ -415,20 +430,16 @@ final class FloatingWindowController {
             display.isHovered = looksHovered
             display.boxFrame = boxFrame(of: glassFrame)
         }
-        if moves {
-            hosting.layoutSubtreeIfNeeded()
-            panel.setFrameOrigin(panelFrame.origin)
-        }
         content.trackingRect = content.convert(display.boxFrame, from: hosting)
         syncPointer()
     }
 
     /// `frame` (screen coordinates) inside the panel, measured from its top-left as SwiftUI does.
     private func boxFrame(of frame: CGRect) -> CGRect {
-        let panelFrame = self.panelFrame
+        let panel = panelFrame
         return CGRect(
-            x: frame.minX - panelFrame.minX,
-            y: panelFrame.maxY - frame.maxY,
+            x: frame.minX - panel.minX,
+            y: panel.maxY - frame.maxY,
             width: frame.width,
             height: frame.height
         )
@@ -511,7 +522,11 @@ extension NSScreen {
     @MainActor
     var usableFrame: CGRect {
         let area = visibleFrame
-        guard let bar = MenuBars.frames.first(where: { $0.intersects(frame) && $0.minY < area.maxY }) else {
+        // A bar across the whole top of this display, not some other window at the menu bar's level.
+        let isMenuBar = { (bar: CGRect) in
+            bar.minX <= self.frame.minX && bar.maxX >= self.frame.maxX && bar.maxY == self.frame.maxY
+        }
+        guard let bar = MenuBars.frames.first(where: { isMenuBar($0) && $0.minY < area.maxY }) else {
             return area
         }
         return CGRect(x: area.minX, y: area.minY, width: area.width, height: max(0, bar.minY - area.minY))
