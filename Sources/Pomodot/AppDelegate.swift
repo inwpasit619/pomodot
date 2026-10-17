@@ -20,7 +20,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Before anything shows, so with Show in Dock off no Dock icon flashes up.
     func applicationWillFinishLaunching(_ notification: Notification) {
         model.applyDockIcon()
-        model.afterDockIconChange = { [weak self] in self?.settingsWindowController.bringToFrontIfOpen() }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {

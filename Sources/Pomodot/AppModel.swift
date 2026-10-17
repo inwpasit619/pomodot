@@ -41,7 +41,6 @@ final class AppModel {
             }
             if settings.showInDock != oldValue.showInDock {
                 applyDockIcon()
-                afterDockIconChange?()
             }
             let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
             send { timer, _ in
@@ -213,14 +212,19 @@ final class AppModel {
         }
     }
 
-    /// Called after Show in Dock changes the Dock icon, e.g. to bring the Settings window back up.
-    @ObservationIgnored var afterDockIconChange: (() -> Void)?
+    /// The Settings window is open. Pomodot keeps its Dock icon meanwhile, even with Show in Dock
+    /// off: taking the icon away from the active app makes macOS deactivate it, and Settings would
+    /// blink (FB7743313). Switched off there, the icon goes when Settings closes.
+    @ObservationIgnored var isSettingsWindowOpen = false {
+        didSet { applyDockIcon() }
+    }
 
     /// The only place that shows or hides the Dock icon: at launch, before anything shows,
-    /// and whenever Show in Dock changes. Info.plist keeps LSUIElement, so with Show in Dock
-    /// off no icon flashes up at launch.
+    /// whenever Show in Dock changes, and as Settings opens and closes. Info.plist keeps
+    /// LSUIElement, so with Show in Dock off no icon flashes up at launch.
     func applyDockIcon() {
-        NSApplication.shared.setActivationPolicy(settings.showInDock ? .regular : .accessory)
+        let hasIcon = settings.showInDock || isSettingsWindowOpen
+        NSApplication.shared.setActivationPolicy(hasIcon ? .regular : .accessory)
     }
 
     /// A sound picked in Settings: saved, and played straight away so it can be heard.
