@@ -41,7 +41,7 @@
 
 ## Menu bar
 
-- [x] (M1) **Given** เปิด Pomodot อยู่ **When** ดูที่ Dock และกด Cmd-Tab ค้างไว้ **Then** ไม่มีไอคอน Pomodot ทั้งใน Dock และในแถบ Cmd-Tab และแถบเมนูด้านบนจอไม่ขึ้นชื่อ Pomodot
+- [ ] (M6) **Given** เปิด Pomodot อยู่ และปิดสวิตช์ `Show in Dock` ใน Settings **When** ดูที่ Dock และกด Cmd-Tab ค้างไว้ **Then** ไม่มีไอคอน Pomodot ทั้งใน Dock และในแถบ Cmd-Tab และแถบเมนูด้านบนจอไม่ขึ้นชื่อ Pomodot (ทดสอบเสร็จแล้วเปิดสวิตช์กลับ)
 - [x] (M1) **Given** เปิด Pomodot อยู่ **When** ดูที่ menu bar ด้านขวาบน **Then** มีไอคอนนาฬิกาจับเวลา (ยังไม่มีตัวเลขเวลา) ถ้ามองไม่เห็นเพราะไอคอนเยอะจนโดนรอยบากบัง ให้ปิดแอพอื่นบน menu bar บางตัวก่อน
 - [x] (M1) **Given** เห็นไอคอนนาฬิกาบน menu bar **When** คลิกไอคอน **Then** มีเมนูหล่นลงมาและมีคำสั่ง `Quit Pomodot`
 - [x] (M1) **Given** เปิดเมนูของ Pomodot อยู่ **When** กด `Quit Pomodot` **Then** ไอคอนนาฬิกาหายไปจาก menu bar และแอพปิดไป
@@ -107,10 +107,10 @@
 - [x] (M5) **Given** ตั้ง Focus เป็น `1` นาที แล้วเปิดสวิตช์ `Start breaks automatically` (สวิตช์เป็นสีแดงมะเขือเทศ) **When** กด `Start` แล้วรอให้ Focus หมดเวลาเอง **Then** Short Break เริ่มเดินทันทีโดยไม่ต้องกด Start; ทำซ้ำโดยเปิด `Start Focus automatically` ด้วย แล้วรอ Short Break หมดเวลา → Focus ถัดไปเดินเอง (ทดสอบเสร็จแล้วกด `Restore Defaults`)
 - [x] (M5) **Given** เปลี่ยน Focus เป็น `30`, Pomodoros per Cycle เป็น `6` และเปิดสวิตช์ทั้งสอง **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ แล้วเปิด `Settings…` **Then** ค่าทุกค่ายังเป็นแบบที่เปลี่ยนไว้
 - [x] (M5) **Given** ค่าใน Settings ไม่ใช่ค่าเริ่มต้น (เช่น ข้อบน) ลากแคปซูลไปไว้มุมล่างซ้ายของจอ และเอาเครื่องหมายถูกหน้า `Always on Top` ออก **When** กด `Restore Defaults` **Then** ช่องกลับเป็น `25` / `5` / `15` / `4` สวิตช์ทั้งสองปิด แต่แคปซูลยังอยู่มุมล่างซ้ายไม่ขยับ และ `Always on Top` ในเมนูยังไม่มีเครื่องหมายถูก (ทดสอบเสร็จแล้วติ๊กกลับ)
-- [ ] (M6) **Given** ไม่เคยตั้ง `Open at login` มาก่อน **When** เปิด `Settings…` **Then** หัวข้อ `General` อยู่บนสุด เหนือ `Timer` และสวิตช์ `Open at login` ปิดอยู่
+- [ ] (M6) **Given** ไม่เคยตั้ง `Open at login` มาก่อน **When** เปิด `Settings…` **Then** หัวข้อ `General` อยู่บนสุด เหนือ `Timer` สวิตช์ `Open at login` ปิดอยู่ และใต้มันมีสวิตช์ `Show in Dock` เปิดอยู่
 - [ ] (M6) **Given** หน้าต่าง Settings เปิดอยู่ **When** เปิดสวิตช์ `Open at login` แล้วไปดู System Settings › General › Login Items & Extensions **Then** macOS แจ้งเตือนว่า Pomodot จะเปิดเองตอน login และในรายการ `Open at Login` มี Pomodot; จากนั้นเลือก Log Out จากเมนู Apple แล้ว login กลับเข้ามา → Pomodot เปิดเองและแคปซูลโผล่
 - [ ] (M6) **Given** สวิตช์ `Open at login` เปิดอยู่ **When** ใน System Settings › General › Login Items & Extensions เลือก Pomodot แล้วกดปุ่ม − จากนั้นกลับมาเปิด `Settings…` ของ Pomodot **Then** สวิตช์ `Open at login` ปิดเองตามระบบ (จดไว้ว่าระหว่างนั้นเห็นบรรทัดสีส้ม `Pomodot needs your approval in System Settings to open at login.` กับปุ่ม `Open Login Items…` หรือไม่) และเปิดสวิตช์ใหม่ได้ตามปกติ
-- [ ] (M6) **Given** สวิตช์ `Open at login` เปิดอยู่ และเปลี่ยน Focus เป็น `30` **When** กด `Restore Defaults` **Then** Focus กลับเป็น `25` แต่ `Open at login` ยังเปิดอยู่ (ทดสอบเสร็จแล้วปิดสวิตช์ถ้าไม่อยากให้เปิดเองตอน login)
+- [ ] (M6) **Given** สวิตช์ `Open at login` เปิดอยู่ ปิดสวิตช์ `Show in Dock` และเปลี่ยน Focus เป็น `30` **When** กด `Restore Defaults` **Then** Focus กลับเป็น `25` และ `Show in Dock` กลับเป็นเปิด (ไอคอนกลับมาบน Dock) แต่ `Open at login` ยังเปิดอยู่ (ทดสอบเสร็จแล้วปิดสวิตช์ถ้าไม่อยากให้เปิดเองตอน login)
 
 ## ข้อมูลที่บันทึกไว้
 
@@ -128,6 +128,17 @@
 - [x] (M5) **Given** เครื่องเป็นโหมด Dark **When** เลือก `Light` ในส่วน `Appearance` ของ Settings **Then** แคปซูล หน้าต่าง Settings และหน้าต่าง Statistics เป็นแบบสว่างทันที แม้เครื่องยังเป็น Dark; สลับโหมดเครื่องไปมาแล้วแอพก็ยังสว่างอยู่ จากนั้นเลือก `Dark` ตอนเครื่องเป็น Light → แอพเป็นแบบมืดทันทีและไม่สนโหมดเครื่องเช่นกัน
 - [x] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ **Then** แคปซูลเป็นแบบมืดตั้งแต่เปิดขึ้นมา และ Settings ยังเลือก `Dark` อยู่
 - [x] (M5) **Given** เลือก `Dark` ไว้ในส่วน `Appearance` และเครื่องเป็นโหมด Light **When** กด `Restore Defaults` **Then** Appearance กลับเป็น `System` และแคปซูลกับทุกหน้าต่างเปลี่ยนเป็นแบบสว่างตามเครื่องทันที
+
+## Dock
+
+- [ ] (M6) **Given** `Show in Dock` เปิดอยู่ (ค่าเริ่มต้น) **When** ดูที่ Dock และกด Cmd-Tab ค้างไว้ **Then** มีไอคอนแคปซูลบนพื้นแดงมะเขือเทศของ Pomodot พร้อมจุดใต้ไอคอนบน Dock และมี Pomodot ในแถบ Cmd-Tab; ปิดสวิตช์ → ไอคอนหายจากทั้งสองที่ในไม่ถึงวินาที
+- [ ] (M6) **Given** หน้าต่าง Settings เป็นหน้าต่างที่ใช้อยู่ (คลิกที่หน้าต่างก่อน) **When** ปิดแล้วเปิดสวิตช์ `Show in Dock` สลับกันสองสามครั้ง **Then** ไอคอนบน Dock ขึ้น/หายตาม, หน้าต่าง Settings ยังอยู่ด้านหน้าและพิมพ์ในช่อง Focus ได้, และตอนเปิดสวิตช์ แถบเมนูด้านบนจอเป็นของ Pomodot (ถ้าแถบเมนูไม่ขึ้นจนต้องสลับไปแอพอื่นแล้วกลับมา จดไว้ ยังถือว่าผ่าน)
+- [ ] (M6) **Given** `Show in Dock` เปิดอยู่ และซ่อนแคปซูลไว้ **When** คลิกไอคอน Pomodot บน Dock **Then** แคปซูลโผล่กลับมาที่เดิมเป็นแคปซูลย่อ ไม่ขยายเป็นการ์ด
+- [ ] (M6) **Given** `Show in Dock` เปิดอยู่ **When** คลิกขวาที่ไอคอน Pomodot บน Dock **Then** เห็นรายการเดียวกับเมนูของการ์ด (`Today: 🍅 …` สีจาง, `New Cycle…`, `Hide Floating Window`, `Always on Top`, `Statistics…`, `Settings…`, `About Pomodot`, `Check for Updates…`) ไม่มี `Quit Pomodot` ของเรา แต่มี Options / Show All Windows / Hide / Quit ของระบบต่อท้าย; เลือก `Statistics…` แล้วหน้าต่าง Statistics เปิด และเลือก `Hide Floating Window` แล้วแคปซูลหาย (เมนูรอบถัดไปเป็น `Show Floating Window`)
+- [ ] (M6) **Given** ยังไม่เคยซ่อนแคปซูลเลยตั้งแต่ติดตั้ง 0.10.0 และ `Show in Dock` เปิดอยู่ **When** ซ่อนแคปซูล **Then** กล่อง `Pomodot keeps running` บอกว่า `To bring the Floating Window back, click Pomodot in the Dock, or open it again from Spotlight or Launchpad.`
+- [ ] (M6) **Given** `Show in Dock` เปิดอยู่ และกำลังพิมพ์อยู่ใน TextEdit **When** คลิกแคปซูลให้ขยาย แล้วกดปุ่ม `Start` บนการ์ด แล้วพิมพ์ต่อทันที **Then** ตัวอักษรยังไปโผล่ใน TextEdit และชื่อแอพบนแถบเมนูด้านบนซ้ายยังเป็น TextEdit
+- [ ] (M6) **Given** Pomodot เป็นแอพที่ใช้อยู่ (คลิกไอคอนบน Dock) และหน้าต่าง Settings กับ Statistics เปิดอยู่ **When** กด ⌘H **Then** หน้าต่าง Settings และ Statistics ซ่อนไป แต่แคปซูลยังอยู่ที่เดิม; คลิกไอคอนบน Dock แล้วกด ⌘, → หน้าต่าง Settings เปิด; กด ⌘Q → Pomodot ออก
+- [ ] (M6) **Given** ปิดสวิตช์ `Show in Dock` ไว้ **When** กด `Quit Pomodot` แล้วเปิด Pomodot ใหม่ โดยจ้องที่ Dock ระหว่างเปิด **Then** ไม่มีไอคอน Pomodot แวบขึ้นมาบน Dock เลย (ทดสอบเสร็จแล้วเปิดสวิตช์กลับ)
 
 ## ติดตั้งบนเครื่องเพื่อน
 
