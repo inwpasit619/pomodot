@@ -12,11 +12,11 @@ final class FloatingPanel: NSPanel {
     override var canBecomeKey: Bool { true }
 
     // AppKit would push the panel's transparent edges out from under the menu bar, moving
-    // the capsule away from where Core put it. Leave it be while the capsule is on a screen;
+    // the glass away from where Core put it. Leave it be while the card's place is on a screen;
     // otherwise (its display went away, say) let AppKit bring it back.
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
-        let capsule = FloatingWindowController.capsuleFrame(inside: frameRect)
-        if NSScreen.screens.contains(where: { $0.visibleFrame.contains(capsule) }) {
+        let card = FloatingWindowController.cardFrame(inside: frameRect)
+        if NSScreen.screens.contains(where: { $0.usableFrame.contains(card) }) {
             return frameRect
         }
         return super.constrainFrameRect(frameRect, to: screen)
@@ -43,7 +43,8 @@ final class FloatingWindowDisplay {
     /// The glass box inside the panel, in `FloatingView.coordinateSpaceName`: the capsule,
     /// or the card while open. Changing it animates the box between the two.
     var boxFrame: CGRect = .zero
-    /// Which middle, edge or corner the card grows from; kept after closing so the card shrinks back into it.
+    /// Which middle, edge or corner of the card the capsule sits in, open or closed: where the
+    /// card grows from and shrinks back into, and where the panel sits around the capsule.
     var cardLayout: CardLayout?
     /// Where the card's buttons are, in `FloatingView.coordinateSpaceName`. A press on one never drags.
     @ObservationIgnored var buttonFrames: [CGRect] = []
@@ -54,25 +55,21 @@ final class FloatingWindowDisplay {
 }
 
 /// Owns the Floating Window: shows, hides and floats it, and opens it into the card
-/// when Core's rules say so. The panel never changes size: it is centred on the capsule
-/// with room for the card to grow any way, plus `margin` for the bounce and the shadow.
-/// Resizing a window during the animation would show a frame of the old layout in the
-/// new size, so only the SwiftUI box grows and shrinks.
+/// when Core's rules say so. The panel never changes size: it is the card's place, open
+/// or closed, plus `margin` for the hover, the bounce and the shadow. Resizing a window
+/// during the animation would show a frame of the old layout in the new size, so only
+/// the SwiftUI box grows and shrinks. A panel any bigger would reach far into the next
+/// display near its edge, and macOS pushes such a window back.
 @MainActor
 final class FloatingWindowController {
-    /// Room around the card for the bounce and the shadow.
-    private static let margin: CGFloat = 16
+    /// Room around the card for the hover, the bounce and the shadow.
+    static let margin: CGFloat = 24
     /// The open and close animation: a spring with no bounce.
     private static let openClose = Animation.smooth(duration: 0.35)
     /// Widening on hover: quicker, with a little bounce, like the Dynamic Island.
     private static let hover = Animation.spring(duration: 0.3, bounce: 0.3)
     /// How much wider and taller the capsule gets on hover.
     private static let hoverGrowth = CGSize(width: 12, height: 4)
-    /// How far past the capsule the panel reaches on every side.
-    private static let reach = CGSize(
-        width: FloatingWindowPlacement.cardSize.width - FloatingWindowPlacement.capsuleSize.width + margin,
-        height: FloatingWindowPlacement.cardSize.height - FloatingWindowPlacement.capsuleSize.height + margin
-    )
 
     private let model: AppModel
     let cardMenu: CardMenuController
@@ -92,16 +89,17 @@ final class FloatingWindowController {
 
         // The primary display (the one with the menu bar), not NSScreen.main:
         // .main follows the key window, and this app never activates.
-        let visibleFrame = NSScreen.screens.first?.visibleFrame ?? .zero
-        expansion = FloatingWindowExpansion(
-            capsuleFrame: FloatingWindowPlacement.capsuleFrame(
-                remembering: model.capsuleCenter,
-                screens: NSScreen.screens.map(\.visibleFrame),
-                mainScreen: visibleFrame
-            )
+        let mainArea = NSScreen.screens.first?.usableFrame ?? .zero
+        let capsule = FloatingWindowPlacement.capsuleFrame(
+            remembering: model.capsuleCenter,
+            screens: NSScreen.screens.map(\.usableFrame),
+            mainScreen: mainArea
         )
+        expansion = FloatingWindowExpansion(capsuleFrame: capsule)
+        let capsuleScreen = NSScreen.screens.first { $0.frame.contains(CGPoint(x: capsule.midX, y: capsule.midY)) }
+        let layout = CardLayout(capsule: capsule, visibleFrame: capsuleScreen?.usableFrame ?? mainArea)
         panel = FloatingPanel(
-            contentRect: Self.panelFrame(around: expansion.capsuleFrame),
+            contentRect: Self.panelFrame(around: capsule, layout: layout),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -143,6 +141,11 @@ final class FloatingWindowController {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.panelMoved() }
         }
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated { MenuBars.refresh() }
+        }
 
         apply()
     }
@@ -169,14 +172,36 @@ final class FloatingWindowController {
         }
     }
 
-    /// The panel around a capsule: centred on it, with room for the card on every side.
-    private static func panelFrame(around capsule: CGRect) -> CGRect {
-        capsule.insetBy(dx: -reach.width, dy: -reach.height)
+    /// The panel around a capsule: the card's place for `layout`, plus the margin.
+    private static func panelFrame(around capsule: CGRect, layout: CardLayout) -> CGRect {
+        layout.cardFrame(around: capsule).insetBy(dx: -margin, dy: -margin)
     }
 
-    /// The capsule at the centre of a panel frame.
-    static func capsuleFrame(inside panelFrame: CGRect) -> CGRect {
-        panelFrame.insetBy(dx: reach.width, dy: reach.height)
+    /// The card's place inside a panel frame.
+    static func cardFrame(inside panelFrame: CGRect) -> CGRect {
+        panelFrame.insetBy(dx: margin, dy: margin)
+    }
+
+    /// Where the capsule sits in the card: Core's while the card is open, else where
+    /// the card would grow from it. Once a drag of the card ends the two are the same,
+    /// so opening and closing never move the panel.
+    private var layout: CardLayout {
+        expansion.cardLayout ?? CardLayout(capsule: expansion.capsuleFrame, visibleFrame: screenArea)
+    }
+
+    /// The panel where Core's capsule says, even while macOS is still moving it.
+    private var panelFrame: CGRect {
+        Self.panelFrame(around: expansion.capsuleFrame, layout: layout)
+    }
+
+    /// Moves the panel to Core's capsule. Where the capsule now sits differently in the card,
+    /// the panel moves around the glass, which is drawn at its new place in the same screen update.
+    private func followCapsule() {
+        if layout != display.cardLayout {
+            showGlass(animation: nil)
+        } else {
+            panel.setFrameOrigin(panelFrame.origin)
+        }
     }
 
     // MARK: Pointer
@@ -185,7 +210,7 @@ final class FloatingWindowController {
         // A release can go missing (Mission Control during a drag, say). Once the button
         // is really up, end the press, or the card could never open or close again.
         if expansion.isPressed, NSEvent.pressedMouseButtons & 1 == 0 {
-            expansion.released(at: NSEvent.mouseLocation, visibleFrame: screenArea)
+            release(at: NSEvent.mouseLocation)
         }
         pointerIsInside = inside
         if inside {
@@ -204,25 +229,36 @@ final class FloatingWindowController {
         case .leftMouseDown:
             // Only the glass counts, not the transparent space around it.
             guard glassFrame.contains(point) else { return }
+            MenuBars.refresh()
             capsuleAtPress = expansion.capsuleFrame
             expansion.pressed(at: point, onButton: isOnButton(event))
         case .leftMouseDragged:
             // The screen under the pointer, so the capsule can be dragged onto another display.
             expansion.dragged(to: point, visibleFrame: usableArea(at: point))
-            panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
+            followCapsule()
         default:
-            expansion.released(at: point, visibleFrame: screenArea)
-            // Remembered once the drag ends, not on every step of it.
-            if let capsuleAtPress, capsuleAtPress != expansion.capsuleFrame {
-                rememberCapsule()
-            }
-            capsuleAtPress = nil
+            release(at: point)
         }
         update()
     }
 
-    /// Saves the collapsed capsule's centre, even while the card is open: the card grows
-    /// from the capsule, which stays put.
+    /// Ends a press. Letting go of a dragged card can tuck the capsule into another edge or
+    /// corner of it; the card and the panel stay where they were.
+    private func release(at point: CGPoint) {
+        expansion.released(at: point, visibleFrame: screenArea)
+        // A click that opens the card is shown by `update`, with its animation.
+        if expansion.isExpanded == display.isExpanded {
+            followCapsule()
+        }
+        // Remembered once the drag ends, not on every step of it.
+        if let capsuleAtPress, capsuleAtPress != expansion.capsuleFrame {
+            rememberCapsule()
+        }
+        capsuleAtPress = nil
+    }
+
+    /// Saves the collapsed capsule's centre, even while the card is open: it is where
+    /// the card shrinks into.
     private func rememberCapsule() {
         model.capsuleCenter = CGPoint(x: expansion.capsuleFrame.midX, y: expansion.capsuleFrame.midY)
     }
@@ -261,7 +297,8 @@ final class FloatingWindowController {
         guard !expansion.isPressed else { return }
         // Not remembered: with the display plugged back in before the next launch,
         // the capsule goes back where it was dragged.
-        expansion.moveCapsule(to: Self.capsuleFrame(inside: panel.frame))
+        let card = Self.cardFrame(inside: panel.frame)
+        expansion.moveCapsule(to: (display.cardLayout ?? layout).capsuleFrame(inside: card))
     }
 
     // MARK: The card's menu
@@ -274,11 +311,11 @@ final class FloatingWindowController {
     /// Opens the menu below the ellipsis button, or above it, where Core says.
     private func openMenuBelowMoreButton() {
         // Screen coordinates: SwiftUI measures from the panel's top-left.
-        let panelFrame = Self.panelFrame(around: expansion.capsuleFrame)
+        let panel = panelFrame
         let frame = display.moreButtonFrame
         let button = CGRect(
-            x: panelFrame.minX + frame.minX,
-            y: panelFrame.maxY - frame.maxY,
+            x: panel.minX + frame.minX,
+            y: panel.maxY - frame.maxY,
             width: frame.width,
             height: frame.height
         )
@@ -325,7 +362,7 @@ final class FloatingWindowController {
         let screen = NSScreen.screens.first { $0.frame.contains(point) }
             ?? NSScreen.screens.first { $0.frame.contains(capsule) }
             ?? NSScreen.screens.first
-        return screen?.visibleFrame ?? .zero
+        return screen?.usableFrame ?? .zero
     }
 
     // MARK: Opening and closing
@@ -365,12 +402,29 @@ final class FloatingWindowController {
     }
 
     /// Grows the glass box from the capsule into the card, or shrinks it back, as Core says,
-    /// and widens the capsule while the pointer is on it.
+    /// and widens the capsule while the pointer is on it. Moves the panel too, where the capsule
+    /// now sits differently in the card: the glass is drawn at its place in the moved panel in the
+    /// same screen update, or it would blink to one side for a frame.
     private func showGlass(animation: Animation?) {
-        if let cardLayout = expansion.cardLayout {
-            // Set before the animation, so the card grows from the right place.
-            display.cardLayout = cardLayout
+        let target = panelFrame
+        // Half a point either way is AppKit rounding, not a move.
+        if abs(panel.frame.minX - target.minX) > 0.5 || abs(panel.frame.minY - target.minY) > 0.5 {
+            // The glass stays where it is on screen while the panel moves under it,
+            // and any animation starts from there.
+            let box = display.boxFrame
+            let shown = CGRect(
+                x: panel.frame.minX + box.minX,
+                y: panel.frame.maxY - box.maxY,
+                width: box.width,
+                height: box.height
+            )
+            panel.disableScreenUpdatesUntilFlush()
+            display.boxFrame = boxFrame(of: shown)
+            hosting.layoutSubtreeIfNeeded()
+            panel.setFrameOrigin(target.origin)
         }
+        // Set before the animation, so the card grows from the right place.
+        display.cardLayout = layout
         withAnimation(Self.reduceMotion ? nil : animation) {
             display.isExpanded = expansion.isExpanded
             display.isHovered = looksHovered
@@ -381,12 +435,11 @@ final class FloatingWindowController {
     }
 
     /// `frame` (screen coordinates) inside the panel, measured from its top-left as SwiftUI does.
-    /// The panel is always where Core's capsule says, even while macOS is still moving it.
     private func boxFrame(of frame: CGRect) -> CGRect {
-        let panelFrame = Self.panelFrame(around: expansion.capsuleFrame)
+        let panel = panelFrame
         return CGRect(
-            x: frame.minX - panelFrame.minX,
-            y: panelFrame.maxY - frame.maxY,
+            x: frame.minX - panel.minX,
+            y: panel.maxY - frame.maxY,
             width: frame.width,
             height: frame.height
         )
@@ -435,5 +488,47 @@ final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
 
     override func menu(for event: NSEvent) -> NSMenu? {
         menuProvider?()
+    }
+}
+
+/// The menu bars on screen, in AppKit's coordinates. Looked up when the app opens, when the
+/// displays change and when a drag starts, not on every step of it.
+@MainActor
+enum MenuBars {
+    private(set) static var frames: [CGRect] = find()
+
+    static func refresh() {
+        frames = find()
+    }
+
+    private static func find() -> [CGRect] {
+        let level = Int(CGWindowLevelForKey(.mainMenuWindow))
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+        // Window bounds measure from the top of the primary display, downwards.
+        let top = NSScreen.screens.first?.frame.maxY ?? 0
+        return windows.compactMap { window in
+            guard window[kCGWindowLayer as String] as? Int == level,
+                  let bounds = window[kCGWindowBounds as String] as? NSDictionary,
+                  let frame = CGRect(dictionaryRepresentation: bounds) else { return nil }
+            return CGRect(x: frame.minX, y: top - frame.maxY, width: frame.width, height: frame.height)
+        }
+    }
+}
+
+extension NSScreen {
+    /// Where the Floating Window may go: `visibleFrame`, also without the menu bar on displays
+    /// where `visibleFrame` keeps it (an external one, say). macOS keeps the glass from going
+    /// under any menu bar, so Core must not put it there.
+    @MainActor
+    var usableFrame: CGRect {
+        let area = visibleFrame
+        // A bar across the whole top of this display, not some other window at the menu bar's level.
+        let isMenuBar = { (bar: CGRect) in
+            bar.minX <= self.frame.minX && bar.maxX >= self.frame.maxX && bar.maxY == self.frame.maxY
+        }
+        guard let bar = MenuBars.frames.first(where: { isMenuBar($0) && $0.minY < area.maxY }) else {
+            return area
+        }
+        return CGRect(x: area.minX, y: area.minY, width: area.width, height: max(0, bar.minY - area.minY))
     }
 }

@@ -32,7 +32,7 @@ xattr -dr com.apple.quarantine /Applications/Pomodot.app
 
 ## Using Pomodot
 
-- **The card:** click the capsule to open it into the card, with Start / Pause, Reset and Skip. Move the pointer away and it closes again. Drag the capsule anywhere.
+- **The card:** click the capsule to open it into the card, with Start / Pause, Reset and Skip. Move the pointer away and it closes again. Drag the capsule anywhere. Drag the open card near an edge or corner of the screen and it closes into that edge or corner.
 - **Everything else:** click the **…** button at the top right of the card, or right-click (or Control-click) the capsule or the card. That menu has **New Cycle…**, **Hide Floating Window**, **Always on Top**, **Statistics…**, **Settings…**, **About Pomodot**, **Check for Updates…** and **Quit Pomodot**.
 - **Other ways in:** the menu bar icon's menu also has all of these. Right-clicking Pomodot's Dock icon shows them too, with macOS's own Quit in place of Quit Pomodot.
 - **Hiding the capsule:** choose **Hide Floating Window**. Pomodot keeps running. To bring the capsule back, click Pomodot in the Dock (while Show in Dock is on), or open Pomodot again from Spotlight or Launchpad. It also shows again whenever Pomodot opens.
@@ -79,7 +79,7 @@ xattr -dr com.apple.quarantine /Applications/Pomodot.app
 
 ### ใช้งาน
 
-- **การ์ด:** คลิกแคปซูลแล้วจะขยายเป็นการ์ดที่มีปุ่ม Start / Pause, Reset และ Skip เอาเมาส์ออกแล้วการ์ดจะหุบเอง ลากแคปซูลไปไว้ตรงไหนก็ได้
+- **การ์ด:** คลิกแคปซูลแล้วจะขยายเป็นการ์ดที่มีปุ่ม Start / Pause, Reset และ Skip เอาเมาส์ออกแล้วการ์ดจะหุบเอง ลากแคปซูลไปไว้ตรงไหนก็ได้ ถ้าลากการ์ดที่ขยายอยู่ไปใกล้ขอบหรือมุมจอ การ์ดจะหุบเข้าขอบหรือมุมนั้น
 - **คำสั่งอื่นๆ:** กดปุ่ม **…** มุมขวาบนของการ์ด หรือคลิกขวา (หรือกด Control ค้างแล้วคลิก) ที่แคปซูลหรือการ์ด จะมีเมนู **New Cycle…**, **Hide Floating Window**, **Always on Top**, **Statistics…**, **Settings…**, **About Pomodot**, **Check for Updates…** และ **Quit Pomodot**
 - **ทางอื่น:** เมนูของไอคอนบน menu bar ก็มีคำสั่งเหล่านี้ครบ และคลิกขวาที่ไอคอน Pomodot บน Dock ก็เห็นคำสั่งเหล่านี้ (ตรง Quit Pomodot จะเป็นปุ่ม Quit ของ macOS แทน)
 - **ซ่อนแคปซูล:** เลือก **Hide Floating Window** แล้ว Pomodot ยังทำงานอยู่ อยากให้แคปซูลกลับมา ให้คลิก Pomodot บน Dock (ตอนเปิด Show in Dock อยู่) หรือเปิด Pomodot อีกครั้งจาก Spotlight หรือ Launchpad และทุกครั้งที่เปิด Pomodot แคปซูลจะโผล่เสมอ

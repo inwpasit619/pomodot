@@ -60,8 +60,8 @@ public enum FloatingWindowPlacement {
     }
 }
 
-/// Which way the card grows from the capsule. Chosen when the card opens and kept
-/// until it closes, so the card never jumps away from the pointer.
+/// Which way the card grows from the capsule. Chosen when the card opens and again when
+/// a drag of the card ends; never while it moves, so the card never jumps away from the pointer.
 public struct CardLayout: Sendable, Equatable {
     /// Centred on the capsule, or growing away from the top or bottom edge where centring would cross it.
     public enum Vertical: Sendable { case centered, down, up }
@@ -70,6 +70,37 @@ public struct CardLayout: Sendable, Equatable {
 
     public let vertical: Vertical
     public let horizontal: Horizontal
+
+    init(vertical: Vertical, horizontal: Horizontal) {
+        self.vertical = vertical
+        self.horizontal = horizontal
+    }
+
+    /// The way a card already at `card` grows from a capsule tucked into it: lined up with each
+    /// edge of the screen it is near, centred where it is near none, so it shrinks into that edge
+    /// or corner. "Near" is asked of the growing rule, so opening it again lands the card on `card`
+    /// whatever the card's and capsule's sizes.
+    public init(tucking card: CGRect, visibleFrame: CGRect) {
+        func growing(fromCapsuleIn layout: CardLayout) -> CardLayout {
+            CardLayout(capsule: layout.capsuleFrame(inside: card), visibleFrame: visibleFrame)
+        }
+        let topRight = growing(fromCapsuleIn: CardLayout(vertical: .down, horizontal: .rightEdges))
+        let bottomLeft = growing(fromCapsuleIn: CardLayout(vertical: .up, horizontal: .leftEdges))
+        if topRight.vertical == .down {
+            vertical = .down
+        } else if bottomLeft.vertical == .up {
+            vertical = .up
+        } else {
+            vertical = .centered
+        }
+        if topRight.horizontal == .rightEdges {
+            horizontal = .rightEdges
+        } else if bottomLeft.horizontal == .leftEdges {
+            horizontal = .leftEdges
+        } else {
+            horizontal = .centered
+        }
+    }
 
     public init(capsule: CGRect, visibleFrame: CGRect) {
         // Near the top it grows down (card top = capsule top); near the bottom, up.
@@ -102,6 +133,22 @@ public struct CardLayout: Sendable, Equatable {
         case .centered: capsule.midX - size.width / 2
         case .rightEdges: capsule.maxX - size.width
         case .leftEdges: capsule.minX
+        }
+        return CGRect(x: x, y: y, width: size.width, height: size.height)
+    }
+
+    /// Where the capsule sits inside `card`: the middle, edge or corner the card grows from.
+    public func capsuleFrame(inside card: CGRect) -> CGRect {
+        let size = FloatingWindowPlacement.capsuleSize
+        let y = switch vertical {
+        case .centered: card.midY - size.height / 2
+        case .down: card.maxY - size.height
+        case .up: card.minY
+        }
+        let x = switch horizontal {
+        case .centered: card.midX - size.width / 2
+        case .rightEdges: card.maxX - size.width
+        case .leftEdges: card.minX
         }
         return CGRect(x: x, y: y, width: size.width, height: size.height)
     }
