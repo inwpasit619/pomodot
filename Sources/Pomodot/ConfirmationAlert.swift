@@ -13,7 +13,7 @@ enum ConfirmationAlert {
         // Wait for the menu to close before showing a modal alert.
         Task { @MainActor in
             let alert = makeAlert(confirmation)
-            // Pomodot has no Dock icon, so without this the alert can open behind the active app.
+            // Pomodot is seldom the active app, so without this the alert can open behind the active app.
             NSApp.activate()
             if alert.runModal() == .alertFirstButtonReturn {
                 action()

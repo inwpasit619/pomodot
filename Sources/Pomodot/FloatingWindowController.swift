@@ -23,7 +23,10 @@ final class FloatingPanel: NSPanel {
     }
 
     override func sendEvent(_ event: NSEvent) {
-        if [.leftMouseDown, .leftMouseDragged, .leftMouseUp].contains(event.type) {
+        // A Control-click opens the card's menu, which takes the release: if Core saw the
+        // press, it would wait for a release that never comes.
+        let opensMenu = event.type == .leftMouseDown && event.modifierFlags.contains(.control)
+        if [.leftMouseDown, .leftMouseDragged, .leftMouseUp].contains(event.type), !opensMenu {
             onMouseEvent?(event)
         }
         super.sendEvent(event)
@@ -44,6 +47,10 @@ final class FloatingWindowDisplay {
     var cardLayout: CardLayout?
     /// Where the card's buttons are, in `FloatingView.coordinateSpaceName`. A press on one never drags.
     @ObservationIgnored var buttonFrames: [CGRect] = []
+    /// Where the card's ellipsis button is, in `FloatingView.coordinateSpaceName`; its menu opens below it.
+    @ObservationIgnored var moreButtonFrame: CGRect = .zero
+    /// The ellipsis button was pressed.
+    @ObservationIgnored var openMenu: (() -> Void)?
 }
 
 /// Owns the Floating Window: shows, hides and floats it, and opens it into the card
@@ -68,6 +75,7 @@ final class FloatingWindowController {
     )
 
     private let model: AppModel
+    let cardMenu: CardMenuController
     private let panel: FloatingPanel
     private let hosting: NSView
     private let display = FloatingWindowDisplay()
@@ -78,8 +86,9 @@ final class FloatingWindowController {
     /// Where the capsule was when the mouse went down, to tell whether a drag moved it.
     private var capsuleAtPress: CGRect?
 
-    init(model: AppModel) {
+    init(model: AppModel, app: AppDelegate) {
         self.model = model
+        cardMenu = CardMenuController(model: model, app: app)
 
         // The primary display (the one with the menu bar), not NSScreen.main:
         // .main follows the key window, and this app never activates.
@@ -100,6 +109,10 @@ final class FloatingWindowController {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .canJoinAllApplications]
         // NSPanel defaults to true, which would hide it whenever Pomodot isn't active.
         panel.hidesOnDeactivate = false
+        // ⌘H, Hide Pomodot and the Dock's Hide hide Settings and Statistics, never the capsule.
+        panel.canHide = false
+        // Pomodot is seldom active, and tooltips (More, Reset, Skip) only show for the active app otherwise.
+        panel.allowsToolTipsWhenApplicationIsInactive = true
         // A click on the capsule must not take the keyboard from the app the user is typing in.
         panel.becomesKeyOnlyIfNeeded = true
         panel.backgroundColor = .clear
@@ -119,6 +132,11 @@ final class FloatingWindowController {
         showGlass(animation: nil)
 
         content.onPointerChange = { [weak self] inside in self?.pointerMoved(inside: inside) }
+        display.openMenu = { [weak self] in self?.openMenuBelowMoreButton() }
+        // A right-click or Control-click anywhere on the glass, buttons included.
+        hosting.menuProvider = { [weak self] in self?.contextMenu() }
+        cardMenu.onOpen = { [weak self] in self?.menuOpened() }
+        cardMenu.onClose = { [weak self] in self?.menuClosed() }
         panel.onMouseEvent = { [weak self] event in self?.mouse(event) }
         NotificationCenter.default.addObserver(
             forName: NSWindow.didMoveNotification, object: panel, queue: .main
@@ -246,6 +264,49 @@ final class FloatingWindowController {
         expansion.moveCapsule(to: Self.capsuleFrame(inside: panel.frame))
     }
 
+    // MARK: The card's menu
+
+    /// The menu for a right-click at the pointer, only over the glass, not the transparent space around it.
+    private func contextMenu() -> NSMenu? {
+        glassFrame.contains(NSEvent.mouseLocation) ? cardMenu.menu : nil
+    }
+
+    /// Opens the menu below the ellipsis button, or above it, where Core says.
+    private func openMenuBelowMoreButton() {
+        // Screen coordinates: SwiftUI measures from the panel's top-left.
+        let panelFrame = Self.panelFrame(around: expansion.capsuleFrame)
+        let frame = display.moreButtonFrame
+        let button = CGRect(
+            x: panelFrame.minX + frame.minX,
+            y: panelFrame.maxY - frame.maxY,
+            width: frame.width,
+            height: frame.height
+        )
+        // Filled now, only to measure it; AppKit asks for the items again as it opens.
+        cardMenu.menu.items = cardMenu.items(for: .card)
+        let corner = FloatingWindowPlacement.menuCorner(
+            below: button,
+            menuHeight: cardMenu.menu.size.height,
+            in: usableArea(at: CGPoint(x: button.midX, y: button.midY))
+        )
+        // popUp doesn't return until the menu closes; let the button's click finish first.
+        DispatchQueue.main.async { [cardMenu] in
+            cardMenu.menu.popUp(positioning: nil, at: corner, in: nil)
+        }
+    }
+
+    private func menuOpened() {
+        expansion.menuOpened()
+        update()
+    }
+
+    /// The pointer may have left, or come back, while the menu had it.
+    private func menuClosed() {
+        expansion.menuClosed(at: Date())
+        syncPointer()
+        update()
+    }
+
     /// Opening Pomodot again while it runs: the Floating Window comes to the front,
     /// without activating the app.
     func bringToFront() {
@@ -365,7 +426,14 @@ final class PointerTrackingView: NSView {
     }
 }
 
-/// Lets the first click on a card button act straight away, though the panel isn't key.
+/// Lets the first click on a card button act straight away, though the panel isn't key,
+/// and opens the card's menu on a right-click or Control-click.
 final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
+    var menuProvider: (() -> NSMenu?)?
+
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        menuProvider?()
+    }
 }

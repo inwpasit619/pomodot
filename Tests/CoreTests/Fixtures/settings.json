@@ -9,5 +9,6 @@
   "showNotifications": true,
   "focusEndSound": "Glass",
   "breakEndSound": "Hero",
-  "appearance": "system"
+  "appearance": "system",
+  "showInDock": true
 }

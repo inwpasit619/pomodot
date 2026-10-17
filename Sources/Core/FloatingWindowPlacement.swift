@@ -39,6 +39,19 @@ public enum FloatingWindowPlacement {
         return CGRect(origin: origin, size: capsuleSize)
     }
 
+    /// Gap between the card's ellipsis button and its menu.
+    static let menuGap: CGFloat = 4
+
+    /// Where the card's menu puts its top-left corner: just below the ellipsis button, its left
+    /// edge lined up with the button's, or just above the button when the screen has no room
+    /// below (AppKit would make the menu scroll).
+    /// - Parameter visibleFrame: the usable area of the screen the button is on.
+    public static func menuCorner(below button: CGRect, menuHeight: CGFloat, in visibleFrame: CGRect) -> CGPoint {
+        let below = button.minY - menuGap
+        let fitsBelow = below - menuHeight >= visibleFrame.minY
+        return CGPoint(x: button.minX, y: fitsBelow ? below : button.maxY + menuGap + menuHeight)
+    }
+
     /// Where the card goes when the capsule expands: the capsule never moves and
     /// the card grows toward the side of its screen with room.
     /// - Parameter visibleFrame: the usable area of the screen the capsule is on.

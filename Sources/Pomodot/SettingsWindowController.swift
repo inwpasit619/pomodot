@@ -16,8 +16,13 @@ final class SettingsWindowController {
     func show() {
         let window = window ?? makeWindow()
         self.window = window
-        model.checkWhetherNotificationsAreTurnedOff()
+        model.checkSystemSettings()
+        // The Dock icon first, so the app menu is there as the window comes up.
+        model.isSettingsWindowOpen = true
         window.showInFront()
+        // No field is picked for typing: people open Settings for many things, not only the
+        // timer's numbers. A click or Tab picks one.
+        window.makeFirstResponder(nil)
     }
 
     private func makeWindow() -> NSWindow {
@@ -29,12 +34,18 @@ final class SettingsWindowController {
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         window.center()
+        // With Show in Dock off, the Dock icon kept while Settings was open goes now.
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification, object: window, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.model.isSettingsWindowOpen = false }
+        }
         return window
     }
 }
 
 extension NSWindow {
-    /// Pomodot has no Dock icon: without activating, a window can open behind the active app.
+    /// Pomodot is seldom the active app, Dock icon or not: without activating, a window can open behind the active app.
     /// macOS may still turn the activation down, so it comes to the front regardless.
     func showInFront() {
         NSApp.activate()

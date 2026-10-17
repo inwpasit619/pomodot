@@ -16,6 +16,8 @@ public struct FloatingWindowExpansion: Sendable {
 
     private var pointerExitedAt: Date?
     private var press: Press?
+    /// The card's menu is open: the pointer is on the menu's items, perhaps outside the card.
+    private var isMenuOpen = false
 
     /// A mouse press on the Floating Window, kept until the button comes up.
     private struct Press {
@@ -38,8 +40,9 @@ public struct FloatingWindowExpansion: Sendable {
 
     /// When the caller should next call `check`; nil while nothing is pending.
     public var nextCheck: Date? {
-        // Nothing closes while the button is down; `released` says what happens next.
-        guard press == nil, isExpanded else { return nil }
+        // Nothing closes while the button is down or the menu is open;
+        // `released` or `menuClosed` says what happens next.
+        guard press == nil, !isMenuOpen, isExpanded else { return nil }
         return pointerExitedAt?.addingTimeInterval(Self.awayBeforeCollapsing)
     }
 
@@ -90,10 +93,24 @@ public struct FloatingWindowExpansion: Sendable {
 
     /// Applies whatever is due by `now`: closing the card once the pointer has been away long enough.
     public mutating func check(at now: Date) {
-        guard press == nil else { return }
+        guard press == nil, !isMenuOpen else { return }
         if let pointerExitedAt, now.timeIntervalSince(pointerExitedAt) >= Self.awayBeforeCollapsing {
             cardLayout = nil
             self.pointerExitedAt = nil
+        }
+    }
+
+    /// The card's menu opened. Until it closes, nothing closes the card.
+    public mutating func menuOpened() {
+        isMenuOpen = true
+    }
+
+    /// The card's menu closed at `now`. If the pointer left the card meanwhile,
+    /// the half second before closing starts counting now, not from when it left.
+    public mutating func menuClosed(at now: Date) {
+        isMenuOpen = false
+        if pointerExitedAt != nil {
+            pointerExitedAt = now
         }
     }
 
@@ -108,6 +125,8 @@ public struct FloatingWindowExpansion: Sendable {
         cardLayout = nil
         pointerExitedAt = nil
         press = nil
+        // Should its close go missing, the card could otherwise never close again.
+        isMenuOpen = false
     }
 
     /// How far to move `frame` so it sits inside `area`.

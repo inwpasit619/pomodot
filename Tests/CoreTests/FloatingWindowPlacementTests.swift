@@ -105,3 +105,41 @@ func aRememberedPositionOnADisplayIsUsed() {
     // Then
     #expect(capsule == CGRect(x: 236, y: 381, width: 128, height: 38))
 }
+
+// MARK: The card's menu
+
+@Test("Given the ellipsis button at x 820–842, y 500–522 and a 280 pt menu, when the menu opens, then its top-left corner is at (820, 496), just below the button")
+func menuOpensBelowTheEllipsisButton() {
+    // Given
+    let button = CGRect(x: 820, y: 500, width: 22, height: 22)
+
+    // When
+    let corner = FloatingWindowPlacement.menuCorner(below: button, menuHeight: 280, in: screen)
+
+    // Then
+    #expect(corner == CGPoint(x: 820, y: 496))
+}
+
+@Test("Given the ellipsis button at x 820–842, y 200–222 near the bottom edge and a 280 pt menu, when the menu opens, then it opens above the button with its top-left corner at (820, 506)")
+func menuOpensAboveTheEllipsisButtonWithoutRoomBelow() {
+    // Given
+    let button = CGRect(x: 820, y: 200, width: 22, height: 22)
+
+    // When
+    let corner = FloatingWindowPlacement.menuCorner(below: button, menuHeight: 280, in: screen)
+
+    // Then
+    #expect(corner == CGPoint(x: 820, y: 506))
+}
+
+@Test("Given the ellipsis button at x 820–842, y 284–306 and a 280 pt menu, when the menu opens, then it just fits below, its bottom on the usable area's bottom edge")
+func menuThatJustFitsOpensBelow() {
+    // Given
+    let button = CGRect(x: 820, y: 284, width: 22, height: 22)
+
+    // When
+    let corner = FloatingWindowPlacement.menuCorner(below: button, menuHeight: 280, in: screen)
+
+    // Then
+    #expect(corner == CGPoint(x: 820, y: 280))
+}

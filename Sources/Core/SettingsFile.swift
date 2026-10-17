@@ -15,7 +15,7 @@ public enum Appearance: String, Sendable, Equatable, CaseIterable {
 }
 
 /// Every value in the Settings window, as settings.json keeps it. Defaults: 25 / 5 / 15 / 4,
-/// both auto-starts off, Show notifications on, Glass / Hero, Appearance System.
+/// both auto-starts off, Show notifications on, Glass / Hero, Appearance System, Show in Dock on.
 /// The Floating Window's place, whether it shows and Always on Top are not Settings:
 /// they live in state.json, and Restore Defaults never touches them.
 public struct Settings: Sendable, Equatable {
@@ -27,6 +27,9 @@ public struct Settings: Sendable, Equatable {
     public var focusEndSound: String? = Sound.focus.defaultSystemSoundName
     public var breakEndSound: String? = Sound.break.defaultSystemSoundName
     public var appearance = Appearance.system
+    /// Pomodot's tomato icon in the Dock and in Cmd-Tab. On by default, so people who don't
+    /// look at the menu bar can find Pomodot.
+    public var showInDock = true
 
     public init() {}
 
@@ -96,7 +99,7 @@ public enum SettingsFile {
 
     private enum CodingKeys: String, CodingKey {
         case version, focusMinutes, shortBreakMinutes, longBreakMinutes, pomodorosPerCycle
-        case autoStartBreaks, autoStartFocus, showNotifications, focusEndSound, breakEndSound, appearance
+        case autoStartBreaks, autoStartFocus, showNotifications, focusEndSound, breakEndSound, appearance, showInDock
     }
 
     private struct FileContents: Encodable {
@@ -116,6 +119,7 @@ public enum SettingsFile {
             try container.encode(settings.focusEndSound, forKey: .focusEndSound)
             try container.encode(settings.breakEndSound, forKey: .breakEndSound)
             try container.encode(settings.appearance.rawValue, forKey: .appearance)
+            try container.encode(settings.showInDock, forKey: .showInDock)
         }
     }
 
@@ -157,6 +161,8 @@ public enum SettingsFile {
             settings.breakEndSound = sound(.breakEndSound, else: defaults.breakEndSound)
             settings.appearance = (try? container.decode(String.self, forKey: .appearance))
                 .flatMap(Appearance.init(rawValue:)) ?? defaults.appearance
+            // A file from 0.9.0 has none: the Dock icon shows after updating.
+            settings.showInDock = flag(.showInDock, else: defaults.showInDock)
         }
     }
 }

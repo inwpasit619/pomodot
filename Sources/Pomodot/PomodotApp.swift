@@ -12,6 +12,14 @@ struct PomodotApp: App {
             MenuBarLabel(model: appDelegate.model)
         }
         .menuBarExtraStyle(.menu)
+        // The menu across the top of the screen, there only while Pomodot shows in the Dock and
+        // is active: SwiftUI's own, plus Settings… ⌘, in place of the empty one.
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…", action: appDelegate.showSettings)
+                    .keyboardShortcut(",")
+            }
+        }
     }
 }
 

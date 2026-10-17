@@ -263,3 +263,90 @@ func pressingACardButtonNeverDrags() {
     #expect(!pressed)
     #expect(window.frame == CGRect(x: 578, y: 669, width: 284, height: 200))
 }
+
+// MARK: The card's menu
+
+@Test("Given the card is open, when its menu opens and the pointer leaves the card for 2 seconds, then the card stays open")
+func cardStaysOpenWhileItsMenuIsOpen() {
+    // Given
+    var window = expandedWindow()
+
+    // When
+    window.menuOpened()
+    window.pointerExited(at: second(0))
+    window.check(at: second(2))
+
+    // Then
+    #expect(window.isExpanded)
+    #expect(window.nextCheck == nil)
+}
+
+@Test("Given the menu is open and the pointer has left the card, when the menu closes at t = 10, then the card is still open at t = 10.4 and closes at t = 10.5")
+func awayCountStartsWhenTheMenuCloses() {
+    // Given
+    var window = expandedWindow()
+    window.menuOpened()
+    window.pointerExited(at: second(0))
+
+    // When
+    window.menuClosed(at: second(10))
+    let nextCheck = window.nextCheck
+    window.check(at: second(10.4))
+    let openAt10_4 = window.isExpanded
+    window.check(at: second(10.5))
+
+    // Then
+    #expect(nextCheck == second(10.5))
+    #expect(openAt10_4)
+    #expect(!window.isExpanded)
+}
+
+@Test("Given the menu is open, when it closes with the pointer on the card, then the card stays open")
+func menuClosingOnTheCardKeepsItOpen() {
+    // Given
+    var window = expandedWindow()
+    window.menuOpened()
+    window.pointerExited(at: second(0))
+    window.pointerEntered()
+
+    // When
+    window.menuClosed(at: second(3))
+    window.check(at: second(10))
+
+    // Then
+    #expect(window.isExpanded)
+    #expect(window.nextCheck == nil)
+}
+
+@Test("Given the capsule is closed, when it is right-clicked (its menu opens, then closes), then it stays a capsule")
+func rightClickingTheCapsuleKeepsItClosed() {
+    // Given
+    var window = FloatingWindowExpansion(capsuleFrame: topCapsule)
+    window.pointerEntered()
+
+    // When
+    window.menuOpened()
+    window.menuClosed(at: second(1))
+    window.check(at: second(2))
+
+    // Then
+    #expect(!window.isExpanded)
+    #expect(window.capsuleFrame == topCapsule)
+}
+
+@Test("Given the card's menu is open, when the Floating Window is hidden and its close never arrives, then once shown and opened again the card still closes 0.5 s after the pointer leaves")
+func hidingEndsTheMenuHold() {
+    // Given
+    var window = expandedWindow()
+    window.menuOpened()
+
+    // When
+    window.hide()
+    window.pressed(at: CGPoint(x: 720, y: 850))
+    window.released(at: CGPoint(x: 720, y: 850), visibleFrame: screen)
+    window.pointerExited(at: second(0))
+    window.check(at: second(0.5))
+
+    // Then
+    #expect(!window.isExpanded)
+}

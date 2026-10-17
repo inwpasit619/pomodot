@@ -12,6 +12,7 @@
   "floatingWindow": {
     "visible": true,
     "alwaysOnTop": true,
-    "center": { "x": 720, "y": 844 }
+    "center": { "x": 720, "y": 844 },
+    "hideNoticeShown": false
   }
 }
