@@ -12,15 +12,24 @@ final class FloatingPanel: NSPanel {
     override var canBecomeKey: Bool { true }
 
     // AppKit would push the panel's transparent edges out from under the menu bar, moving
-    // the glass away from where Core put it. Leave it be while the card's place is on a screen;
-    // otherwise (its display went away, say) let AppKit bring it back.
+    // the glass away from where Core put it. Leave it be while the card's place is on a screen.
+    // Where the card itself is under the menu bar (it showed up after Core placed it, say), move
+    // only as far as the card needs, so it still sits flush against the menu bar. With no screen
+    // left under it (its display went away), let AppKit bring it back.
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
         let margin = FloatingWindowController.margin
         let card = frameRect.insetBy(dx: margin, dy: margin)
-        if NSScreen.screens.contains(where: { $0.visibleFrame.contains(card) }) {
+        if NSScreen.screens.contains(where: { $0.usableFrame.contains(card) }) {
             return frameRect
         }
-        return super.constrainFrameRect(frameRect, to: screen)
+        guard let area = NSScreen.screens.first(where: { $0.frame.intersects(card) })?.usableFrame,
+              card.width <= area.width, card.height <= area.height else {
+            return super.constrainFrameRect(frameRect, to: screen)
+        }
+        return frameRect.offsetBy(
+            dx: min(max(card.minX, area.minX), area.maxX - card.width) - card.minX,
+            dy: min(max(card.minY, area.minY), area.maxY - card.height) - card.minY
+        )
     }
 
     override func sendEvent(_ event: NSEvent) {
@@ -90,15 +99,15 @@ final class FloatingWindowController {
 
         // The primary display (the one with the menu bar), not NSScreen.main:
         // .main follows the key window, and this app never activates.
-        let visibleFrame = NSScreen.screens.first?.visibleFrame ?? .zero
+        let visibleFrame = NSScreen.screens.first?.usableFrame ?? .zero
         let capsule = FloatingWindowPlacement.capsuleFrame(
             remembering: model.capsuleCenter,
-            screens: NSScreen.screens.map(\.visibleFrame),
+            screens: NSScreen.screens.map(\.usableFrame),
             mainScreen: visibleFrame
         )
         expansion = FloatingWindowExpansion(capsuleFrame: capsule)
         let capsuleScreen = NSScreen.screens.first { $0.frame.contains(CGPoint(x: capsule.midX, y: capsule.midY)) }
-        let layout = CardLayout(capsule: capsule, visibleFrame: capsuleScreen?.visibleFrame ?? visibleFrame)
+        let layout = CardLayout(capsule: capsule, visibleFrame: capsuleScreen?.usableFrame ?? visibleFrame)
         panel = FloatingPanel(
             contentRect: Self.panelFrame(around: capsule, layout: layout),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -141,6 +150,11 @@ final class FloatingWindowController {
             forName: NSWindow.didMoveNotification, object: panel, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.panelMoved() }
+        }
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated { MenuBars.refresh() }
         }
 
         apply()
@@ -220,6 +234,7 @@ final class FloatingWindowController {
         case .leftMouseDown:
             // Only the glass counts, not the transparent space around it.
             guard glassFrame.contains(point) else { return }
+            MenuBars.refresh()
             capsuleAtPress = expansion.capsuleFrame
             expansion.pressed(at: point, onButton: isOnButton(event))
         case .leftMouseDragged:
@@ -236,6 +251,9 @@ final class FloatingWindowController {
     /// corner of it; the card and the panel stay where they were.
     private func release(at point: CGPoint) {
         expansion.released(at: point, visibleFrame: screenArea)
+        // macOS keeps a window's glass from going under a menu bar, even on a display whose
+        // usable area says it may; the move it held back during the drag reached no one.
+        followPanel()
         // A click that opens the card is shown by `update`, with its animation.
         if expansion.isExpanded == display.isExpanded {
             followCapsule()
@@ -287,8 +305,17 @@ final class FloatingWindowController {
         guard !expansion.isPressed else { return }
         // Not remembered: with the display plugged back in before the next launch,
         // the capsule goes back where it was dragged.
-        let card = panel.frame.insetBy(dx: Self.margin, dy: Self.margin)
-        expansion.moveCapsule(to: (display.cardLayout ?? layout).capsuleFrame(inside: card))
+        followPanel()
+    }
+
+    /// Where macOS put the panel somewhere other than Core said, the capsule goes along.
+    private func followPanel() {
+        let expected = panelFrame
+        let dx = panel.frame.minX - expected.minX
+        let dy = panel.frame.minY - expected.minY
+        // Half a point either way is AppKit rounding, not a move.
+        guard abs(dx) > 0.5 || abs(dy) > 0.5 else { return }
+        expansion.moveCapsule(to: expansion.capsuleFrame.offsetBy(dx: dx, dy: dy))
     }
 
     // MARK: The card's menu
@@ -352,7 +379,7 @@ final class FloatingWindowController {
         let screen = NSScreen.screens.first { $0.frame.contains(point) }
             ?? NSScreen.screens.first { $0.frame.contains(capsule) }
             ?? NSScreen.screens.first
-        return screen?.visibleFrame ?? .zero
+        return screen?.usableFrame ?? .zero
     }
 
     // MARK: Opening and closing
@@ -471,5 +498,43 @@ final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
 
     override func menu(for event: NSEvent) -> NSMenu? {
         menuProvider?()
+    }
+}
+
+/// The menu bars on screen, in AppKit's coordinates. Looked up when the app opens, when the
+/// displays change and when a drag starts, not on every step of it.
+@MainActor
+enum MenuBars {
+    private(set) static var frames: [CGRect] = find()
+
+    static func refresh() {
+        frames = find()
+    }
+
+    private static func find() -> [CGRect] {
+        let level = Int(CGWindowLevelForKey(.mainMenuWindow))
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+        // Window bounds measure from the top of the primary display, downwards.
+        let top = NSScreen.screens.first?.frame.maxY ?? 0
+        return windows.compactMap { window in
+            guard window[kCGWindowLayer as String] as? Int == level,
+                  let bounds = window[kCGWindowBounds as String] as? NSDictionary,
+                  let frame = CGRect(dictionaryRepresentation: bounds) else { return nil }
+            return CGRect(x: frame.minX, y: top - frame.maxY, width: frame.width, height: frame.height)
+        }
+    }
+}
+
+extension NSScreen {
+    /// Where the Floating Window may go: `visibleFrame`, also without the menu bar on displays
+    /// where `visibleFrame` keeps it (an external one, say). macOS keeps the glass from going
+    /// under any menu bar, so Core must not put it there.
+    @MainActor
+    var usableFrame: CGRect {
+        let area = visibleFrame
+        guard let bar = MenuBars.frames.first(where: { $0.intersects(frame) && $0.minY < area.maxY }) else {
+            return area
+        }
+        return CGRect(x: area.minX, y: area.minY, width: area.width, height: max(0, bar.minY - area.minY))
     }
 }
