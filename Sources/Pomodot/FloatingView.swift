@@ -26,7 +26,7 @@ struct FloatingView: View {
 
         ZStack(alignment: anchor) {
             if expanded {
-                FloatingCard(model: model)
+                FloatingCard(model: model, display: display)
                     .transition(swap)
             } else {
                 FloatingCapsule(model: model)
@@ -58,6 +58,9 @@ struct FloatingView: View {
         .coordinateSpace(.named(Self.coordinateSpaceName))
         .onPreferenceChange(ButtonFramesKey.self) { frames in
             MainActor.assumeIsolated { display.buttonFrames = frames }
+        }
+        .onPreferenceChange(MoreButtonFrameKey.self) { frame in
+            MainActor.assumeIsolated { display.moreButtonFrame = frame }
         }
     }
 }
@@ -96,6 +99,7 @@ private struct FloatingCapsule: View {
 /// Expanded: every control the Floating Window has, and no others.
 private struct FloatingCard: View {
     let model: AppModel
+    let display: FloatingWindowDisplay
 
     var body: some View {
         let timer = model.timer
@@ -109,15 +113,22 @@ private struct FloatingCard: View {
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
+                // The card's menu: what the card has no button for, Hide Floating Window included.
                 Button {
-                    model.isFloatingWindowVisible = false
+                    display.openMenu?()
                 } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 9, weight: .bold))
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 10, weight: .bold))
                 }
                 .buttonStyle(RoundButtonStyle())
-                .help("Hide Floating Window")
-                .accessibilityLabel("Hide Floating Window")
+                .background {
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: MoreButtonFrameKey.self,
+                                               value: proxy.frame(in: .named(FloatingView.coordinateSpaceName)))
+                    }
+                }
+                .help("More")
+                .accessibilityLabel("More")
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -305,6 +316,16 @@ private struct ButtonFramesKey: PreferenceKey {
 
     static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) {
         value += nextValue()
+    }
+}
+
+/// The frame of the card's ellipsis button, so its menu opens just below it.
+private struct MoreButtonFrameKey: PreferenceKey {
+    static let defaultValue: CGRect = .zero
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        let next = nextValue()
+        if next != .zero { value = next }
     }
 }
 

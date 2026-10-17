@@ -1,6 +1,6 @@
 # Pomodot v1 — Spec สำหรับ AI coding agent
 
-> **อ่านก่อนเริ่ม:** spec นี้รวมการตัดสินใจทั้งหมดจาก [map](map.md) และตั๋ว 01–15 ไว้ที่เดียว อ่านจบแล้วต้อง build ได้ครบ 5 milestone **โดยไม่ต้องถามผู้ใช้เรื่องที่ตัดสินไปแล้ว** แต่ละหัวข้อมีลิงก์ไปที่ตั๋วต้นทาง เผื่ออยากรู้ว่าทำไมถึงตัดสินแบบนั้น ถ้า spec ขัดกับตั๋ว **ให้เชื่อ spec** (spec ใช้ข้อที่ตัดสินทีหลังทับข้อเก่าแล้ว)
+> **อ่านก่อนเริ่ม:** spec นี้รวมการตัดสินใจทั้งหมดจาก [map](map.md) และตั๋ว 01–15 ไว้ที่เดียว และ M6 จาก [map M6](../pomodot-m6-without-menu-bar/map.md) (ตั๋ว 01–10 ของ map นั้น) อ่านจบแล้วต้อง build ได้ครบ 6 milestone **โดยไม่ต้องถามผู้ใช้เรื่องที่ตัดสินไปแล้ว** แต่ละหัวข้อมีลิงก์ไปที่ตั๋วต้นทาง เผื่ออยากรู้ว่าทำไมถึงตัดสินแบบนั้น ถ้า spec ขัดกับตั๋ว **ให้เชื่อ spec** (spec ใช้ข้อที่ตัดสินทีหลังทับข้อเก่าแล้ว)
 >
 > ผู้ใช้ **ไม่เขียน Swift และไม่ได้อยากเรียน** คุยกับผู้ใช้เป็นภาษาไทย ศัพท์เทคนิคใช้ภาษาอังกฤษได้ ถ้าจำเป็นต้องให้ผู้ใช้ตัดสินอะไร ให้เสนอทางที่แนะนำพร้อม trade-off เป็นภาษาคน ไม่ต้องอธิบาย API
 
@@ -23,6 +23,7 @@
   - [M3. แจ้งเตือน + เสียง](#m3-แจ้งเตือน--เสียง)
   - [M4. History + Statistics](#m4-history--statistics)
   - [M5. Settings + Appearance + แจกจ่าย](#m5-settings--appearance--แจกจ่าย)
+  - [M6. ใช้ได้ครบโดยไม่ต้องแตะ menu bar](#m6-ใช้ได้ครบโดยไม่ต้องแตะ-menu-bar)
 - [ภาคผนวก](#ภาคผนวก)
   - [P1. ไฟล์ข้อมูล version 1](#p1-ไฟล์ข้อมูล-version-1)
   - [P2. README](#p2-readme)
@@ -34,7 +35,7 @@
 
 ## A1. แอพนี้คืออะไร
 
-**Pomodot** เป็นแอพ Pomodoro timer เล็กๆ บน macOS อยู่บน menu bar (ไม่มี Dock icon) มี **Floating Window** เป็นแคปซูลกระจกเล็กๆ ลอยอยู่บนสุด คลิกแล้วขยายเป็นการ์ดที่มีปุ่มครบ แจกให้เพื่อนเป็น `.zip` ผ่าน GitHub Releases โดยไม่มี Apple Developer account แบบเสียเงิน (ไม่ notarize, ไม่ลง App Store)
+**Pomodot** เป็นแอพ Pomodoro timer เล็กๆ บน macOS อยู่บน menu bar (ไอคอนบน Dock เลือกแสดง/ซ่อนได้ตั้งแต่ M6 ค่าเริ่มต้นแสดง) มี **Floating Window** เป็นแคปซูลกระจกเล็กๆ ลอยอยู่บนสุด คลิกแล้วขยายเป็นการ์ดที่มีปุ่มครบ แจกให้เพื่อนเป็น `.zip` ผ่าน GitHub Releases โดยไม่มี Apple Developer account แบบเสียเงิน (ไม่ notarize, ไม่ลง App Store)
 
 ฟีเจอร์ v1:
 - ตั้งเวลาได้: Focus / Short Break / Long Break / Pomodoro ต่อ Cycle (ค่าเริ่มต้น 25 / 5 / 15 / 4)
@@ -46,8 +47,9 @@
 - History + หน้าต่าง Statistics
 - Settings + Appearance (System / Light / Dark)
 - UI ภาษาอังกฤษอย่างเดียว
+- **(M6, 0.10.0)** ทุกคำสั่งเรียกจากแคปซูล/การ์ดได้ (ปุ่ม `…` + คลิกขวา), เปิดเองตอน login, ไอคอนบน Dock ที่เลือกแสดงได้
 
-**นอก scope ของ v1 (ห้ามทำ):** iOS/iPadOS, global hotkey, ตั้งชื่องานให้แต่ละ Pomodoro, เปิดเองตอน login, App Store/notarization, หลายภาษา, รองรับ downgrade, auto-update (Sparkle หรือแอพเช็กเวอร์ชันเอง), GitHub Actions, ช่วงสถิติแบบอื่น (30 วัน/รายเดือน), streak, ดู/ลบ Pomodoro ทีละอัน, export
+**นอก scope ของ v1 (ห้ามทำ):** iOS/iPadOS, global hotkey, ตั้งชื่องานให้แต่ละ Pomodoro, App Store/notarization, หลายภาษา, รองรับ downgrade, auto-update (Sparkle หรือแอพเช็กเวอร์ชันเอง), GitHub Actions, ช่วงสถิติแบบอื่น (30 วัน/รายเดือน), streak, ดู/ลบ Pomodoro ทีละอัน, export
 
 ## A2. ศัพท์
 
@@ -82,7 +84,7 @@
 | macOS ขั้นต่ำ | **14 (Sonoma)** | [05](issues/05-minimum-macos.md) |
 | สถาปัตยกรรม | Universal (arm64 + x86_64) build ในคำสั่งเดียว | [11](issues/11-reinstall-clt-verify.md) |
 | UI framework | SwiftUI + `MenuBarExtra` (แบบเมนู) + AppKit `NSPanel` สำหรับ Floating Window | [03](issues/03-floating-window-apis.md) |
-| Dock icon | ไม่มี (`LSUIElement`) | [07](issues/07-menubar-vs-floating.md) |
+| Dock icon | ~~ไม่มี~~ **M6:** สวิตช์ `Show in Dock` ค่าเริ่มต้นแสดง คง `LSUIElement` แล้วสลับ activation policy | [07](issues/07-menubar-vs-floating.md), [M6 › 10](../pomodot-m6-without-menu-bar/issues/10-grilling-dock-icon-setting.md) |
 | ภาษา UI | อังกฤษอย่างเดียว | [07](issues/07-menubar-vs-floating.md) |
 | เก็บข้อมูล | JSON 3 ไฟล์ใน `~/Library/Application Support/com.teppasit.pomodot/` | [13](issues/13-data-storage.md) |
 | Test | Swift Testing, ชื่อ test แบบ Given/When/Then, ใช้ `/tdd` กับ Core | [12](issues/12-code-structure-and-testing.md) |
@@ -260,7 +262,7 @@ pomodoro-time/                   (repo นี้ remote คือ github.com/inw
 |---|---|
 | `main` | มีแค่โค้ดที่ออก release แล้ว merge เข้า `main` ทุกครั้งต้องมี tag `vX.Y.Z` (ตอนนี้มีแต่เอกสารวางแผน) |
 | `develop` | รวมงานที่ผ่านแล้ว แยกจาก `main` ตอนเริ่ม M1 |
-| `feature/m1-floating-window`, `feature/m2-timer`, `feature/m3-notifications`, `feature/m4-statistics`, `feature/m5-settings-release` | milestone ละ branch แยกจาก `develop` ผู้ใช้บอก "ผ่าน" แล้วค่อย merge กลับเข้า `develop` |
+| `feature/m1-floating-window`, `feature/m2-timer`, `feature/m3-notifications`, `feature/m4-statistics`, `feature/m5-settings-release`, `feature/m6-without-menu-bar` | milestone ละ branch แยกจาก `develop` ผู้ใช้บอก "ผ่าน" แล้วค่อย merge กลับเข้า `develop` |
 | `release/X.Y.Z` | แยกจาก `develop` ใช้แก้ `VERSION`, ร่าง release notes, ตรวจรอบสุดท้าย แล้ว merge เข้า `main` + tag และ merge กลับเข้า `develop` |
 | `hotfix/X.Y.Z` | แก้บั๊กของเวอร์ชันที่ออกแล้ว แยกจาก `main` merge เข้าทั้ง `main` (+ tag) และ `develop` |
 
@@ -299,7 +301,7 @@ branch: `feature/m1-floating-window` (สร้าง `develop` จาก `main`
 ### ขอบเขต
 - `Package.swift` 3 target (A5), `VERSION` = `0.9.0`, `Packaging/Info.plist`, `.gitignore`
 - `scripts/make-icon.sh` และ `scripts/build-app.sh` ผ่านเงื่อนไข "เสร็จ" ข้อ 4–5
-- แอพ SwiftUI ที่มี `@NSApplicationDelegateAdaptor`, `LSUIElement` (ไม่มี Dock icon, ไม่อยู่ใน Cmd-Tab, ไม่มีเมนูแอพด้านบนจอ)
+- แอพ SwiftUI ที่มี `@NSApplicationDelegateAdaptor`, `LSUIElement` (ไม่มี Dock icon, ไม่อยู่ใน Cmd-Tab, ไม่มีเมนูแอพด้านบนจอ — M6: มีทั้งสามอย่างเมื่อเปิด `Show in Dock`)
 - `MenuBarExtra` แบบ `.menu` แสดงไอคอน `timer` (ยังไม่มีเวลา) มีเมนูอย่างน้อย `Hide/Show Floating Window`, `Always on Top`, `Quit Pomodot`
 - Floating Window ตอนย่อ (แคปซูล ~128×38 pt แสดงจุดสีของ Focus + `25:00` + `READY`) ลอยตามกติกาข้างล่าง วางที่ตำแหน่งเริ่มต้น
 - ตอนเริ่ม App ต้องเช็กว่า SF Symbols `timer`, `cup.and.saucer.fill`, `pause.circle` โหลดได้จริง (`NSImage(systemSymbolName:accessibilityDescription:)` ต้องไม่ได้ `nil`) ถ้าตัวไหนได้ `nil` ให้หยุดแล้วรายงาน **ห้ามเปลี่ยนไปใช้ตัวอื่นเอง**
@@ -347,7 +349,7 @@ panel.orderFrontRegardless()                    // แสดงโดยไม�
 
 ### Checklist ทดสอบด้วยมือ M1
 - Finder › Applications (หรือโฟลเดอร์ที่ build) เห็นไอคอนแอพแบบ A (แคปซูลขาวบนพื้นแดง) ชื่อ `Pomodot` **ผู้ใช้บอกผ่านเรื่องหน้าตาของไอคอน** (ไอคอนจริงต่างจากหน้าตัวอย่างนิดหน่อย เงาเป็นรูปทรงธรรมดา ไม่เบลอ)
-- เปิดแอพแล้วไม่มีไอคอนใน Dock และไม่อยู่ใน Cmd-Tab
+- เปิดแอพแล้วไม่มีไอคอนใน Dock และไม่อยู่ใน Cmd-Tab (M6: เฉพาะตอน `Show in Dock` ปิด)
 - ไอคอน `timer` ขึ้นบน menu bar คลิกแล้วได้เมนู dropdown
 - เปิดแอพครั้งแรก แคปซูลอยู่กลางด้านบนใต้ menu bar
 - เปิด Safari (หรือแอพอื่น) แบบ fullscreen → แคปซูลยังลอยอยู่บนสุด และกระจกโปร่งแสงยังอ่านตัวเลขได้
@@ -453,12 +455,12 @@ Core seam 1 (Timer) + seam 4 (Floating Window) + seam 5 ส่วน `state.json
 - **ขยาย** (~284×200 pt การ์ดมุมโค้ง):
   - ป้าย Phase (`Focus` / `Short Break` / `Long Break`) สีของ Phase
   - จุดความคืบหน้า N จุด + `k/N`
-  - ปุ่มซ่อน (SF Symbol `xmark`) มุมขวาบน = Hide Floating Window
+  - ~~ปุ่มซ่อน (SF Symbol `xmark`) มุมขวาบน = Hide Floating Window~~ **M6 ทับ:** ปุ่ม `…` (SF Symbol `ellipsis`) มุมขวาบน เปิดเมนูของการ์ด (ดู M6)
   - เวลาตัวใหญ่ + `PAUSED` / `READY`
   - แถบเวลาที่เหลือ (เทียบกับความยาวเต็มของ Phase นี้)
   - **Expected finish:** `Phase ends` และ `Cycle ends` (โชว์เฉพาะตอนขยาย ตอนซ่อนหน้าต่างดูได้จากเมนู)
   - ปุ่มใหญ่สีของ Phase: `Start` / `Pause` / `Resume` (SF Symbol `play.fill` / `pause.fill`) + ปุ่ม Reset (`arrow.counterclockwise`) + Skip (`forward.end.fill`)
-- ปุ่มบนหน้าต่างมี**แค่** Start/Pause/Resume, Reset, Skip, ซ่อน **ไม่มี** New Cycle, Quit, หมุด, เมนูคลิกขวา
+- ~~ปุ่มบนหน้าต่างมี**แค่** Start/Pause/Resume, Reset, Skip, ซ่อน **ไม่มี** New Cycle, Quit, หมุด, เมนูคลิกขวา~~ **M6 ทับ:** ปุ่มบนการ์ดเป็น Start/Pause/Resume, Reset, Skip และ `…`; New Cycle, Hide Floating Window, Always on Top, Statistics, Settings, About, Check for Updates และ Quit อยู่ในเมนูของ `…` และเมนูคลิกขวาที่แคปซูล/การ์ด (ยังไม่มีปุ่มหมุด)
 - **ตอน Paused:** ตัวเลขค่อยๆ จางลงแล้วเข้มขึ้นวนไป (เหมือนหายใจ) + `PAUSED`
 - **เปลี่ยน Phase:** แคปซูลหรือการ์ด**เด้งเบาๆ ครั้งเดียว** (ขยายนิดเดียวแล้วกลับ ~0.7 วิ) + **สีค่อยๆ เปลี่ยน**เป็นสีของ Phase ใหม่ ไม่กะพริบซ้ำ ไม่ใช่การแจ้งเตือน
 - หมด Phase แล้ว Floating Window **ไม่เด้งกลับมาเอง**ถ้าซ่อนอยู่
@@ -523,9 +525,9 @@ Quit Pomodot
 
 - บรรทัดที่ 2 ใช้ชื่อ Phase จริง เช่น `Short Break 2/4 · ends 14:40`, `Long Break 4/4 · ends 15:00` เวลาตามรูปแบบเครื่อง
 - `…` ท้าย Reset / New Cycle = อาจมีกล่องถาม (ตามธรรมเนียม Mac) และเป็นสีจางกดไม่ได้ตอนกดแล้วไม่มีอะไรเปลี่ยน (ดู "ถามยืนยัน")
-- **ออกจากแอพได้ทางเดียวคือ `Quit Pomodot`**
+- **ออกจากแอพได้ทางเดียวคือ `Quit Pomodot`** (M6: อยู่ในเมนูของการ์ดด้วย และ ⌘Q / Quit จาก Dock ตอนมีไอคอน Dock ทุกทางไม่ถามยืนยัน)
 - ไอคอนบน menu bar อาจถูกซ่อนหลังรอยบาก → **เปิดแอพซ้ำตอนรันอยู่แล้ว** (Finder / Spotlight) = แสดง Floating Window ไม่เปิดตัวที่สอง (`applicationShouldHandleReopen` ถ้าใช้ไม่ได้กับแอพแบบ `LSUIElement` ให้หาทางอื่นแล้วบอกในรายงาน)
-- จำว่า Floating Window ซ่อนหรือแสดงอยู่ข้ามการเปิดแอพใหม่
+- ~~จำว่า Floating Window ซ่อนหรือแสดงอยู่ข้ามการเปิดแอพใหม่~~ **M6 ทับ:** เปิดแอพเมื่อไหร่แคปซูลโผล่เสมอ (ยังจำตำแหน่งและ Always on Top)
 
 ### ข้อมูล: `state.json` (seam 5)
 ที่มา: [13](issues/13-data-storage.md) รูปแบบไฟล์ดู [ภาคผนวก P1](#p1-ไฟล์ข้อมูล-version-1) กติการ่วมของทุกไฟล์:
@@ -619,7 +621,7 @@ Quit Pomodot
 - เปิดแอพซ้ำจาก Finder ตอนรันอยู่ (และซ่อน Floating Window ไว้) → Floating Window โผล่ ไม่มีแอพตัวที่สอง
 - Quit กลาง Focus แล้วเปิดใหม่ → ทุกอย่างเหมือนเดิม เป็น Pause
 - Force Quit กลาง Focus แล้วเปิดใหม่ → เวลาคลาดไม่เกิน 30 วิ เป็น Pause
-- ซ่อน Floating Window แล้ว Quit และเปิดใหม่ → ยังซ่อนอยู่
+- ~~ซ่อน Floating Window แล้ว Quit และเปิดใหม่ → ยังซ่อนอยู่~~ (M6 ทับ: เปิดใหม่แล้วแคปซูลโผล่)
 - ลากแคปซูลไปมุมจอ แล้ว Quit และเปิดใหม่ → อยู่ที่เดิม
 - (ถ้ามีจอเสริม) ลากแคปซูลไปจอเสริม Quit ถอดจอ แล้วเปิดใหม่ → แคปซูลกลับมากลางบนของจอหลัก
 
@@ -787,12 +789,13 @@ Appearance
                       [Restore Defaults]
 ```
 
+- **M6:** หัวข้อ `General` (`Open at login`, `Show in Dock`) อยู่เหนือ `Timer` ดู M6 › Settings › General
 - เวลาแต่ละ Phase 1–120 นาที (จำนวนเต็ม), Pomodoros per Cycle 1–10 ใช้ช่องตัวเลข + ปุ่มขึ้น/ลง
 - **เปลี่ยนแล้วมีผลทันที ไม่มีปุ่ม Save** (มีผลกับ Phase ไหนตามกติกา M2)
 - บรรทัดเตือนสิทธิ์เป็น**สีส้ม**อยู่ใต้ `Show notifications` (ใช้ SF Symbol `exclamationmark.triangle.fill`) ขึ้นเฉพาะตอน `Show notifications` เปิด และระบบปิดสิทธิ์ (เช็กด้วย `getNotificationSettings` ตอนเปิดหน้าต่างและตอนแอพกลับมา active) `[Open System Settings…]` เปิดหน้า Notifications ของ System Settings (URL scheme ที่น่าจะใช้ได้คือ `x-apple.systempreferences:com.apple.Notifications-Settings.extension` ต้องลองเปิดจริงก่อน)
 - dropdown เสียงมีเสียงระบบทุกตัว (ไฟล์ใน `/System/Library/Sounds` ใช้ชื่อไม่มีนามสกุล) และ `None` อยู่บนสุด **เลือกแล้วเล่นให้ฟังทันที** ไม่มีปุ่มเล่นแยก ไม่มีสวิตช์ปิดเสียงทั้งหมด (อยากเงียบเลือก `None`) ถ้าชื่อเสียงที่บันทึกไว้ไม่มีในเครื่อง ใช้ค่าเริ่มต้นของช่องนั้น
 - **Appearance** `System` / `Light` / `Dark` ค่าเริ่มต้น `System` มีผลกับ**ทุกหน้าต่างรวมถึงแคปซูล**ทันที (`NSApp.appearance`) เลือก System แล้วเครื่องสลับโหมด → แอพเปลี่ยนตามทันที
-- **Restore Defaults** (ชิดขวาล่าง): 25 / 5 / 15 / 4, ปิด auto-start ทั้งสอง, เปิด `Show notifications`, เสียง Glass / Hero, Appearance System **ไม่แตะ**ตำแหน่ง Floating Window, ซ่อน/แสดง และ Always on Top (ไม่อยู่ในหน้า Settings)
+- **Restore Defaults** (ชิดขวาล่าง): 25 / 5 / 15 / 4, ปิด auto-start ทั้งสอง, เปิด `Show notifications`, เสียง Glass / Hero, Appearance System (M6: และ `Show in Dock` เปิด แต่**ไม่แตะ** `Open at login`) **ไม่แตะ**ตำแหน่ง Floating Window, ซ่อน/แสดง และ Always on Top (ไม่อยู่ในหน้า Settings)
 
 ### ข้อมูล: `settings.json`
 - เก็บทุกค่าในหน้า Settings บันทึกทุกครั้งที่เปลี่ยน รูปแบบดู P1 กติการ่วมตาม M2
@@ -856,6 +859,183 @@ Appearance
 
 ---
 
+## M6. ใช้ได้ครบโดยไม่ต้องแตะ menu bar
+
+branch: `feature/m6-without-menu-bar` (แยกจาก `develop` หลัง M5 ผ่าน) แล้วออก `release/0.10.0` ที่มา: [map M6](../pomodot-m6-without-menu-bar/map.md) และตั๋ว [01–10](../pomodot-m6-without-menu-bar/issues/) ของ map นั้น
+
+**เป้าหมาย:** ทุกคำสั่งที่เคยมีแค่ในเมนูบน menu bar เรียกจากแคปซูล/การ์ดได้ครบ ไอคอนบน menu bar ยังอยู่เหมือนเดิมเป็นอีกทางหนึ่ง (ไม่มีสวิตช์ปิด) และเพิ่ม 2 อย่างที่ผู้ใช้ขอ: เปิดเองตอน login และไอคอนบน Dock ที่เลือกแสดง/ซ่อนได้ เวอร์ชันนี้คือ **`0.10.0`** (MINOR = เพิ่มฟีเจอร์)
+
+**นอกขอบเขต M6:** คีย์ลัด (global hotkey, คีย์ลัดเรียกแคปซูล — นอกจาก ⌘, / ⌘Q / ⌘H ที่มากับเมนูแอพมาตรฐานตอนมีไอคอน Dock), สวิตช์ปิดไอคอนบน menu bar
+
+### ขอบเขต
+- ปุ่ม `…` บนการ์ดแทนปุ่ม × และเมนูคลิกขวาที่แคปซูล/การ์ด (เมนูของการ์ด)
+- เปิดแอพเมื่อไหร่แคปซูลโผล่เสมอ + กล่องบอกวิธีเอาแคปซูลกลับตอนซ่อนครั้งแรก
+- หน้าต่าง Settings หัวข้อใหม่ `General`: `Open at login` และ `Show in Dock`
+- ไอคอนบน Dock: คลิกแล้วแคปซูลกลับมา, เมนูคลิกขวาที่ Dock, เมนูแอพด้านบนจอ
+- README (อังกฤษ + ไทย) และ release `0.10.0`
+
+### เมนูของการ์ด ([02](../pomodot-m6-without-menu-bar/issues/02-prototype-where-card-commands-live.md), [04](../pomodot-m6-without-menu-bar/issues/04-grilling-today-on-card.md), [06](../pomodot-m6-without-menu-bar/issues/06-grilling-quit-from-card.md))
+
+```
+ขยาย (การ์ด)
+┌──────────────────────────────┐
+│ [● Focus] ●○○○ 2/4       (…) │   ← ปุ่ม … แทนปุ่ม × เดิม
+│ 24:12  PAUSED                │
+│ ━━━━━━━━━━━━━━━━━━━━━━━━──   │
+│ Phase ends     Cycle ends    │
+│ 3:17 PM        4:32 PM       │
+│ [ ▶︎ Resume ]   [↺]   [⏭]    │
+└──────────────────────────────┘
+
+เมนูที่เปิดจาก … / คลิกขวา / คลิกขวาที่ไอคอน Dock
+Today: 🍅 5                          ← กดไม่ได้ สีจาง
+──────────────
+New Cycle…
+──────────────
+Hide Floating Window                 ← Show Floating Window ตอนซ่อนอยู่ (เห็นได้จากเมนู Dock)
+✓ Always on Top
+──────────────
+Statistics…
+Settings…
+──────────────
+About Pomodot
+Check for Updates…
+──────────────
+Quit Pomodot                         ← ไม่มีในเมนู Dock (macOS ใส่ Quit ให้เอง)
+```
+
+- **ปุ่ม `…`** มุมขวาบนของการ์ด SF Symbol `ellipsis` ขนาดและสไตล์เดียวกับปุ่ม `xmark` เดิม (`RoundButtonStyle`, `.reportsButtonFrame()`) `.help("More")` **ปุ่ม `xmark` บนการ์ดถูกเอาออก** — ซ่อนแคปซูลทำจากเมนู `Hide Floating Window`
+- กดปุ่ม `…` → เมนูเปิดใต้ปุ่ม (ถ้าใต้ปุ่มไม่มีที่พอ เช่น การ์ดชิดขอบล่างของจอ ให้เปิดเหนือปุ่มแทน — ไม่งั้น AppKit ทำให้เมนูต้องเลื่อน; กติกานี้อยู่ใน Core `FloatingWindowPlacement.menuCorner`); **คลิกขวา หรือ Control-คลิก ที่ใดก็ได้บนแคปซูลหรือการ์ด** (รวมบนปุ่ม) → เมนูเดียวกันเปิดที่ตำแหน่งเมาส์
+- คลิกขวา**ไม่ขยาย ไม่ลาก และไม่กดปุ่ม**ใดๆ คลิกขวาที่แคปซูลตอนย่อ → แคปซูลยังย่ออยู่หลังเมนูปิด
+- **`Today: 🍅 N`** = จำนวน Pomodoro วันนี้ (ค่าเดียวกับบรรทัดแรกของเมนู menu bar) เป็นบรรทัดแรก สีจาง กดไม่ได้ เมนูของการ์ด**ไม่มี**บรรทัดเวลาจบและไม่มี Start/Skip/Reset… (อยู่บนการ์ดแล้ว) ผู้ใช้รับได้ว่าคลิกขวาที่แคปซูลตอนย่อจะไม่เห็นเวลาจบ
+- `New Cycle…` ใช้กล่องถามและการเป็นสีจางตามกติกาเดิมของเมนู menu bar (M2 › ถามยืนยัน)
+- `Quit Pomodot` **ไม่ถามยืนยัน** ออกทันทีเหมือนทุกทางที่ Quit ได้ (menu bar, เมนูของการ์ด, ⌘Q และ Quit จาก Dock ตอนมีไอคอน Dock) เพราะเปิดใหม่ timer กลับมา Paused ที่เดิม
+- เปิด Statistics / Settings / About จากเมนูนี้ใช้ `showInFront()` / `showAbout()` เดิม (หน้าต่างขึ้นหน้าสุดแน่นอนด้วย `orderFrontRegardless()`; จะรับคีย์บอร์ดทันทีไหมขึ้นกับว่าระบบยอม `NSApp.activate()` — คลิกจริงน่าจะยอม ถ้าไม่ยอมผู้ใช้คลิกหน้าต่างหนึ่งครั้งก่อนพิมพ์ ตรวจด้วยมือ)
+
+**วิธีทำ** (ผล research บน branch `research/menu-from-nonactivating-panel` สรุปไว้ที่นี่แล้ว ไม่ต้องไปเปิด — ทดลองบน macOS 27 แล้วว่าเปิดเมนูได้โดย Pomodot **ไม่กลายเป็นแอพ active** แอพที่ผู้ใช้พิมพ์อยู่ยังรับคีย์บอร์ด)
+- ใช้ **AppKit `NSMenu` ตัวเดียว** ที่สร้างใหม่จาก model ทุกครั้งก่อนเปิด (หรือเติมใน `menuNeedsUpdate(_:)` ห้ามแก้รายการใน `menuWillOpen`/`menuDidClose`) ตั้ง `autoenablesItems = false` (ไม่งั้น `isEnabled` ไม่มีผล)
+  - ปุ่ม `…` = SwiftUI `Button` ธรรมดา action เรียก `DispatchQueue.main.async { menu.popUp(positioning: nil, at: <ใต้ปุ่ม>, in: hostingView) }` (async เพราะ `popUp` block จนเมนูปิด) — **ไม่ใช้ SwiftUI `Menu`** (เปิดตั้งแต่ mouse-down, ไม่มี hook ตอนปิด, ยังไม่ได้ทดลองเปิดจริง)
+  - คลิกขวา = override `menu(for:)` ใน `FirstClickHostingView` คืน `NSMenu` ตัวเดียวกัน
+  - `FloatingPanel.sendEvent` **ต้องไม่ส่ง left-click ที่กด Control ให้ Core** (ไม่งั้น Core เริ่ม "กดอยู่" แล้ว mouse-up ถูกเมนูกิน)
+- **การ์ดต้องไม่หุบระหว่างเมนูเปิด:** timer เช็กเมาส์ (`syncPointer`, mode `.common`) ยังยิงระหว่างเมนูเปิด เมาส์อยู่บนรายการเมนูนอกการ์ด = ถือว่าออก → หุบ จึงเพิ่มใน Core `FloatingWindowExpansion`: `menuOpened()` (ระหว่างนี้ `nextCheck == nil` และ `check(at:)` ไม่หุบ) และ `menuClosed(at:)` (ถ้าเมาส์ออกระหว่างเมนูเปิด ให้นับ 0.5 วิ **เริ่มจากตอนเมนูปิด**) ฝั่ง controller เรียกจาก `NSMenuDelegate.menuWillOpen(_:)` / `menuDidClose(_:)` แล้ว `syncPointer()` หนึ่งครั้ง + ตั้ง timer ใหม่
+- **รายการในเมนูมาจาก Core** (ชื่อ, กดได้ไหม, มีเครื่องหมายถูกไหม, คำสั่ง) แบบเดียวกับ `startPauseResumeTitle` เพื่อให้เมนูของการ์ดกับเมนู Dock ใช้ที่เดียวกันและ test ได้ App แค่แปลงเป็น `NSMenuItem`
+
+### เอาแคปซูลกลับ ([03](../pomodot-m6-without-menu-bar/issues/03-grilling-bring-back-hidden-capsule.md))
+- **เปิด Pomodot เมื่อไหร่ แคปซูลโผล่เสมอ** ทั้งเปิดเองตอนแอพไม่ได้ทำงาน (Finder / Spotlight / Launchpad / เปิดตอน login) และเปิดซ้ำหรือคลิกไอคอน Dock ตอนทำงานอยู่ (`applicationShouldHandleReopen` เดิม: แสดง + `bringToFront()` ไม่ขยายการ์ด) **เลิกจำสถานะซ่อนข้ามการ Quit** (ทับกติกา M2) ส่วนตำแหน่งที่ลากไว้และ Always on Top ยังจำเหมือนเดิม
+  - `state.json` ยังเขียน `floatingWindow.visible` เหมือนเดิม แต่**ตอนโหลดไม่ใช้** (แสดงเสมอ) ไม่ต้องเพิ่มเลข `version` เพราะไม่ได้เปลี่ยนโครงสร้าง
+- คลิก banner ยังพาแคปซูลกลับมาเหมือนเดิม; หมด Phase แล้วแคปซูล**ไม่**เด้งกลับมาเอง (เหมือนเดิม)
+- **ครั้งแรกตลอดชีพที่ซ่อนแคปซูล** (จากทางไหนก็ได้: เมนูของการ์ด, เมนู menu bar, เมนู Dock) ขึ้นกล่อง `NSAlert` ปุ่มเดียว ขึ้นหน้าสุดแบบเดียวกับกล่องถามยืนยัน (`NSApp.activate()` ก่อน `runModal`) แคปซูลซ่อนไปแล้วตอนกล่องขึ้น
+  - หัวข้อ: `Pomodot keeps running`
+  - เนื้อความตอน `Show in Dock` ปิด: `To bring the Floating Window back, open Pomodot again from Spotlight or Launchpad.`
+  - เนื้อความตอน `Show in Dock` เปิด: `To bring the Floating Window back, click Pomodot in the Dock, or open it again from Spotlight or Launchpad.`
+  - ปุ่ม: `OK`
+  - จำว่าแสดงแล้วใน `state.json` › `floatingWindow.hideNoticeShown` (ไม่มี key = `false`) อยู่ที่นี่ไม่อยู่ใน `settings.json` เพื่อให้ Restore Defaults ไม่แตะ
+
+### Settings › `General` ([08](../pomodot-m6-without-menu-bar/issues/08-grilling-launch-at-login-setting.md), [10](../pomodot-m6-without-menu-bar/issues/10-grilling-dock-icon-setting.md))
+
+```
+General
+  [ ] Open at login
+      ⚠ Pomodot needs your approval in System Settings to open at login.
+        [Open Login Items…]               ← ขึ้นเฉพาะตอนระบบต้องให้อนุมัติ
+  [✓] Show in Dock
+
+Timer
+  …   (ส่วนอื่นเหมือน M5)
+```
+
+**`Open at login`** — ค่าเริ่มต้น**ปิด** (ผู้ใช้ต้องเปิดเอง)
+- ใช้ `SMAppService.mainApp` (ServiceManagement, macOS 13+) **ใน App เท่านั้น** Core ไม่ import ServiceManagement ไม่ต้องแก้ `build-app.sh` / `Info.plist`
+- **สวิตช์แสดงตามความจริงของระบบเสมอ ไม่เก็บใน `settings.json`:** App อ่าน `SMAppService.mainApp.status` ทุกครั้งที่เปิดหน้าต่าง Settings และตอนแอพกลับมา active (แบบเดียวกับเช็กสิทธิ์ notification) แล้วส่งให้ Core แปลง: `.enabled` → เปิด; `.notRegistered` หรือ `.notFound` → ปิด; `.requiresApproval` → เปิด + บรรทัดส้ม
+- เปิดสวิตช์ → `register()`; ปิด → `unregister()` แล้วอ่าน status ใหม่ ถ้า throw ให้สวิตช์กลับไปตามสถานะจริงและเขียน log (ไม่มีกล่อง)
+- แอพ**ไม่ลงทะเบียนกลับเอง** (ผู้ใช้เอาออกเองใน System Settings → สวิตช์ปิดตาม) และไม่ลงทะเบียนใหม่ตอนอัปเดต
+- บรรทัดเตือน**สีส้ม**ใต้สวิตช์ (SF Symbol `exclamationmark.triangle.fill` แบบเดียวกับเตือนสิทธิ์ notification) `Pomodot needs your approval in System Settings to open at login.` + ปุ่ม `Open Login Items…` ที่เรียก `SMAppService.openSystemSettingsLoginItems()`
+- `Restore Defaults` **ไม่แตะ** (เป็นการตั้งค่าของระบบ)
+- ตอนเปิดสวิตช์ macOS แจ้งเตือนเองว่า "Pomodot will open automatically when you log in" เป็นเรื่องปกติ
+
+ข้อเท็จจริงจาก research (branch `research/launch-at-login` ทดลองด้วยแอพ ad-hoc sign ไม่มี Team ID บน macOS 27 บัญชี admin): `register()` ได้ `.enabled` ทันที **ไม่ต้องให้ผู้ใช้อนุมัติ** ไม่ต้องอยู่ใน `/Applications`; ไม่เคยลงทะเบียน = `.notFound` (ไม่ใช่ `.notRegistered`); **อัปเดตด้วยการลากทับแล้วยังอยู่และยัง `.enabled`** (ตอน login ระบบเปิดแบบเดียวกับดับเบิลคลิก ถ้าตัวใหม่ยังไม่ผ่าน Open Anyway น่าจะเห็นกล่อง Gatekeeper — ตรวจด้วยมือ); **ลบแอพแล้วรายการค้าง**ใน System Settings › General › Login Items & Extensions (สามเหลี่ยมเหลือง) ผู้ใช้ลบเองด้วยปุ่ม −
+
+**`Show in Dock`** — ค่าเริ่มต้น**เปิด** (ผู้ใช้เลือก: เพื่อนที่ไม่คุ้น menu bar เจอแอพง่าย) เก็บใน `settings.json` key `showInDock` (ไม่มี key = `true`) มีผลทันทีไม่ต้องเปิดแอพใหม่ ~~ทุกกรณี~~ **(แก้ตอนตรวจด่าน M6: ระหว่างที่หน้าต่าง Settings เปิดอยู่มีไอคอน Dock เสมอ แม้สวิตช์ปิด — ปิดสวิตช์แล้วไอคอนหายตอนปิดหน้าต่าง Settings — เพราะเอาไอคอนออกตอนแอพ active ทำให้ macOS ดึง active ไปและหน้าต่าง Settings กะพริบ ผู้ใช้เลือกแบบนี้)** `Restore Defaults` คืนเป็น**เปิด** **คนที่อัปเดตจาก 0.9.0 จะเห็นไอคอนบน Dock โผล่หลังอัปเดต** (ต้องบอกใน release notes)
+
+### ไอคอนบน Dock ([09](../pomodot-m6-without-menu-bar/issues/09-research-dock-icon-toggle.md), [10](../pomodot-m6-without-menu-bar/issues/10-grilling-dock-icon-setting.md))
+ข้อเท็จจริงจาก research (branch `research/dock-icon-toggle` สรุปไว้ที่นี่แล้ว): สลับ `.regular` ↔ `.accessory` ตอนทำงานอยู่ได้ ไอคอนขึ้น/หายใน ~0.5 วิ หน้าต่างไม่หาย ไม่แย่ง focus ไม่มีไอคอนค้าง (ทดลองตอนแอพ**ไม่** active); Dock ใช้ `Pomodot.icns` และมีจุดใต้ไอคอนเอง; การมีไอคอน Dock **ไม่ได้**ทำให้ `activate()` ที่ไม่มีคลิกผ่านง่ายขึ้น
+
+- **คง `LSUIElement = true`** ใน `Info.plist` แล้วมีที่เดียวที่เรียก `NSApp.setActivationPolicy(showInDock ? .regular : .accessory)`: ใน `applicationWillFinishLaunching` (override เพิ่มใน `AppDelegate`; ตอนปิดสวิตช์จะไม่มีไอคอนแวบ) และทุกครั้งที่ค่าเปลี่ยน
+- ~~หลังสลับ ถ้าหน้าต่าง Settings เปิดอยู่ให้ `orderFrontRegardless()` อีกครั้ง~~ **(ตรวจด่าน M6: ทดลองแล้วหน้าต่างยังกะพริบ — FB7743313 — จึงเปลี่ยนเป็น: ระหว่างที่หน้าต่าง Settings เปิดอยู่ คิดเป็น `.regular` เสมอ (`showInDock || Settings เปิดอยู่`) ไอคอนจึงไม่เคยถูกเอาออกตอนผู้ใช้อยู่ใน Settings; ปิดหน้าต่าง Settings แล้วค่อยใช้ค่าสวิตช์ และเปิด Settings ตอนสวิตช์ปิดไอคอนจะโผล่ระหว่างที่หน้าต่างเปิด)**
+- **`panel.canHide = false` เสมอ** (ไม่ขึ้นกับสวิตช์) — ไม่งั้น ⌘H / Hide Pomodot / Hide จาก Dock ซ่อนแคปซูลไปด้วย
+- **คลิกไอคอน Dock** = `applicationShouldHandleReopen` เดิม: แคปซูลโผล่ที่เดิมและขึ้นหน้าสุด **ไม่ขยายการ์ด**
+- **คลิกขวาที่ไอคอน Dock** = `applicationDockMenu(_:)` คืนเมนูเดียวกับเมนูของการ์ด (จาก Core) ยกเว้น `Quit Pomodot` (macOS ใส่ Quit, Options, Show All Windows, Hide ให้เอง) `Hide/Show Floating Window` เปลี่ยนชื่อตามสถานะ สร้างใหม่ทุกครั้งที่ถูกเรียก
+- **เมนูแอพด้านบนจอ** (ขึ้นเฉพาะตอน Pomodot active และมีไอคอน Dock): SwiftUI สร้างให้เองแล้ว (Pomodot / Edit / View / Window / Help) **ห้ามแทน `NSApp.mainMenu` ด้วยมือ** เพิ่มด้วย `.commands { … }` บน `MenuBarExtra`: `CommandGroup(replacing: .appSettings) { Button("Settings…") { … }.keyboardShortcut(",") }` (ยังไม่ได้ทดลอง ถ้าใช้ไม่ได้ให้หาทางอื่นแล้วบอกในรายงาน) เมนู Pomodot จึงมี `About Pomodot`, `Settings…` ⌘,, Hide Pomodot ⌘H, `Quit Pomodot` ⌘Q จะลบเมนู Help ที่ว่างด้วย `CommandGroup(replacing: .help) {}` ก็ได้
+- ⌘H ซ่อนหน้าต่าง Settings / Statistics ได้ตามปกติ แต่แคปซูลอยู่ที่เดิม
+- ถ้าผู้ใช้กด Options › Keep in Dock แล้วปิดสวิตช์ ไอคอน (ไม่มีจุด) จะค้างใน Dock เพราะผู้ใช้ปักไว้เอง คลิกแล้ว = เปิดแอพ ไม่ใช่บั๊ก
+
+### ข้อมูล
+- `settings.json` เพิ่ม `showInDock` (P1) ไฟล์ version 1 ที่ไม่มี key = `true` ไม่เพิ่มเลข version
+- `state.json` เพิ่ม `floatingWindow.hideNoticeShown` (P1) ไม่มี key = `false`; `floatingWindow.visible` ยังเขียนแต่ไม่ใช้ตอนโหลด
+- `Open at login` **ไม่อยู่ในไฟล์ใดเลย** (อ่านจากระบบ)
+- อัปเดต fixture ใน `Tests/CoreTests/Fixtures/` ตาม P1 ใหม่ (test "ไฟล์ค่าเริ่มต้นมี key ตรงกับ settings.json ตัวอย่าง" จะเปลี่ยนตามเพราะมี key ใหม่ — ถูกต้องแล้ว)
+
+### Test (Core) M6
+**เมนูของการ์ด**
+- รายการเรียงตามโครงข้างบน บรรทัดแรก `Today: 🍅 N` กดไม่ได้ ตามด้วยเส้นคั่น
+- Floating Window แสดงอยู่ → `Hide Floating Window`; ซ่อนอยู่ → `Show Floating Window`
+- Always on Top เปิด → มีเครื่องหมายถูก; ปิด → ไม่มี
+- `New Cycle…` กดไม่ได้ตอน Focus 1/N Ready ที่ยังไม่มี Pomodoro (ตามกติกาเมนู menu bar เดิม)
+- เมนู Dock = เมนูของการ์ดไม่มี `Quit Pomodot`
+**การ์ดไม่หุบระหว่างเมนูเปิด (seam ของ `FloatingWindowExpansion`)**
+- Given การ์ดขยาย, When เมนูเปิดแล้วเมาส์ออกจากการ์ด 2 วิ, Then ยังขยายอยู่
+- Given เมนูเปิดและเมาส์ออกไปแล้ว, When เมนูปิดตอน 10:00:00, Then ยังไม่หุบตอน 10:00:00.4 และหุบตอน 10:00:00.5
+- Given เมนูเปิด, When เมนูปิดตอนเมาส์อยู่บนการ์ด, Then ไม่หุบ
+- Given แคปซูลย่อ, When คลิกขวา (เมนูเปิดแล้วปิด), Then ยังย่ออยู่
+**เอาแคปซูลกลับ**
+- `state.json` ที่ `visible: false` → โหลดแล้วแสดง ตำแหน่ง/Always on Top ตามไฟล์
+- ซ่อนครั้งแรก (`hideNoticeShown` เป็น `false`) → มีกล่อง และหลังจากนั้นเป็น `true`; ซ่อนครั้งถัดไป → ไม่มีกล่อง
+- ข้อความกล่องตอน `Show in Dock` ปิด / เปิด ตรงตามข้างบน
+- ไฟล์ไม่มี `hideNoticeShown` → `false`
+**Settings**
+- ไม่มีไฟล์ / ไฟล์ไม่มี `showInDock` → `true`; บันทึกแล้วโหลดกลับได้ค่าเดิม (`false`)
+- Restore Defaults → `showInDock` เป็น `true` และไม่แตะ state ของ Floating Window
+- สถานะ login: `.enabled` → สวิตช์เปิด ไม่มีเตือน; `.notRegistered` / `.notFound` → ปิด ไม่มีเตือน; `.requiresApproval` → เปิด + เตือน
+- ไฟล์ตัวอย่าง `settings.json` และ `state.json` จาก P1 (ฉบับ M6) อ่านได้ถูกต้อง
+
+### Checklist ทดสอบด้วยมือ M6
+**Floating Window / เมนูของการ์ด**
+- การ์ดมีปุ่ม `…` มุมขวาบน ไม่มีปุ่ม × กดแล้วเมนูเปิดใต้ปุ่ม (ชิดขอบล่างของจอ = เหนือปุ่ม) เรียงตามโครง มี `Today: 🍅 N` จางอยู่บนสุด
+- พิมพ์อยู่ใน TextEdit → เปิดการ์ด → กด `…` → เลือก `Always on Top` → TextEdit ยังรับคีย์บอร์ดทันที
+- คลิกขวา และ Control-คลิก ที่แคปซูลตอนย่อ → เมนูเปิด แคปซูลไม่ขยาย ไม่ขยับ; ปิดเมนูแล้วยังย่อ
+- คลิกขวาบนปุ่ม `Start` ของการ์ด → เมนูเปิด timer ไม่เริ่ม
+- เปิดเมนูแล้วเลื่อนเมาส์ไปตามรายการนอกการ์ดสัก 3 วิ → การ์ดไม่หุบ; ปิดเมนูโดยเมาส์อยู่นอกการ์ด → การ์ดหุบหลังราวครึ่งวินาที
+- จากเมนูของการ์ด: `New Cycle…` (กล่องถามขึ้นหน้า), `Statistics…`, `Settings…`, `About Pomodot`, `Check for Updates…` ทำงานเหมือนจาก menu bar; เปิด `Settings…` แล้ว**พิมพ์ในช่องตัวเลขได้ทันที**ไหม (ถ้าต้องคลิกก่อน บันทึกไว้ ยังถือว่าผ่าน)
+- `Quit Pomodot` จากเมนูของการ์ด → ออกทันทีไม่มีกล่อง เปิดใหม่ → Paused ที่เดิม
+**เอาแคปซูลกลับ**
+- ซ่อนแคปซูลครั้งแรก → กล่อง `Pomodot keeps running` ขึ้นหน้าสุดครั้งเดียว ซ่อนอีกครั้ง → ไม่มีกล่อง
+- ซ่อนแคปซูล → Quit → เปิดจาก Spotlight → แคปซูลโผล่ที่เดิม (ตำแหน่งและ Always on Top เหมือนก่อน Quit)
+- ซ่อนแคปซูลตอนแอพทำงาน → เปิด Pomodot ซ้ำจาก Spotlight → แคปซูลโผล่
+**Settings › General**
+- หัวข้อ `General` อยู่บนสุด มี `Open at login` (ปิด) และ `Show in Dock` (เปิด) ในเครื่องที่ไม่เคยตั้ง
+- เปิด `Open at login` → macOS แจ้งว่า Pomodot จะเปิดตอน login, System Settings › General › Login Items มี Pomodot → logout/login → Pomodot เปิดเองและแคปซูลโผล่
+- เอา Pomodot ออกใน Login Items ด้วยปุ่ม − → เปิด Settings ของ Pomodot → สวิตช์ปิด (บันทึกว่าเห็นบรรทัดส้มหรือไม่) → เปิดสวิตช์ใหม่ได้
+- `Restore Defaults` → `Open at login` คงเดิม, `Show in Dock` กลับเป็นเปิด
+**Dock**
+- `Show in Dock` เปิด → ไอคอนมะเขือเทศมีจุดบน Dock, Cmd-Tab เห็น Pomodot; ปิด → ไอคอนยังอยู่จนปิดหน้าต่าง Settings แล้วหาย Cmd-Tab ไม่เห็น
+- **สลับสวิตช์ตอนหน้าต่าง Settings เป็นหน้าต่างที่ใช้อยู่** → ไอคอนอยู่ตลอดระหว่างที่ Settings เปิด, หน้าต่างไม่กะพริบและพิมพ์ได้, แถบเมนูด้านบนเป็นของ Pomodot; ปิดหน้าต่างตอนสวิตช์ปิด → ไอคอนหาย; เปิด Settings ตอนสวิตช์ปิด → ไอคอนโผล่ระหว่างที่หน้าต่างเปิด
+- ซ่อนแคปซูล → คลิกไอคอนบน Dock → แคปซูลโผล่ (ไม่ขยาย)
+- คลิกขวาไอคอนบน Dock → เห็นเมนูของการ์ด + Options / Hide / Quit ของระบบ เลือกคำสั่งของเราแล้วทำงาน
+- มีไอคอน Dock, พิมพ์ใน TextEdit → คลิกแคปซูล/ปุ่มบนการ์ด → TextEdit ยังรับคีย์บอร์ด
+- Pomodot active → ⌘H → หน้าต่าง Settings/Statistics ซ่อน แคปซูลยังอยู่; ⌘, เปิด Settings; ⌘Q ออก
+- Quit แล้วเปิดใหม่ ตอนสวิตช์ปิด → ไม่มีไอคอนแวบบน Dock
+**ติดตั้งบนเครื่องเพื่อน (0.10.0)**
+- อัปเดตจาก 0.9.0 (ลากทับ → Open Anyway) → History/Settings ยังอยู่, ไอคอน Dock โผล่, `General` มีสวิตช์ทั้งสอง
+- เปิด `Open at login` แล้วอัปเดตทับด้วยตัวใหม่**โดยไม่เปิด** → logout/login → เห็นกล่อง Gatekeeper หรือเงียบ (บันทึก) → หลัง Open Anyway login รอบต่อไปเปิดเอง
+- ลบแอพที่เปิด `Open at login` ไว้ → รายการค้างใน Login Items (สามเหลี่ยมเหลือง) → ลบด้วย − ได้ตาม README
+- เครื่องเพื่อน macOS 14/15 (บัญชีที่ไม่ใช่ admin ถ้ามี): ปุ่ม `…`/คลิกขวาไม่แย่ง focus, ไอคอน Dock, `Open at login` ทำงาน
+
+### แจกจ่าย 0.10.0
+- ขั้นตอนเหมือน M5 (`scripts/release.sh`) — agent merge `release/0.10.0` เข้า `main` และกลับเข้า `develop` ด้วย `--no-ff -m` **แต่ไม่สร้าง tag และไม่ push** (script หยุดถ้ามี tag อยู่แล้ว และสร้าง tag + push `main`/`develop`/tag พร้อมกันเอง); ผู้ใช้รัน `scripts/release.sh docs/release-notes/0.10.0.md` **ใน Terminal ของตัวเอง** (script ต้องมีคนพิมพ์ `yes`); ไฟล์ที่ยังไม่ commit (รวม untracked) ทำให้ขั้น 1 หยุด
+- release notes (อังกฤษ 3 ส่วนตาม M5) ต้องบอก: ปุ่ม `…` / คลิกขวาที่แคปซูล, เปิดแอพแล้วแคปซูลโผล่เสมอ, `Open at login`, **ไอคอนบน Dock โผล่หลังอัปเดต ปิดได้ที่ Settings › General › Show in Dock**, อัปเดตแล้วต้อง Open Anyway ซ้ำ, ข้อมูลยังอยู่
+
+---
+
 # ภาคผนวก
 
 ## P1. ไฟล์ข้อมูล version 1
@@ -875,11 +1055,13 @@ Appearance
   "showNotifications": true,
   "focusEndSound": "Glass",
   "breakEndSound": "Hero",
-  "appearance": "system"
+  "appearance": "system",
+  "showInDock": true
 }
 ```
 - `focusEndSound` / `breakEndSound`: ชื่อเสียงระบบ หรือ `null` = `None` (ไม่มี key = ค่าเริ่มต้น)
 - `appearance`: `"system"` | `"light"` | `"dark"`
+- `showInDock` (M6): แสดงไอคอนบน Dock ไม่มี key = `true`
 
 **`state.json`** (ตัวอย่าง: Focus 2/4 ที่เคย Start แล้ว เหลือ 14:02 จาก Focus 25 นาที)
 ```json
@@ -897,7 +1079,8 @@ Appearance
   "floatingWindow": {
     "visible": true,
     "alwaysOnTop": true,
-    "center": { "x": 720, "y": 844 }
+    "center": { "x": 720, "y": 844 },
+    "hideNoticeShown": false
   }
 }
 ```
@@ -907,6 +1090,8 @@ Appearance
 - `phaseLengthSeconds` = ความยาวเต็มของ Phase นี้ (ใช้วาดแถบ)
 - `hasStarted` = เคย Start แล้ว (`false` → โหลดมาเป็น Ready, `true` → Paused)
 - `center` = จุดกึ่งกลางแคปซูลตอนย่อ ในพิกัดรวมทุกจอของ AppKit `null` = ยังไม่เคยวาง (ใช้ตำแหน่งเริ่มต้น)
+- `visible`: ตั้งแต่ M6 ยังเขียนแต่**ไม่ใช้ตอนโหลด** (เปิดแอพแล้วแคปซูลโผล่เสมอ)
+- `hideNoticeShown` (M6): เคยแสดงกล่อง `Pomodot keeps running` แล้วหรือยัง ไม่มี key = `false`
 - `alwaysOnTop` อยู่ที่นี่ (ไม่อยู่ใน `settings.json`) เพราะเป็นสวิตช์ในเมนู ไม่อยู่ในหน้า Settings และ Restore Defaults ต้องไม่แตะ
 
 **`history.json`**
@@ -927,6 +1112,7 @@ Appearance
 - เขียน**ภาษาอังกฤษเป็นหลัก** + หัวข้อ**ภาษาไทย**ของขั้นตอน ติดตั้ง / อัปเดต / ถอนการติดตั้ง
 - ลิงก์ดาวน์โหลด: `https://github.com/inwpasit619/pomodot/releases/latest`
 - ต้องมี: ขั้นตอน Open Anyway, ติดตั้งด้วยการลากไป Applications (เลี่ยง App Translocation), ทางสำรอง `xattr -dr com.apple.quarantine`, อัปเดตด้วยการเอาไปทับ (ข้อมูลยังอยู่), ถอนการติดตั้งผ่าน Finder, ไม่รองรับ downgrade, หมายเหตุ "advanced" สำหรับคนที่อยาก build จาก source เอง (ต้องมี Command Line Tools, ใช้ `scripts/build-app.sh`)
+- **M6 (0.10.0) เพิ่ม** ทั้งอังกฤษและไทย: ปุ่ม `…` บนการ์ด / คลิกขวาที่แคปซูลเพื่อเปิดคำสั่งทั้งหมด; ซ่อนแคปซูลแล้วเอากลับด้วยการเปิด Pomodot ซ้ำ (Spotlight / Launchpad) หรือคลิกไอคอนบน Dock; สวิตช์ `Open at login` และ `Show in Dock` ใน Settings › General; ส่วน Updating: หลังลากทับให้เปิด Pomodot เองหนึ่งครั้ง (Open Anyway) ก่อนรีสตาร์ทเครื่อง ถ้าเปิด `Open at login` ไว้; ส่วน Uninstalling: ปิด `Open at login` ก่อนลบแอพ หรือเอารายการที่ค้างออกที่ System Settings › General › Login Items & Extensions ด้วยปุ่ม −
 - ใส่ screenshot จากการดาวน์โหลดจริง (ถ่ายตอนทดสอบ Open Anyway ใน M5) ได้ถ้ามี
 - **ประโยคเรื่อง "อัปเดตแล้วต้องกด Open Anyway ซ้ำ" ให้เขียนตามผลทดสอบจริงใน M5** ร่างด้านล่างใส่ไว้เป็น `[…]` 
 
@@ -993,6 +1179,11 @@ Appearance
 | [13](issues/13-data-storage.md) | เก็บข้อมูลของแอพไว้ที่ไหน รูปแบบอะไร | M2, M4, M5, P1 |
 | [14](issues/14-app-name-and-icon.md) | ชื่อแอพ, bundle identifier และไอคอน | A3, A4, M1, M2 |
 | [15](issues/15-versioning-and-release.md) | เลข version และขั้นตอนออก GitHub Release | A9, M5, P2 |
+| [M6 map](../pomodot-m6-without-menu-bar/map.md) | ใช้ Pomodot ได้ครบโดยไม่ต้องแตะ menu bar (ตั๋ว 01–10 ของ map นั้น) | A1, A3, M6, P1, P2 |
+| [M6 › 01](../pomodot-m6-without-menu-bar/issues/01-research-menu-from-nonactivating-panel.md) | เปิดเมนูจากแคปซูลที่ไม่แย่ง focus ได้ไหม (research branch `research/menu-from-nonactivating-panel`) | M6 |
+| [M6 › 02](../pomodot-m6-without-menu-bar/issues/02-prototype-where-card-commands-live.md) | คำสั่งที่เหลืออยู่ตรงไหนบนการ์ด (prototype branch `prototype/card-commands`) | M2, M6 |
+| [M6 › 07](../pomodot-m6-without-menu-bar/issues/07-research-launch-at-login.md) | แอพที่ไม่ได้ notarize เปิดเองตอน login ได้ไหม (research branch `research/launch-at-login`) | M6 |
+| [M6 › 09](../pomodot-m6-without-menu-bar/issues/09-research-dock-icon-toggle.md) | สลับไอคอนบน Dock ตอนแอพทำงานอยู่ได้ไหม (research branch `research/dock-icon-toggle`) | A3, M6 |
 
 **ข้อที่ spec ทับของเก่า** (ตั๋วต้นทางยังเขียนแบบเดิม ให้เชื่อ spec):
 - ชื่อแอพ `Pomodot` ทับ `Pomodoro` ทุกที่ (เมนู `Quit Pomodot`, ข้อความเตือนใน Settings, ร่าง README จาก research)
@@ -1002,3 +1193,4 @@ Appearance
 - macOS ขั้นต่ำ 14 ไม่ใช่ 15 (ตั๋ว 05 ทับข้อแนะนำของ research ที่เป็นทาง SwiftUI ล้วน)
 - ความยาวของ Pomodoro เก็บเป็นวินาที (ตั๋ว 13 ทับ "นาที" ในตั๋ว 09)
 - executable target ชื่อ `Pomodot` (ตั๋ว 14 ทับชื่อ "App" ในตั๋ว 12)
+- **M6 ทับ M1/M2/M5** (ข้อเก่าในหัวข้อเดิมขีดฆ่าไว้พร้อมหมายเหตุ): ปุ่ม × บนการ์ด → ปุ่ม `…`, "ไม่มีเมนูคลิกขวา" → มี, จำสถานะซ่อนข้าม Quit → แคปซูลโผล่เสมอ, ไม่มี Dock icon → สวิตช์ `Show in Dock`, เปิดเองตอน login จากห้ามทำ → มี

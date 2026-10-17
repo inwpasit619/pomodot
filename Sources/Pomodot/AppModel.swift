@@ -8,10 +8,19 @@ import Observation
 @MainActor
 @Observable
 final class AppModel {
-    /// Shown on first launch; remembered in state.json.
+    /// Shown whenever Pomodot opens. Hidden from any menu, the first time ever it says how to
+    /// bring it back.
     var isFloatingWindowVisible: Bool {
-        didSet { saveState() }
+        didSet {
+            if oldValue, !isFloatingWindowVisible,
+               let notice = HideNotice.onHiding(alreadyShown: &hideNoticeShown, showInDock: settings.showInDock) {
+                HideNoticeAlert.tell(notice)
+            }
+            saveState()
+        }
     }
+    /// The notice on the first Hide has been shown; remembered in state.json.
+    @ObservationIgnored private var hideNoticeShown: Bool
     /// On by default; remembered in state.json.
     var isAlwaysOnTop: Bool {
         didSet { saveState() }
@@ -29,6 +38,9 @@ final class AppModel {
             settingsFile.save(SettingsFile.encode(settings))
             if settings.appearance != oldValue.appearance {
                 applyAppearance()
+            }
+            if settings.showInDock != oldValue.showInDock {
+                applyDockIcon()
             }
             let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
             send { timer, _ in
@@ -49,6 +61,13 @@ final class AppModel {
     var warnsNotificationsAreOff: Bool {
         settings.warnsNotificationsAreOff(turnedOffInSystemSettings: notificationsTurnedOffInSystemSettings)
     }
+
+    /// Open at login, as macOS says it is. Read when Settings opens and whenever Pomodot
+    /// comes back active, e.g. from System Settings; never saved, so Restore Defaults leaves it alone.
+    private(set) var loginItemStatus = LoginItem.status
+    /// Counts the times macOS turned down a change to Open at login, so the switch redraws
+    /// back where it was: the status stays the same then, and observers aren't told.
+    private(set) var loginItemRefusals = 0
 
     /// Each sound dropdown: None, then every system sound.
     let soundChoices = Settings.soundChoices(onThisMac: SoundPlayer.systemSoundNames)
@@ -86,7 +105,9 @@ final class AppModel {
         // Where the app was at the last Quit, Paused (or Ready if it hadn't started).
         let saved = stateFile.load { StateFile.decode($0, settings: timerSettings) }
         timer = PomodoroTimer(restoring: saved.timer, settings: timerSettings)
+        // Always true: the capsule shows whenever Pomodot opens.
         isFloatingWindowVisible = saved.floatingWindow.visible
+        hideNoticeShown = saved.floatingWindow.hideNoticeShown
         isAlwaysOnTop = saved.floatingWindow.alwaysOnTop
         capsuleCenter = saved.floatingWindow.center
         // Only real sleep (lid closed, Sleep chosen). Locking the screen, the display
@@ -115,7 +136,7 @@ final class AppModel {
         NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.checkWhetherNotificationsAreTurnedOff() }
+            MainActor.assumeIsolated { self?.checkSystemSettings() }
         }
         // Before any window shows, so none of them flashes in the other look.
         applyAppearance()
@@ -168,6 +189,42 @@ final class AppModel {
         case .light: NSAppearance(named: .aqua)
         case .dark: NSAppearance(named: .darkAqua)
         }
+    }
+
+    /// What Settings shows from System Settings: notifications turned off, and Open at login.
+    /// Read when Settings opens and whenever Pomodot comes back active.
+    func checkSystemSettings() {
+        checkWhetherNotificationsAreTurnedOff()
+        checkLoginItem()
+    }
+
+    /// Asks macOS whether Pomodot opens at login, for the switch in Settings.
+    private func checkLoginItem() {
+        loginItemStatus = LoginItem.status
+    }
+
+    /// The Open at login switch: registers or unregisters, then shows what macOS now says.
+    func setOpensAtLogin(_ on: Bool) {
+        LoginItem.turn(on: on)
+        checkLoginItem()
+        if loginItemStatus.isOn != on {
+            loginItemRefusals += 1
+        }
+    }
+
+    /// The Settings window is open. Pomodot keeps its Dock icon meanwhile, even with Show in Dock
+    /// off: taking the icon away from the active app makes macOS deactivate it, and Settings would
+    /// blink (FB7743313). Switched off there, the icon goes when Settings closes.
+    @ObservationIgnored var isSettingsWindowOpen = false {
+        didSet { applyDockIcon() }
+    }
+
+    /// The only place that shows or hides the Dock icon: at launch, before anything shows,
+    /// whenever Show in Dock changes, and as Settings opens and closes. Info.plist keeps
+    /// LSUIElement, so with Show in Dock off no icon flashes up at launch.
+    func applyDockIcon() {
+        let hasIcon = settings.showInDock || isSettingsWindowOpen
+        NSApplication.shared.setActivationPolicy(hasIcon ? .regular : .accessory)
     }
 
     /// A sound picked in Settings: saved, and played straight away so it can be heard.
@@ -309,7 +366,8 @@ final class AppModel {
     /// Rewrites state.json whole: the timer as if paused at `now`, and the Floating Window.
     private func saveState(at now: Date = Date()) {
         let window = FloatingWindowState(
-            visible: isFloatingWindowVisible, alwaysOnTop: isAlwaysOnTop, center: capsuleCenter
+            visible: isFloatingWindowVisible, alwaysOnTop: isAlwaysOnTop, center: capsuleCenter,
+            hideNoticeShown: hideNoticeShown
         )
         stateFile.save(StateFile.encode(SavedState(timer: timer.snapshot(at: now), floatingWindow: window)))
         lastStateSave = now
