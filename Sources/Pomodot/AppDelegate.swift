@@ -17,6 +17,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// macOS's About window, found the first time it opens and brought forward after that.
     private var aboutWindow: NSWindow?
 
+    /// Before anything shows, so with Show in Dock off no Dock icon flashes up.
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        model.applyDockIcon()
+        model.afterDockIconChange = { [weak self] in self?.settingsWindowController.bringToFrontIfOpen() }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let missing = Self.requiredSymbols.filter {
             NSImage(systemSymbolName: $0, accessibilityDescription: nil) == nil
@@ -43,13 +49,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Opening Pomodot again from Finder or Spotlight while it runs (its menu bar icon may be
-    /// hidden behind the notch): show the Floating Window instead of a second copy.
+    /// hidden behind the notch), or clicking its Dock icon: show the Floating Window, still a
+    /// capsule, instead of a second copy.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         NSLog("Pomodot: opened again while running; showing the Floating Window")
         model.isFloatingWindowVisible = true
         // Already showing, perhaps behind other windows with Always on Top off: bring it forward.
         floatingWindowController?.bringToFront()
         return false
+    }
+
+    /// Right-clicking the Dock icon: the card's menu without Quit Pomodot, which macOS adds itself.
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        floatingWindowController?.dockMenu()
     }
 
     /// The menu's Statistics….
@@ -67,7 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showAbout() {
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
         let windowsBefore = Set(NSApp.windows.map(ObjectIdentifier.init))
-        // No Dock icon: without this the window can open behind the active app.
+        // Pomodot is seldom active: without this the window can open behind the active app.
         NSApp.activate()
         NSApp.orderFrontStandardAboutPanel(options: [.version: "build \(build)"])
         aboutWindow = aboutWindow ?? NSApp.windows.first { !windowsBefore.contains(ObjectIdentifier($0)) }

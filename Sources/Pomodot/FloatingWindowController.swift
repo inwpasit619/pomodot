@@ -109,6 +109,8 @@ final class FloatingWindowController {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .canJoinAllApplications]
         // NSPanel defaults to true, which would hide it whenever Pomodot isn't active.
         panel.hidesOnDeactivate = false
+        // ⌘H, Hide Pomodot and the Dock's Hide hide Settings and Statistics, never the capsule.
+        panel.canHide = false
         // A click on the capsule must not take the keyboard from the app the user is typing in.
         panel.becomesKeyOnlyIfNeeded = true
         panel.backgroundColor = .clear
@@ -289,6 +291,14 @@ final class FloatingWindowController {
         DispatchQueue.main.async { [cardMenu] in
             cardMenu.menu.popUp(positioning: nil, at: corner, in: nil)
         }
+    }
+
+    /// The Dock icon's menu: the card's items, made afresh each time macOS asks.
+    func dockMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        menu.items = cardMenu.items(for: .dock)
+        return menu
     }
 
     private func menuOpened() {

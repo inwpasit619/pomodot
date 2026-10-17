@@ -17,6 +17,7 @@ private func expectTheSpecDefaults(_ settings: Settings, sourceLocation: SourceL
     #expect(settings.focusEndSound == "Glass", sourceLocation: sourceLocation)
     #expect(settings.breakEndSound == "Hero", sourceLocation: sourceLocation)
     #expect(settings.appearance == .system, sourceLocation: sourceLocation)
+    #expect(settings.showInDock == true, sourceLocation: sourceLocation)
 }
 
 @Test("Given the version 1 sample settings.json from the spec, when it is loaded, then it is 25 / 5 / 15 / 4, both auto-starts off, Show notifications on, Glass / Hero and Appearance System")
@@ -33,7 +34,7 @@ func theSampleSettingsFileAlwaysReads() {
 }
 
 /// Every value changed from its default: 30 / 10 / 20 / 6, both auto-starts on,
-/// Show notifications off, no sound at the end of a Focus, Ping after a Break, Dark.
+/// Show notifications off, no sound at the end of a Focus, Ping after a Break, Dark, Show in Dock off.
 private func everyValueChanged() -> Settings {
     var settings = Settings()
     settings.timer.focusMinutes = 30
@@ -46,6 +47,7 @@ private func everyValueChanged() -> Settings {
     settings.focusEndSound = nil
     settings.breakEndSound = "Ping"
     settings.appearance = .dark
+    settings.showInDock = false
     return settings
 }
 
@@ -59,7 +61,7 @@ private func sample(_ swaps: (line: String, replacement: String)...) -> Data {
     return Data(text.utf8)
 }
 
-@Test("Given Settings of 30 / 10 / 20 / 6, both auto-starts on, Show notifications off, no end of Focus sound, Ping after a Break and Dark, when they are saved and loaded back, then every value is the same")
+@Test("Given Settings of 30 / 10 / 20 / 6, both auto-starts on, Show notifications off, no end of Focus sound, Ping after a Break, Dark and Show in Dock off, when they are saved and loaded back, then every value is the same")
 func savedSettingsLoadBack() {
     // Given
     let settings = everyValueChanged()
@@ -231,3 +233,51 @@ func theAppearanceChoicesReadSystemLightDark() {
     // Then
     #expect(names == ["System", "Light", "Dark"])
 }
+
+// MARK: M6: Show in Dock
+
+@Test("Given a settings.json from 0.9.0 with no showInDock key, when Settings are loaded, then Show in Dock is on and every other value is kept")
+func aMissingShowInDockIsOn() {
+    // Given
+    let data = sample(
+        (",\n  \"showInDock\": true", ""),
+        ("\"focusMinutes\": 25", "\"focusMinutes\": 30")
+    )
+
+    // When
+    let settings = SettingsFile.decode(data).value
+
+    // Then
+    #expect(settings.showInDock == true)
+    #expect(settings.timer.focusMinutes == 30)
+}
+
+@Test("Given Show in Dock turned off, when Settings are saved and loaded back, then it is still off and the file says \"showInDock\": false")
+func showInDockOffLoadsBack() throws {
+    // Given
+    var settings = Settings()
+    settings.showInDock = false
+
+    // When
+    let data = SettingsFile.encode(settings)
+    let loaded = SettingsFile.decode(data).value
+
+    // Then
+    #expect(loaded.showInDock == false)
+    let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    #expect(json["showInDock"] as? Bool == false)
+}
+
+@Test("Given Show in Dock turned off, when Restore Defaults is pressed, then it is on again")
+func restoreDefaultsTurnsShowInDockOn() {
+    // Given
+    var settings = Settings()
+    settings.showInDock = false
+
+    // When
+    settings.restoreDefaults()
+
+    // Then
+    #expect(settings.showInDock == true)
+}
+

@@ -13,7 +13,7 @@ final class AppModel {
     var isFloatingWindowVisible: Bool {
         didSet {
             if oldValue, !isFloatingWindowVisible,
-               let notice = HideNotice.onHiding(alreadyShown: &hideNoticeShown, showInDock: hasDockIcon) {
+               let notice = HideNotice.onHiding(alreadyShown: &hideNoticeShown, showInDock: settings.showInDock) {
                 HideNoticeAlert.tell(notice)
             }
             saveState()
@@ -21,8 +21,6 @@ final class AppModel {
     }
     /// The notice on the first Hide has been shown; remembered in state.json.
     @ObservationIgnored private var hideNoticeShown: Bool
-    /// Pomodot shows in the Dock, so clicking its icon brings the Floating Window back.
-    private var hasDockIcon: Bool { NSApp.activationPolicy() == .regular }
     /// On by default; remembered in state.json.
     var isAlwaysOnTop: Bool {
         didSet { saveState() }
@@ -40,6 +38,10 @@ final class AppModel {
             settingsFile.save(SettingsFile.encode(settings))
             if settings.appearance != oldValue.appearance {
                 applyAppearance()
+            }
+            if settings.showInDock != oldValue.showInDock {
+                applyDockIcon()
+                afterDockIconChange?()
             }
             let timerSettings = Self.timerSettings(from: settings, focusMinutes: focusMinutesForThisRun)
             send { timer, _ in
@@ -209,6 +211,16 @@ final class AppModel {
         if loginItemStatus.isOn != on {
             loginItemRefusals += 1
         }
+    }
+
+    /// Called after Show in Dock changes the Dock icon, e.g. to bring the Settings window back up.
+    @ObservationIgnored var afterDockIconChange: (() -> Void)?
+
+    /// The only place that shows or hides the Dock icon: at launch, before anything shows,
+    /// and whenever Show in Dock changes. Info.plist keeps LSUIElement, so with Show in Dock
+    /// off no icon flashes up at launch.
+    func applyDockIcon() {
+        NSApplication.shared.setActivationPolicy(settings.showInDock ? .regular : .accessory)
     }
 
     /// A sound picked in Settings: saved, and played straight away so it can be heard.

@@ -35,6 +35,7 @@ struct SettingsView: View {
                             action: LoginItem.openSystemSettings
                         )
                     }
+                    Toggle("Show in Dock", isOn: $model.settings.showInDock)
                 } header: {
                     SectionTitle("General")
                 }
