@@ -34,7 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         NSLog("Pomodot: SF Symbols OK: %@", Self.requiredSymbols.joined(separator: ", "))
 
-        floatingWindowController = FloatingWindowController(model: model)
+        floatingWindowController = FloatingWindowController(model: model, app: self)
     }
 
     /// Quit Pomodot, a restart or a log out: save where the timer is, to come back Paused.
