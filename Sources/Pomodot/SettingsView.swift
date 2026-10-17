@@ -22,6 +22,18 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             Form {
                 Section {
+                    Toggle("Open at login", isOn: Binding(
+                        get: { model.loginItemStatus.isOn },
+                        set: { model.setOpensAtLogin($0) }
+                    ))
+                    if model.loginItemStatus.needsApproval {
+                        LoginItemApprovalWarning()
+                    }
+                } header: {
+                    SectionTitle("General")
+                }
+
+                Section {
                     NumberRow("Focus", value: $model.settings.timer.focusMinutes, in: minutes, unit: "min", corrections: corrections)
                     NumberRow("Short Break", value: $model.settings.timer.shortBreakMinutes, in: minutes, unit: "min", corrections: corrections)
                     NumberRow("Long Break", value: $model.settings.timer.longBreakMinutes, in: minutes, unit: "min", corrections: corrections)
@@ -155,6 +167,21 @@ private struct NotificationsOffWarning: View {
                 .foregroundStyle(.orange)
             Button("Open System Settings…") {
                 NSWorkspace.shared.open(Self.systemSettingsURL)
+            }
+            // Its own grey button: the tomato red is for the window's main button and switches.
+            .tint(nil)
+        }
+    }
+}
+
+/// Shown under Open at login while macOS waits for the user to allow it.
+private struct LoginItemApprovalWarning: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Pomodot needs your approval in System Settings to open at login.", systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            Button("Open Login Items…") {
+                LoginItem.openSystemSettings()
             }
             // Its own grey button: the tomato red is for the window's main button and switches.
             .tint(nil)

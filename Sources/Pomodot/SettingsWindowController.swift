@@ -17,6 +17,7 @@ final class SettingsWindowController {
         let window = window ?? makeWindow()
         self.window = window
         model.checkWhetherNotificationsAreTurnedOff()
+        model.checkLoginItem()
         window.showInFront()
     }
 

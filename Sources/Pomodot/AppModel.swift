@@ -61,6 +61,10 @@ final class AppModel {
         settings.warnsNotificationsAreOff(turnedOffInSystemSettings: notificationsTurnedOffInSystemSettings)
     }
 
+    /// Open at login, as macOS says it is. Read when Settings opens and whenever Pomodot
+    /// comes back active, e.g. from System Settings; never saved, so Restore Defaults leaves it alone.
+    private(set) var loginItemStatus = LoginItem.status
+
     /// Each sound dropdown: None, then every system sound.
     let soundChoices = Settings.soundChoices(onThisMac: SoundPlayer.systemSoundNames)
 
@@ -128,7 +132,10 @@ final class AppModel {
         NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.checkWhetherNotificationsAreTurnedOff() }
+            MainActor.assumeIsolated {
+                self?.checkWhetherNotificationsAreTurnedOff()
+                self?.checkLoginItem()
+            }
         }
         // Before any window shows, so none of them flashes in the other look.
         applyAppearance()
@@ -181,6 +188,16 @@ final class AppModel {
         case .light: NSAppearance(named: .aqua)
         case .dark: NSAppearance(named: .darkAqua)
         }
+    }
+
+    func checkLoginItem() {
+        loginItemStatus = LoginItem.status
+    }
+
+    /// The Open at login switch: registers or unregisters, then shows what macOS now says.
+    func setOpensAtLogin(_ on: Bool) {
+        LoginItem.turn(on: on)
+        checkLoginItem()
     }
 
     /// A sound picked in Settings: saved, and played straight away so it can be heard.
