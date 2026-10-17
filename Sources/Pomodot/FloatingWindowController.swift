@@ -267,22 +267,24 @@ final class FloatingWindowController {
         glassFrame.contains(NSEvent.mouseLocation) ? cardMenu.menu : nil
     }
 
-    /// Opens the menu just below the ellipsis button, its left edge lined up with the button's,
-    /// or just above it when the screen has no room below (AppKit would make it scroll).
+    /// Opens the menu below the ellipsis button, or above it, where Core says.
     private func openMenuBelowMoreButton() {
-        let button = display.moreButtonFrame
-        let panelFrame = Self.panelFrame(around: expansion.capsuleFrame)
         // Screen coordinates: SwiftUI measures from the panel's top-left.
-        let left = panelFrame.minX + button.minX
-        let bottom = panelFrame.maxY - button.maxY
-        let top = panelFrame.maxY - button.minY
-        let gap: CGFloat = 4
+        let panelFrame = Self.panelFrame(around: expansion.capsuleFrame)
+        let frame = display.moreButtonFrame
+        let button = CGRect(
+            x: panelFrame.minX + frame.minX,
+            y: panelFrame.maxY - frame.maxY,
+            width: frame.width,
+            height: frame.height
+        )
         // Filled now, only to measure it; AppKit asks for the items again as it opens.
         cardMenu.menu.items = cardMenu.items(for: .card)
-        let height = cardMenu.menu.size.height
-        let roomBelow = bottom - gap - usableArea(at: CGPoint(x: left, y: bottom)).minY
-        // popUp places the menu's top-left corner at the point.
-        let corner = CGPoint(x: left, y: roomBelow >= height ? bottom - gap : top + gap + height)
+        let corner = FloatingWindowPlacement.menuCorner(
+            below: button,
+            menuHeight: cardMenu.menu.size.height,
+            in: usableArea(at: CGPoint(x: button.midX, y: button.midY))
+        )
         // popUp doesn't return until the menu closes; let the button's click finish first.
         DispatchQueue.main.async { [cardMenu] in
             cardMenu.menu.popUp(positioning: nil, at: corner, in: nil)
