@@ -69,7 +69,7 @@ func todayLineIsDisabled() {
     #expect(today?.command == nil)
 }
 
-@Test("Given the Floating Window is showing, when the menu opens, then it offers Hide Floating Window; given it is hidden, Show Floating Window")
+@Test("Given the Floating Window is showing, when the card's menu opens, then it offers Hide Floating Window; given it is hidden, when the Dock's menu opens, then it offers Show Floating Window")
 func hideOrShowFollowsTheFloatingWindow() {
     // Given
     let showing = menu(visible: true)
@@ -128,8 +128,21 @@ func dockMenuHasNoQuit() {
     let dock = menu.entries(for: .dock)
 
     // Then
-    #expect(dock == Array(card.dropLast(2)))
-    #expect(item("Quit Pomodot", in: dock) == nil)
+    #expect(titles(dock) == [
+        "Today: 🍅 5",
+        "—",
+        "New Cycle…",
+        "—",
+        "Hide Floating Window",
+        "Always on Top",
+        "—",
+        "Statistics…",
+        "Settings…",
+        "—",
+        "About Pomodot",
+        "Check for Updates…",
+    ])
+    #expect(Array(dock) == Array(card.prefix(dock.count)))
 }
 
 @Test("Given the card's menu, when it opens, then every item but Today runs its own command")
