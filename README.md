@@ -33,17 +33,18 @@ xattr -dr com.apple.quarantine /Applications/Pomodot.app
 ## Using Pomodot
 
 - **The card:** click the capsule to open it into the card, with Start / Pause, Reset and Skip. Move the pointer away and it closes again. Drag the capsule anywhere.
-- **Everything else:** click the **…** button at the top right of the card, or right-click (or Control-click) the capsule or the card. That menu has **New Cycle…**, **Hide Floating Window**, **Always on Top**, **Statistics…**, **Settings…**, **About Pomodot**, **Check for Updates…** and **Quit Pomodot**. The menu bar icon has the same commands, and right-clicking Pomodot's Dock icon shows them too.
-- **Hiding the capsule:** choose **Hide Floating Window**. Pomodot keeps running. To bring the capsule back, click Pomodot in the Dock, or open Pomodot again from Spotlight or Launchpad. It also shows again whenever Pomodot opens.
+- **Everything else:** click the **…** button at the top right of the card, or right-click (or Control-click) the capsule or the card. That menu has **New Cycle…**, **Hide Floating Window**, **Always on Top**, **Statistics…**, **Settings…**, **About Pomodot**, **Check for Updates…** and **Quit Pomodot**.
+- **Other ways in:** the menu bar icon's menu also has all of these. Right-clicking Pomodot's Dock icon shows them too, with macOS's own Quit in place of Quit Pomodot.
+- **Hiding the capsule:** choose **Hide Floating Window**. Pomodot keeps running. To bring the capsule back, click Pomodot in the Dock (while Show in Dock is on), or open Pomodot again from Spotlight or Launchpad. It also shows again whenever Pomodot opens.
 - **Settings › General:**
   - **Open at login** (off at first): Pomodot opens by itself when you log in. If macOS wants your approval first, an orange line appears under the switch; click **Open Login Items…** and allow Pomodot there.
-  - **Show in Dock** (on at first): Pomodot's icon in the Dock and in Cmd-Tab. Switch it off if you'd rather keep it to the capsule and the menu bar.
+  - **Show in Dock** (on at first): Pomodot's icon in the Dock and in Command-Tab. Switch it off if you'd rather keep it to the capsule and the menu bar.
 
 ## Updating
 
-Quit Pomodot (**Quit Pomodot** in its menu), download the new zip, and drag the new **Pomodot** into Applications to replace the old one. Your History and Settings are kept. macOS blocks the new version too (tested on macOS 27), so do steps 3–6 above again for it.
+Quit Pomodot (choose **Quit Pomodot** from the card's **…** menu or the menu bar icon), download the new zip, and drag the new **Pomodot** into Applications to replace the old one. Your History and Settings are kept. macOS blocks the new version too (tested on macOS 27), so do steps 3–6 above again for it.
 
-If **Open at login** is on, open the new Pomodot yourself once, and do Open Anyway, before you restart or log out. Otherwise macOS may block it when you log in.
+If **Open at login** is on, open the new Pomodot yourself once, and do **Open Anyway**, before you restart or log out. Otherwise macOS may block it when you log in.
 
 Coming from 0.9.0, Pomodot's icon now shows in the Dock. If you don't want it, switch off **Settings › General › Show in Dock**.
 
@@ -56,7 +57,7 @@ Going back to an older version isn't supported.
 3. To delete your data too: in Finder choose **Go › Go to Folder…**, enter `~/Library/Application Support/com.teppasit.pomodot`, and delete that folder.
 4. Optional: remove Pomodot from **System Settings › Notifications**.
 
-If you deleted the app with **Open at login** still on, Pomodot stays in **System Settings › General › Login Items & Extensions** with a yellow warning. Select it there and click the **−** button.
+If you deleted the app with **Open at login** still on, Pomodot stays in **System Settings › General › Login Items & Extensions** (on macOS 14: **Login Items**) with a yellow warning triangle. Select it there and click the **−** button.
 
 ## ภาษาไทย
 
@@ -79,17 +80,18 @@ xattr -dr com.apple.quarantine /Applications/Pomodot.app
 ### ใช้งาน
 
 - **การ์ด:** คลิกแคปซูลแล้วจะขยายเป็นการ์ดที่มีปุ่ม Start / Pause, Reset และ Skip เอาเมาส์ออกแล้วการ์ดจะหุบเอง ลากแคปซูลไปไว้ตรงไหนก็ได้
-- **คำสั่งอื่นๆ:** กดปุ่ม **…** มุมขวาบนของการ์ด หรือคลิกขวา (หรือกด Control ค้างแล้วคลิก) ที่แคปซูลหรือการ์ด จะมีเมนู **New Cycle…**, **Hide Floating Window**, **Always on Top**, **Statistics…**, **Settings…**, **About Pomodot**, **Check for Updates…** และ **Quit Pomodot** ไอคอนบน menu bar มีคำสั่งชุดเดียวกัน และคลิกขวาที่ไอคอน Pomodot บน Dock ก็เห็นคำสั่งเหล่านี้
-- **ซ่อนแคปซูล:** เลือก **Hide Floating Window** แล้ว Pomodot ยังทำงานอยู่ อยากให้แคปซูลกลับมา ให้คลิก Pomodot บน Dock หรือเปิด Pomodot อีกครั้งจาก Spotlight หรือ Launchpad และทุกครั้งที่เปิด Pomodot แคปซูลจะโผล่เสมอ
+- **คำสั่งอื่นๆ:** กดปุ่ม **…** มุมขวาบนของการ์ด หรือคลิกขวา (หรือกด Control ค้างแล้วคลิก) ที่แคปซูลหรือการ์ด จะมีเมนู **New Cycle…**, **Hide Floating Window**, **Always on Top**, **Statistics…**, **Settings…**, **About Pomodot**, **Check for Updates…** และ **Quit Pomodot**
+- **ทางอื่น:** เมนูของไอคอนบน menu bar ก็มีคำสั่งเหล่านี้ครบ และคลิกขวาที่ไอคอน Pomodot บน Dock ก็เห็นคำสั่งเหล่านี้ (ตรง Quit Pomodot จะเป็นปุ่ม Quit ของ macOS แทน)
+- **ซ่อนแคปซูล:** เลือก **Hide Floating Window** แล้ว Pomodot ยังทำงานอยู่ อยากให้แคปซูลกลับมา ให้คลิก Pomodot บน Dock (ตอนเปิด Show in Dock อยู่) หรือเปิด Pomodot อีกครั้งจาก Spotlight หรือ Launchpad และทุกครั้งที่เปิด Pomodot แคปซูลจะโผล่เสมอ
 - **Settings › General:**
   - **Open at login** (เริ่มต้นปิด): Pomodot เปิดเองตอน login ถ้า macOS ต้องให้อนุมัติก่อน จะมีบรรทัดสีส้มใต้สวิตช์ ให้กด **Open Login Items…** แล้วอนุญาต Pomodot ในหน้านั้น
-  - **Show in Dock** (เริ่มต้นเปิด): ไอคอน Pomodot บน Dock และใน Cmd-Tab ปิดได้ถ้าอยากใช้แค่แคปซูลกับ menu bar
+  - **Show in Dock** (เริ่มต้นเปิด): ไอคอน Pomodot บน Dock และใน Command-Tab ปิดได้ถ้าอยากใช้แค่แคปซูลกับ menu bar
 
 ### อัปเดต
 
-Quit Pomodot (**Quit Pomodot** ในเมนูของมัน) ดาวน์โหลด zip ตัวใหม่ แล้วลาก **Pomodot** ตัวใหม่ไปทับตัวเดิมใน Applications History กับ Settings ยังอยู่ครบ macOS จะบล็อกเวอร์ชันใหม่อีกครั้ง (ทดสอบแล้วบน macOS 27) ให้ทำข้อ 3–6 ข้างบนซ้ำอีกรอบ
+Quit Pomodot (เลือก **Quit Pomodot** จากเมนู **…** ของการ์ด หรือจากไอคอนบน menu bar) ดาวน์โหลด zip ตัวใหม่ แล้วลาก **Pomodot** ตัวใหม่ไปทับตัวเดิมใน Applications History กับ Settings ยังอยู่ครบ macOS จะบล็อกเวอร์ชันใหม่อีกครั้ง (ทดสอบแล้วบน macOS 27) ให้ทำข้อ 3–6 ข้างบนซ้ำอีกรอบ
 
-ถ้าเปิด **Open at login** ไว้ ให้เปิด Pomodot ตัวใหม่เองหนึ่งครั้งและทำ Open Anyway ให้เสร็จ ก่อนรีสตาร์ทหรือ log out ไม่งั้นตอน login macOS อาจบล็อกไว้
+ถ้าเปิด **Open at login** ไว้ ให้เปิด Pomodot ตัวใหม่เองหนึ่งครั้งและทำ **Open Anyway** ให้เสร็จ ก่อนรีสตาร์ทหรือ log out ไม่งั้นตอน login macOS อาจบล็อกไว้
 
 ถ้าอัปเดตจาก 0.9.0 จะเห็นไอคอน Pomodot โผล่บน Dock ถ้าไม่อยากได้ ปิดได้ที่ **Settings › General › Show in Dock**
 
@@ -102,7 +104,7 @@ Quit Pomodot (**Quit Pomodot** ในเมนูของมัน) ดาว�
 3. ถ้าอยากลบข้อมูลด้วย: ใน Finder เลือก **Go › Go to Folder…** พิมพ์ `~/Library/Application Support/com.teppasit.pomodot` แล้วลบโฟลเดอร์นั้น
 4. ไม่บังคับ: ลบรายการ Pomodot ใน **System Settings › Notifications**
 
-ถ้าลบแอพไปแล้วโดยที่ยังเปิด **Open at login** ไว้ Pomodot จะค้างอยู่ใน **System Settings › General › Login Items & Extensions** พร้อมสามเหลี่ยมสีเหลือง ให้เลือก Pomodot ในหน้านั้นแล้วกดปุ่ม **−**
+ถ้าลบแอพไปแล้วโดยที่ยังเปิด **Open at login** ไว้ Pomodot จะค้างอยู่ใน **System Settings › General › Login Items & Extensions** (macOS 14 ชื่อว่า **Login Items**) พร้อมสามเหลี่ยมสีเหลือง ให้เลือก Pomodot ในหน้านั้นแล้วกดปุ่ม **−**
 
 ## Advanced: building from source
 
