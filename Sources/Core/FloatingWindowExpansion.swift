@@ -11,7 +11,7 @@ public struct FloatingWindowExpansion: Sendable {
     static let clickTolerance: CGFloat = 3
 
     public private(set) var capsuleFrame: CGRect
-    /// Chosen as the card opens and kept until it closes; nil while collapsed.
+    /// Chosen as the card opens and again as a drag of it ends; nil while collapsed.
     public private(set) var cardLayout: CardLayout?
 
     private var pointerExitedAt: Date?
@@ -70,11 +70,16 @@ public struct FloatingWindowExpansion: Sendable {
     }
 
     /// The mouse button came up at `point`. Moving no more than ~3 pt is a click,
-    /// and a click opens the card at once; anything further was a drag.
+    /// and a click opens the card at once; anything further was a drag, and a drag of
+    /// the card tucks the capsule into the edges of `visibleFrame` the card is near.
     public mutating func released(at point: CGPoint, visibleFrame: CGRect) {
         defer { press = nil }
-        guard let press, !press.isDrag, !press.isBeyondClick(point) else { return }
-        expand(in: visibleFrame)
+        guard let press else { return }
+        if press.isDrag || press.isBeyondClick(point) {
+            tuck(in: visibleFrame)
+        } else {
+            expand(in: visibleFrame)
+        }
     }
 
     /// The pointer moved to `point` with the button down. Once it is more than ~3 pt
@@ -140,6 +145,15 @@ public struct FloatingWindowExpansion: Sendable {
             dx: along(frame.minX, frame.maxX, area.minX, area.maxX),
             dy: along(frame.minY, frame.maxY, area.minY, area.maxY)
         )
+    }
+
+    /// The card stays put; only the capsule moves inside it, to where the card should shrink into.
+    private mutating func tuck(in visibleFrame: CGRect) {
+        guard let cardLayout else { return }
+        let card = cardLayout.cardFrame(around: capsuleFrame)
+        let tucked = CardLayout(tucking: card, visibleFrame: visibleFrame)
+        self.cardLayout = tucked
+        capsuleFrame = tucked.capsuleFrame(inside: card)
     }
 
     private mutating func expand(in visibleFrame: CGRect) {
