@@ -955,13 +955,13 @@ Timer
 
 ข้อเท็จจริงจาก research (branch `research/launch-at-login` ทดลองด้วยแอพ ad-hoc sign ไม่มี Team ID บน macOS 27 บัญชี admin): `register()` ได้ `.enabled` ทันที **ไม่ต้องให้ผู้ใช้อนุมัติ** ไม่ต้องอยู่ใน `/Applications`; ไม่เคยลงทะเบียน = `.notFound` (ไม่ใช่ `.notRegistered`); **อัปเดตด้วยการลากทับแล้วยังอยู่และยัง `.enabled`** (ตอน login ระบบเปิดแบบเดียวกับดับเบิลคลิก ถ้าตัวใหม่ยังไม่ผ่าน Open Anyway น่าจะเห็นกล่อง Gatekeeper — ตรวจด้วยมือ); **ลบแอพแล้วรายการค้าง**ใน System Settings › General › Login Items & Extensions (สามเหลี่ยมเหลือง) ผู้ใช้ลบเองด้วยปุ่ม −
 
-**`Show in Dock`** — ค่าเริ่มต้น**เปิด** (ผู้ใช้เลือก: เพื่อนที่ไม่คุ้น menu bar เจอแอพง่าย) เก็บใน `settings.json` key `showInDock` (ไม่มี key = `true`) มีผลทันทีไม่ต้องเปิดแอพใหม่ `Restore Defaults` คืนเป็น**เปิด** **คนที่อัปเดตจาก 0.9.0 จะเห็นไอคอนบน Dock โผล่หลังอัปเดต** (ต้องบอกใน release notes)
+**`Show in Dock`** — ค่าเริ่มต้น**เปิด** (ผู้ใช้เลือก: เพื่อนที่ไม่คุ้น menu bar เจอแอพง่าย) เก็บใน `settings.json` key `showInDock` (ไม่มี key = `true`) มีผลทันทีไม่ต้องเปิดแอพใหม่ ~~ทุกกรณี~~ **(แก้ตอนตรวจด่าน M6: ระหว่างที่หน้าต่าง Settings เปิดอยู่มีไอคอน Dock เสมอ แม้สวิตช์ปิด — ปิดสวิตช์แล้วไอคอนหายตอนปิดหน้าต่าง Settings — เพราะเอาไอคอนออกตอนแอพ active ทำให้ macOS ดึง active ไปและหน้าต่าง Settings กะพริบ ผู้ใช้เลือกแบบนี้)** `Restore Defaults` คืนเป็น**เปิด** **คนที่อัปเดตจาก 0.9.0 จะเห็นไอคอนบน Dock โผล่หลังอัปเดต** (ต้องบอกใน release notes)
 
 ### ไอคอนบน Dock ([09](../pomodot-m6-without-menu-bar/issues/09-research-dock-icon-toggle.md), [10](../pomodot-m6-without-menu-bar/issues/10-grilling-dock-icon-setting.md))
 ข้อเท็จจริงจาก research (branch `research/dock-icon-toggle` สรุปไว้ที่นี่แล้ว): สลับ `.regular` ↔ `.accessory` ตอนทำงานอยู่ได้ ไอคอนขึ้น/หายใน ~0.5 วิ หน้าต่างไม่หาย ไม่แย่ง focus ไม่มีไอคอนค้าง (ทดลองตอนแอพ**ไม่** active); Dock ใช้ `Pomodot.icns` และมีจุดใต้ไอคอนเอง; การมีไอคอน Dock **ไม่ได้**ทำให้ `activate()` ที่ไม่มีคลิกผ่านง่ายขึ้น
 
 - **คง `LSUIElement = true`** ใน `Info.plist` แล้วมีที่เดียวที่เรียก `NSApp.setActivationPolicy(showInDock ? .regular : .accessory)`: ใน `applicationWillFinishLaunching` (override เพิ่มใน `AppDelegate`; ตอนปิดสวิตช์จะไม่มีไอคอนแวบ) และทุกครั้งที่ค่าเปลี่ยน
-- หลังสลับ ถ้าหน้าต่าง Settings เปิดอยู่ให้ `orderFrontRegardless()` อีกครั้ง (มีรายงานว่าสลับตอนแอพ active แล้วหน้าต่างตกไปข้างหลัง และเมนูแอพไม่ขึ้นจนสลับแอพไปกลับ — FB7743313; ตรวจด้วยมือ)
+- ~~หลังสลับ ถ้าหน้าต่าง Settings เปิดอยู่ให้ `orderFrontRegardless()` อีกครั้ง~~ **(ตรวจด่าน M6: ทดลองแล้วหน้าต่างยังกะพริบ — FB7743313 — จึงเปลี่ยนเป็น: ระหว่างที่หน้าต่าง Settings เปิดอยู่ คิดเป็น `.regular` เสมอ (`showInDock || Settings เปิดอยู่`) ไอคอนจึงไม่เคยถูกเอาออกตอนผู้ใช้อยู่ใน Settings; ปิดหน้าต่าง Settings แล้วค่อยใช้ค่าสวิตช์ และเปิด Settings ตอนสวิตช์ปิดไอคอนจะโผล่ระหว่างที่หน้าต่างเปิด)**
 - **`panel.canHide = false` เสมอ** (ไม่ขึ้นกับสวิตช์) — ไม่งั้น ⌘H / Hide Pomodot / Hide จาก Dock ซ่อนแคปซูลไปด้วย
 - **คลิกไอคอน Dock** = `applicationShouldHandleReopen` เดิม: แคปซูลโผล่ที่เดิมและขึ้นหน้าสุด **ไม่ขยายการ์ด**
 - **คลิกขวาที่ไอคอน Dock** = `applicationDockMenu(_:)` คืนเมนูเดียวกับเมนูของการ์ด (จาก Core) ยกเว้น `Quit Pomodot` (macOS ใส่ Quit, Options, Show All Windows, Hide ให้เอง) `Hide/Show Floating Window` เปลี่ยนชื่อตามสถานะ สร้างใหม่ทุกครั้งที่ถูกเรียก
@@ -1017,8 +1017,8 @@ Timer
 - เอา Pomodot ออกใน Login Items ด้วยปุ่ม − → เปิด Settings ของ Pomodot → สวิตช์ปิด (บันทึกว่าเห็นบรรทัดส้มหรือไม่) → เปิดสวิตช์ใหม่ได้
 - `Restore Defaults` → `Open at login` คงเดิม, `Show in Dock` กลับเป็นเปิด
 **Dock**
-- `Show in Dock` เปิด → ไอคอนมะเขือเทศมีจุดบน Dock, Cmd-Tab เห็น Pomodot; ปิด → ไอคอนหาย Cmd-Tab ไม่เห็น
-- **สลับสวิตช์ตอนหน้าต่าง Settings เป็นหน้าต่างที่ใช้อยู่** → ไอคอนขึ้น/หาย, หน้าต่าง Settings ยังอยู่หน้าและพิมพ์ได้, ตอนเปิด แถบเมนูด้านบนเป็นของ Pomodot (ถ้าไม่ขึ้นจนสลับแอพไปกลับ บันทึกไว้)
+- `Show in Dock` เปิด → ไอคอนมะเขือเทศมีจุดบน Dock, Cmd-Tab เห็น Pomodot; ปิด → ไอคอนยังอยู่จนปิดหน้าต่าง Settings แล้วหาย Cmd-Tab ไม่เห็น
+- **สลับสวิตช์ตอนหน้าต่าง Settings เป็นหน้าต่างที่ใช้อยู่** → ไอคอนอยู่ตลอดระหว่างที่ Settings เปิด, หน้าต่างไม่กะพริบและพิมพ์ได้, แถบเมนูด้านบนเป็นของ Pomodot; ปิดหน้าต่างตอนสวิตช์ปิด → ไอคอนหาย; เปิด Settings ตอนสวิตช์ปิด → ไอคอนโผล่ระหว่างที่หน้าต่างเปิด
 - ซ่อนแคปซูล → คลิกไอคอนบน Dock → แคปซูลโผล่ (ไม่ขยาย)
 - คลิกขวาไอคอนบน Dock → เห็นเมนูของการ์ด + Options / Hide / Quit ของระบบ เลือกคำสั่งของเราแล้วทำงาน
 - มีไอคอน Dock, พิมพ์ใน TextEdit → คลิกแคปซูล/ปุ่มบนการ์ด → TextEdit ยังรับคีย์บอร์ด
