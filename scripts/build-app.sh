@@ -5,10 +5,10 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Core holds rules only. It must never import a UI or notification framework
+# Core holds rules only. It must never import a UI, notification or login-item framework
 # (Cocoa counts too: it brings in AppKit). Also catches `import struct SwiftUI.View`.
-if grep -rnE '^[[:space:]]*(@[A-Za-z_]+[[:space:]]+)*import[[:space:]]+((typealias|struct|class|enum|protocol|let|var|func)[[:space:]]+)?(AppKit|SwiftUI|UserNotifications|Cocoa)\b' Sources/Core; then
-    echo "error: Sources/Core imports AppKit, SwiftUI, UserNotifications or Cocoa (see above)" >&2
+if grep -rnE '^[[:space:]]*(@[A-Za-z_]+[[:space:]]+)*import[[:space:]]+((typealias|struct|class|enum|protocol|let|var|func)[[:space:]]+)?(AppKit|SwiftUI|UserNotifications|ServiceManagement|Cocoa)\b' Sources/Core; then
+    echo "error: Sources/Core imports AppKit, SwiftUI, UserNotifications, ServiceManagement or Cocoa (see above)" >&2
     exit 1
 fi
 
