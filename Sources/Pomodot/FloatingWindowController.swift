@@ -185,7 +185,7 @@ final class FloatingWindowController {
         // A release can go missing (Mission Control during a drag, say). Once the button
         // is really up, end the press, or the card could never open or close again.
         if expansion.isPressed, NSEvent.pressedMouseButtons & 1 == 0 {
-            expansion.released(at: NSEvent.mouseLocation, visibleFrame: screenArea)
+            release(at: NSEvent.mouseLocation)
         }
         pointerIsInside = inside
         if inside {
@@ -211,7 +211,7 @@ final class FloatingWindowController {
             expansion.dragged(to: point, visibleFrame: usableArea(at: point))
             panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
         default:
-            expansion.released(at: point, visibleFrame: screenArea)
+            release(at: point)
             // Remembered once the drag ends, not on every step of it.
             if let capsuleAtPress, capsuleAtPress != expansion.capsuleFrame {
                 rememberCapsule()
@@ -221,8 +221,22 @@ final class FloatingWindowController {
         update()
     }
 
-    /// Saves the collapsed capsule's centre, even while the card is open: the card grows
-    /// from the capsule, which stays put.
+    /// Ends a press. Letting go of a dragged card can tuck the capsule into another edge or
+    /// corner of it: the panel moves with the capsule while the card stays where it was let go.
+    private func release(at point: CGPoint) {
+        let capsule = expansion.capsuleFrame
+        expansion.released(at: point, visibleFrame: screenArea)
+        guard expansion.isExpanded, expansion.capsuleFrame != capsule else { return }
+        // Moving the panel and the card inside it as one, or the card would blink
+        // to one side for a frame.
+        panel.disableScreenUpdatesUntilFlush()
+        showGlass(animation: nil)
+        hosting.layoutSubtreeIfNeeded()
+        panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
+    }
+
+    /// Saves the collapsed capsule's centre, even while the card is open: it is where
+    /// the card shrinks into.
     private func rememberCapsule() {
         model.capsuleCenter = CGPoint(x: expansion.capsuleFrame.midX, y: expansion.capsuleFrame.midY)
     }
