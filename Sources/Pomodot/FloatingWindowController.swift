@@ -212,11 +212,6 @@ final class FloatingWindowController {
             panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
         default:
             release(at: point)
-            // Remembered once the drag ends, not on every step of it.
-            if let capsuleAtPress, capsuleAtPress != expansion.capsuleFrame {
-                rememberCapsule()
-            }
-            capsuleAtPress = nil
         }
         update()
     }
@@ -226,13 +221,19 @@ final class FloatingWindowController {
     private func release(at point: CGPoint) {
         let capsule = expansion.capsuleFrame
         expansion.released(at: point, visibleFrame: screenArea)
-        guard expansion.isExpanded, expansion.capsuleFrame != capsule else { return }
-        // Moving the panel and the card inside it as one, or the card would blink
-        // to one side for a frame.
-        panel.disableScreenUpdatesUntilFlush()
-        showGlass(animation: nil)
-        hosting.layoutSubtreeIfNeeded()
-        panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
+        if expansion.isExpanded, expansion.capsuleFrame != capsule {
+            // Moving the panel and the card inside it as one, or the card would blink
+            // to one side for a frame.
+            panel.disableScreenUpdatesUntilFlush()
+            showGlass(animation: nil)
+            hosting.layoutSubtreeIfNeeded()
+            panel.setFrameOrigin(Self.panelFrame(around: expansion.capsuleFrame).origin)
+        }
+        // Remembered once the drag ends, not on every step of it.
+        if let capsuleAtPress, capsuleAtPress != expansion.capsuleFrame {
+            rememberCapsule()
+        }
+        capsuleAtPress = nil
     }
 
     /// Saves the collapsed capsule's centre, even while the card is open: it is where
