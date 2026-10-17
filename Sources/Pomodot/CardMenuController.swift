@@ -50,6 +50,15 @@ final class CardMenuController: NSObject, NSMenuDelegate {
         }
     }
 
+    /// The Dock icon's menu: the same items without Quit Pomodot, made afresh each time macOS asks.
+    /// It has no delegate: opening it never holds the card open.
+    func dockMenu() -> NSMenu {
+        let dockMenu = NSMenu()
+        dockMenu.autoenablesItems = false
+        dockMenu.items = items(for: .dock)
+        return dockMenu
+    }
+
     // MARK: NSMenuDelegate
 
     /// Items change only here: AppKit asks just before the menu opens.

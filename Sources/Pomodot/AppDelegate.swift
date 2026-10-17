@@ -61,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Right-clicking the Dock icon: the card's menu without Quit Pomodot, which macOS adds itself.
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
-        floatingWindowController?.dockMenu()
+        floatingWindowController?.cardMenu.dockMenu()
     }
 
     /// The menu's Statistics….

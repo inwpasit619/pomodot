@@ -75,7 +75,7 @@ final class FloatingWindowController {
     )
 
     private let model: AppModel
-    private let cardMenu: CardMenuController
+    let cardMenu: CardMenuController
     private let panel: FloatingPanel
     private let hosting: NSView
     private let display = FloatingWindowDisplay()
@@ -291,14 +291,6 @@ final class FloatingWindowController {
         DispatchQueue.main.async { [cardMenu] in
             cardMenu.menu.popUp(positioning: nil, at: corner, in: nil)
         }
-    }
-
-    /// The Dock icon's menu: the card's items, made afresh each time macOS asks.
-    func dockMenu() -> NSMenu {
-        let menu = NSMenu()
-        menu.autoenablesItems = false
-        menu.items = cardMenu.items(for: .dock)
-        return menu
     }
 
     private func menuOpened() {
